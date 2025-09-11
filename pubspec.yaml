@@ -1,0 +1,17 @@
+name: segundo_cogni
+description: A starter project with splash screen, welcome flow, and Riverpod
+
+environment:
+  sdk: '^3.9.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  flutter_svg: ^2.0.10+1
+  go_router: ^12.1.1
+
+flutter:
+  uses-material-design: false
+  assets:
+    - assets/svg/logo.svg
