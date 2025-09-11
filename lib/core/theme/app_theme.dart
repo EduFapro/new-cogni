@@ -7,11 +7,9 @@ class AppTheme {
     colorScheme: ColorScheme.light(
       primary: AppColors.skyBlue,
       secondary: AppColors.aquaBlue,
-      background: AppColors.softWhite,
       surface: AppColors.pureWhite,
       onPrimary: AppColors.coolGray900,
       onSecondary: AppColors.coolGray900,
-      onBackground: AppColors.coolGray900,
       onSurface: AppColors.coolGray900,
     ),
     scaffoldBackgroundColor: AppColors.softWhite,
@@ -31,11 +29,9 @@ class AppTheme {
     colorScheme: ColorScheme.dark(
       primary: AppColors.chromeBlue,
       secondary: AppColors.mistTeal,
-      background: AppColors.coolGray900,
       surface: AppColors.coolGray500,
       onPrimary: AppColors.pureWhite,
       onSecondary: AppColors.pureWhite,
-      onBackground: AppColors.pureWhite,
       onSurface: AppColors.pureWhite,
     ),
     scaffoldBackgroundColor: AppColors.coolGray900,
