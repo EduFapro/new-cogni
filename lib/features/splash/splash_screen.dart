@@ -70,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(3, (index) {
-            double scale = activeDot == index ? 1.3 : 0.8;
+            double scaleFactor = activeDot == index ? 1.3 : 0.8;
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -80,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              transform: Matrix4.identity()..scale(scale),
+              transform: Matrix4.identity()..scaleByDouble(scaleFactor, scaleFactor, scaleFactor, 1.0),
             );
           }),
         );
