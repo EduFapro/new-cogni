@@ -1,9 +1,20 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/theme/app_theme.dart';
-import 'router.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-void main() {
+import 'core/router.dart';
+import 'core/theme/app_theme.dart';
+
+Future<void> initDatabaseFactory() async {
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+}
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initDatabaseFactory();
+
   runApp(const ProviderScope(child: StartupApp()));
 }
 
@@ -12,11 +23,12 @@ class StartupApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return FluentApp.router(
       title: 'Novo Cogni',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // 🔁 Light/Dark auto switch
+      debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.system,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       routerConfig: router,
     );
   }

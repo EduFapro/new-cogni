@@ -23,4 +23,11 @@ class AppColors {
   static const Color coolGray500 = Color(0xFF6B7280);
   static const Color coolGray900 = Color(0xFF111827);
   static const Color trueBlack = Color(0xFF000000);
+
+  // FluentUI
+  static const Color primary = Color(0xFF0063B1); // azul Microsoft
+  static const Color secondary = Color(0xFF107C10); // verde
+  static const Color accent = Color(0xFFB4009E); // roxo
+  static const Color neutralLight = Color(0xFFF3F2F1);
+  static const Color neutralDark = Color(0xFF201F1E);
 }

@@ -1,28 +1,31 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:async';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../providers/startup_provider.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _dotsController;
   late Animation<double> _fadeAnimation;
 
   bool showLogo = false;
   bool fadeOut = false;
+  bool hasNavigated = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Controls the fade-in of the entire screen
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 700),
       vsync: this,
@@ -38,58 +41,45 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       vsync: this,
     )..repeat();
 
-    // Start fade-in
     Future.delayed(const Duration(milliseconds: 300), () {
-      setState(() {
-        showLogo = true;
-      });
-      _fadeController.forward();
+      if (mounted) {
+        setState(() => showLogo = true);
+        _fadeController.forward();
+      }
     });
+  }
 
-    // Fade out and navigate
-    Future.delayed(const Duration(seconds: 4), () {
+  void _triggerNavigation(StartupState state) {
+    if (hasNavigated || !mounted) return;
+    hasNavigated = true;
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
       setState(() => fadeOut = true);
+
       Future.delayed(const Duration(milliseconds: 600), () {
-        context.go('/welcome');
+        if (!mounted) return;
+
+        switch (state) {
+          case StartupState.needsEvaluatorAdmin:
+            context.goNamed('admin_register');
+            break;
+          case StartupState.ready:
+            context.go('/home');
+            break;
+          default:
+            context.go('/welcome');
+        }
       });
     });
-  }
-
-  @override
-  void dispose() {
-    _fadeController.dispose();
-    _dotsController.dispose();
-    super.dispose();
-  }
-
-  Widget buildDots() {
-    return AnimatedBuilder(
-      animation: _dotsController,
-      builder: (context, child) {
-        int activeDot = (_dotsController.value * 3).floor() % 3;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(3, (index) {
-            double scale = activeDot == index ? 1.3 : 0.8;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              transform: Matrix4.identity()..scale(scale),
-            );
-          }),
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<StartupState>>(startupProvider, (previous, next) {
+      next.whenData(_triggerNavigation);
+    });
+
     return Scaffold(
       backgroundColor: Colors.deepPurple.shade400,
       body: AnimatedOpacity(
@@ -108,16 +98,53 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     'assets/svg/logo.svg',
                     width: 100,
                     height: 100,
-                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
-                buildDots(),
+                _buildDots(),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildDots() {
+    return AnimatedBuilder(
+      animation: _dotsController,
+      builder: (context, child) {
+        int activeDot = (_dotsController.value * 3).floor() % 3;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(3, (index) {
+            double scaleFactor = activeDot == index ? 1.3 : 0.8;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: 10,
+              height: 10,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              transform: Matrix4.identity()
+                ..scale(scaleFactor, scaleFactor),
+            );
+          }),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _dotsController.dispose();
+    super.dispose();
   }
 }

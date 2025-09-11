@@ -5,13 +5,23 @@ environment:
   sdk: '^3.9.0'
 
 dependencies:
+  fluent_ui:
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.5.1
-  flutter_svg: ^2.0.10+1
-  go_router: ^12.1.1
+  flutter_hooks:
+  flutter_riverpod:
+  flutter_svg:
+  go_router:
+  hooks_riverpod:
+  http:
+  sqflite_common_ffi: ^2.3.6
+  syncfusion_flutter_datepicker: ^31.1.21
+
+dependency_overrides:
+  math_expressions: 3.1.0
+
 
 flutter:
-  uses-material-design: false
+  uses-material-design: true
   assets:
     - assets/svg/logo.svg
