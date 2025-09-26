@@ -1,4 +1,5 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common/utils/utils.dart';
 
 class Admin {
   final int? id;
@@ -43,13 +44,13 @@ class Admin {
   factory Admin.fromMap(Map<String, dynamic> map) {
     return Admin(
       id: map['id'] as int?,
-      name: map['name'],
-      surname: map['surname'],
-      birthDate: map['birthDate'],
-      specialty: map['specialty'],
-      cpfOrNif: map['cpfOrNif'],
-      username: map['username'],
-      password: map['password'],
+      name: map['name'] as String,
+      surname: map['surname'] as String,
+      birthDate: map['birthDate'] as String,
+      specialty: map['specialty'] as String,
+      cpfOrNif: map['cpfOrNif'] as String,
+      username: map['username'] as String,
+      password: map['password'] as String,
       firstLogin: (map['firstLogin'] as int) == 1,
       isAdmin: (map['isAdmin'] as int) == 1,
     );
@@ -78,7 +79,7 @@ class AdminDao {
   }
 
   Future<bool> hasAnyAdmin() async {
-    final count = Sqflite.firstIntValue(
+    final count = firstIntValue(
       await db.rawQuery('SELECT COUNT(*) FROM admins'),
     );
     return (count ?? 0) > 0;

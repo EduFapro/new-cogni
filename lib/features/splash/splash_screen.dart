@@ -1,16 +1,20 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:async';
 
-class SplashScreen extends StatefulWidget {
+import '../../providers/startup_provider.dart';
+
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _dotsController;
   late Animation<double> _fadeAnimation;
@@ -22,7 +26,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   void initState() {
     super.initState();
 
-    // Controls the fade-in of the entire screen
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 700),
       vsync: this,
@@ -38,20 +41,37 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       vsync: this,
     )..repeat();
 
-    // Start fade-in
+    // Start fade-in animation after 300ms
     Future.delayed(const Duration(milliseconds: 300), () {
-      setState(() {
-        showLogo = true;
-      });
-      _fadeController.forward();
+      if (mounted) {
+        setState(() => showLogo = true);
+        _fadeController.forward();
+      }
     });
 
-    // Fade out and navigate
-    Future.delayed(const Duration(seconds: 4), () {
-      setState(() => fadeOut = true);
-      Future.delayed(const Duration(milliseconds: 600), () {
-        context.go('/welcome');
-      });
+    // Start DB check
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(startupProvider.notifier).initialize();
+    });
+
+    // Wait 6 seconds total, then fade out and navigate
+    Future.delayed(const Duration(seconds: 6), () {
+      if (mounted) {
+        setState(() => fadeOut = true);
+
+        // Give it 600ms to fade out before navigating
+        Future.delayed(const Duration(milliseconds: 600), () {
+          final state = ref.read(startupProvider);
+
+          if (state == StartupState.needsAdmin) {
+            context.go('/admin/register');
+          } else if (state == StartupState.ready) {
+            context.go('/home');
+          } else {
+            context.go('/welcome'); // fallback
+          }
+        });
+      }
     });
   }
 
@@ -62,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     super.dispose();
   }
 
-  Widget buildDots() {
+  Widget _buildDots() {
     return AnimatedBuilder(
       animation: _dotsController,
       builder: (context, child) {
@@ -76,11 +96,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               margin: const EdgeInsets.symmetric(horizontal: 4),
               width: 10,
               height: 10,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              transform: Matrix4.identity()..scaleByDouble(scaleFactor, scaleFactor, scaleFactor, 1.0),
+              transform: Matrix4.identity()..scaleByDouble(scaleFactor, scaleFactor, scaleFactor, 1),
             );
           }),
         );
@@ -108,11 +128,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     'assets/svg/logo.svg',
                     width: 100,
                     height: 100,
-                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
-                buildDots(),
+                _buildDots(),
               ],
             ),
           ),
