@@ -7,6 +7,7 @@ class AdminRegistrationController {
   final cpfOrNifController = TextEditingController();
   final confirmCpfOrNifController = TextEditingController();
   final usernameController = TextEditingController();
+  final emailController = TextEditingController();
 
   void dispose() {
     fullNameController.dispose();
@@ -16,5 +17,6 @@ class AdminRegistrationController {
     confirmCpfOrNifController.dispose();
     usernameController.dispose();
     specialtyController.dispose();
+    emailController.dispose();
   }
 }

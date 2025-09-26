@@ -1,74 +1,57 @@
-import 'dart:convert';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
+import 'admin_registration_provider.dart';
 
-class AdminRegistrationScreen extends StatefulWidget {
+class AdminRegistrationScreen extends HookConsumerWidget {
   const AdminRegistrationScreen({super.key});
 
   @override
-  State<AdminRegistrationScreen> createState() => _AdminRegistrationScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+    final nameController = useTextEditingController();
+    final surnameController = useTextEditingController();
+    final emailController = useTextEditingController();
+    final usernameController = useTextEditingController();
+    final cpfController = useTextEditingController();
+    final passwordController = useTextEditingController();
+    final specialtyController = useTextEditingController();
+    final selectedDate = useState<DateTime?>(null);
 
-class _AdminRegistrationScreenState extends State<AdminRegistrationScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final surnameController = TextEditingController();
-  final usernameController = TextEditingController();
-  final cpfController = TextEditingController();
-  final passwordController = TextEditingController();
-  final specialtyController = TextEditingController();
+    final state = ref.watch(adminRegistrationProvider);
+    final notifier = ref.read(adminRegistrationProvider.notifier);
 
+    Future<void> _submit() async {
+      if (!formKey.currentState!.validate() || selectedDate.value == null) return;
 
-  DateTime? selectedDate;
-  bool isLoading = false;
-
-  Future<void> _registerAdmin() async {
-    if (!_formKey.currentState!.validate() || selectedDate == null) return;
-
-    setState(() => isLoading = true);
-
-    final response = await http.post(
-      Uri.parse("http://127.0.0.1:8080/admin/register"),
-      headers: {"Content-Type": "application/json; charset=UTF-8"},
-      body: jsonEncode({
+      await notifier.registerAdmin({
         "name": nameController.text,
         "surname": surnameController.text,
-        "birthDate": DateFormat('yyyy-MM-dd').format(selectedDate!),
+        "email": emailController.text,
+        "birthDate": DateFormat('yyyy-MM-dd').format(selectedDate.value!),
         "cpfOrNif": cpfController.text,
         "username": usernameController.text,
         "password": passwordController.text,
         "specialty": specialtyController.text,
         "firstLogin": true,
-        "isAdmin": true
-      }),
-    );
+        "isAdmin": true,
+      });
 
-    setState(() => isLoading = false);
-
-    final success = response.statusCode == 200;
-    showDialog(
-      context: context,
-      builder: (context) => ContentDialog(
-        title: Text(success ? "Sucesso" : "Erro"),
-        content: Text(success
-            ? "✅ Admin registrado com sucesso"
-            : "❌ Erro: ${response.body}"),
-        actions: [
-          FilledButton(
-            child: const Text("Ok"),
-            onPressed: () => Navigator.pop(context),
+      if (ref.read(adminRegistrationProvider) == AdminRegistrationState.success) {
+        showDialog(
+          context: context,
+          builder: (context) => const ContentDialog(
+            title: Text("Sucesso"),
+            content: Text("✅ Admin registrado com sucesso"),
           ),
-        ],
-      ),
-    );
-  }
+        );
+      }
+    }
 
-  @override
-  Widget build(BuildContext context) {
     return NavigationView(
       content: ScaffoldPage(
         header: const PageHeader(title: Text("Registro de Administrador")),
@@ -77,12 +60,13 @@ class _AdminRegistrationScreenState extends State<AdminRegistrationScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
             child: Form(
-              key: _formKey,
+              key: formKey,
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 children: [
                   _buildTextField("Nome", nameController),
                   _buildTextField("Sobrenome", surnameController),
+                  _buildTextField("Email", emailController),
                   _buildTextField("Usuário", usernameController),
                   _buildTextField("CPF/NIF", cpfController),
                   InfoLabel(
@@ -91,84 +75,41 @@ class _AdminRegistrationScreenState extends State<AdminRegistrationScreen> {
                       controller: passwordController,
                       revealMode: PasswordRevealMode.peekAlways,
                       placeholder: "Digite a senha",
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? "Digite a senha"
-                          : null,
+                      validator: (v) =>
+                      (v == null || v.isEmpty) ? "Digite a senha" : null,
                     ),
                   ),
                   const SizedBox(height: 16),
                   InfoLabel(
                     label: "Data de Nascimento",
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          selectedDate != null
-                              ? DateFormat('dd/MM/yyyy').format(selectedDate!)
-                              : "Nenhuma data selecionada",
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 8),
-                        Expander(
-                          header: const Text("Selecionar data"),
-                          content: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: FluentTheme.of(context).micaBackgroundColor,
-                            ),
-                            padding: const EdgeInsets.all(8),
-                            child: SfDateRangePicker(
-                              onSelectionChanged: (args) {
-                                setState(() {
-                                  selectedDate = args.value;
-                                });
-                              },
-                              selectionMode: DateRangePickerSelectionMode.single,
-                              initialSelectedDate: selectedDate,
-                              showNavigationArrow: true,
-                              todayHighlightColor: AppColors.primary,
-                              selectionColor: AppColors.primary,
-                              backgroundColor: FluentTheme.of(context).micaBackgroundColor,
-                              headerStyle: const DateRangePickerHeaderStyle(
-                                textStyle: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              monthCellStyle: DateRangePickerMonthCellStyle(
-                                textStyle: const TextStyle(color: Colors.white),
-                                todayTextStyle: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                leadingDatesTextStyle: TextStyle(color: Colors.grey[70]),
-                                trailingDatesTextStyle: TextStyle(color: Colors.grey[70]),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: Expander(
+                      header: Text(
+                        selectedDate.value != null
+                            ? DateFormat('dd/MM/yyyy').format(selectedDate.value!)
+                            : "Selecionar data",
+                      ),
+                      content: SfDateRangePicker(
+                        onSelectionChanged: (args) {
+                          selectedDate.value = args.value;
+                        },
+                        selectionMode: DateRangePickerSelectionMode.single,
+                        initialSelectedDate: selectedDate.value,
+                        showNavigationArrow: true,
+                        todayHighlightColor: AppColors.primary,
+                        selectionColor: AppColors.primary,
+                      ),
                     ),
                   ),
-                  InfoLabel(
-                    label: "Especialidade",
-                    child: TextFormBox(
-                      controller: specialtyController,
-                      placeholder: "Digite sua especialidade",
-                      validator: (v) => v == null || v.isEmpty ? "Digite a especialidade" : null,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
+                  _buildTextField("Especialidade", specialtyController),
                   const SizedBox(height: 24),
                   FilledButton(
                     style: ButtonStyle(
                       backgroundColor: ButtonState.all(AppColors.primary),
-                      padding: ButtonState.all(
-                          const EdgeInsets.symmetric(vertical: 12)),
                     ),
-                    onPressed: isLoading ? null : _registerAdmin,
-                    child: isLoading
+                    onPressed: state == AdminRegistrationState.loading
+                        ? null
+                        : _submit,
+                    child: state == AdminRegistrationState.loading
                         ? const ProgressRing()
                         : const Text("Registrar"),
                   ),
