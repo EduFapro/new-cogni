@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:http/http.dart' as http;
 
 import '../../core/theme/app_colors.dart';
 

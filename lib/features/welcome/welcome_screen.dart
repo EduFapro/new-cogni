@@ -19,7 +19,12 @@ class WelcomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () => context.go('/home'),
               child: const Text("Get Started"),
-            )
+            ),
+            ElevatedButton(
+              onPressed: () => context.go('/admin/register'),
+              child: const Text("Registrar Admin"),
+            ),
+
           ],
         ),
       ),
