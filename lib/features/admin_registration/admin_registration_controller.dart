@@ -15,5 +15,6 @@ class AdminRegistrationController {
     cpfOrNifController.dispose();
     confirmCpfOrNifController.dispose();
     usernameController.dispose();
+    specialtyController.dispose();
   }
 }
