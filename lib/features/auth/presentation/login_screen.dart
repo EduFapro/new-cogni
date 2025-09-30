@@ -2,29 +2,9 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
-
-class LoginNotifier extends AsyncNotifier<bool> {
-  @override
-  Future<bool> build() async {
-    return false;
-  }
-
-  Future<void> login(String email, String password) async {
-    state = const AsyncValue.loading();
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (email == "admin@example.com" && password == "1234") {
-      state = const AsyncValue.data(true);
-    } else {
-      state = AsyncValue.error("Credenciais inválidas", StackTrace.current);
-    }
-  }
-}
-
-final loginProvider =
-AsyncNotifierProvider<LoginNotifier, bool>(LoginNotifier.new);
+import '../../auth/application/login_notifier.dart';
 
 class LoginScreen extends HookConsumerWidget {
   const LoginScreen({super.key});
@@ -122,15 +102,6 @@ class LoginScreen extends HookConsumerWidget {
                     ref
                         .read(loginProvider.notifier)
                         .login(emailController.text, passwordController.text);
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-                Button(
-                  child: const Text("Sign up"),
-                  onPressed: () {
-                    context.go('/admin/register');
                   },
                 ),
                 const SizedBox(height: 16),

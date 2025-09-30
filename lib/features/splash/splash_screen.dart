@@ -65,10 +65,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             context.goNamed('admin_register');
             break;
           case StartupState.ready:
-            context.go('/home');
+            context.go('/login');
             break;
           default:
-            context.go('/welcome');
+            context.go('/login');
         }
       });
     });
