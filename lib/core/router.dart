@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/splash/splash_screen.dart';
-import '../features/evaluator/presentation/create_admin_screen.dart';
+import '../features/evaluator/presentation/admin_registration_screen.dart';
 
 final router = GoRouter(
   initialLocation: '/',
@@ -17,7 +17,7 @@ final router = GoRouter(
     GoRoute(
       path: '/admin/register',
       name: 'admin_register',
-      builder: (BuildContext context, GoRouterState state) => const CreateAdminScreen(),
+      builder: (BuildContext context, GoRouterState state) => const AdminRegistrationScreen(),
     ),
     GoRoute(
       path: '/login',
