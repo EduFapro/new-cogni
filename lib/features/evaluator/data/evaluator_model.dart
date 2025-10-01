@@ -1,5 +1,4 @@
 import 'package:segundo_cogni/features/evaluator/domain/evaluator_registration_data.dart';
-
 import '../domain/evaluator_entity.dart';
 import 'evaluator_constants.dart';
 
@@ -18,36 +17,33 @@ class EvaluatorModel extends EvaluatorEntity {
     super.isAdmin = true,
   });
 
-
   factory EvaluatorModel.fromMap(Map<String, dynamic> map) => EvaluatorModel(
-    evaluatorId: map[ID_EVALUATOR] as int?,
-    name: map[EVALUATOR_NAME],
-    surname: map[EVALUATOR_SURNAME],
-    email: map[EMAIL],
-    birthDate: map[BIRTH_DATE_EVALUATOR],
-    specialty: map[SPECIALTY_EVALUATOR],
-    cpfOrNif: map[CPF_EVALUATOR],
-    username: map[USERNAME_EVALUATOR],
-    password: map[PASSWORD_EVALUATOR],
-    firstLogin: (map[FIRST_LOGIN] as int) == 1,
-    isAdmin: (map[IS_ADMIN] as int) == 1,
+    evaluatorId: map[EvaluatorFields.id] as int?,
+    name: map[EvaluatorFields.name],
+    surname: map[EvaluatorFields.surname],
+    email: map[EvaluatorFields.email],
+    birthDate: map[EvaluatorFields.birthDate],
+    specialty: map[EvaluatorFields.specialty],
+    cpfOrNif: map[EvaluatorFields.cpf],
+    username: map[EvaluatorFields.username],
+    password: map[EvaluatorFields.password],
+    firstLogin: (map[EvaluatorFields.firstLogin] as int) == 1,
+    isAdmin: (map[EvaluatorFields.isAdmin] as int) == 1,
   );
 
-
   Map<String, dynamic> toMap() => {
-    ID_EVALUATOR: evaluatorId,
-    EVALUATOR_NAME: name,
-    EVALUATOR_SURNAME: surname,
-    EMAIL: email,
-    BIRTH_DATE_EVALUATOR: birthDate,
-    SPECIALTY_EVALUATOR: specialty,
-    CPF_EVALUATOR: cpfOrNif,
-    USERNAME_EVALUATOR: username,
-    PASSWORD_EVALUATOR: password,
-    FIRST_LOGIN: firstLogin ? 1 : 0,
-    IS_ADMIN: isAdmin ? 1 : 0,
+    EvaluatorFields.id: evaluatorId,
+    EvaluatorFields.name: name,
+    EvaluatorFields.surname: surname,
+    EvaluatorFields.email: email,
+    EvaluatorFields.birthDate: birthDate,
+    EvaluatorFields.specialty: specialty,
+    EvaluatorFields.cpf: cpfOrNif,
+    EvaluatorFields.username: username,
+    EvaluatorFields.password: password,
+    EvaluatorFields.firstLogin: firstLogin ? 1 : 0,
+    EvaluatorFields.isAdmin: isAdmin ? 1 : 0,
   };
-
 
   Map<String, dynamic> toJson() => {
     'evaluator_id': evaluatorId,

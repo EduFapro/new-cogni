@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sqflite_common/sqlite_api.dart';
-import '../../../app/database_helper.dart';
+import '../../../database_helper.dart';
 import '../../auth/data/auth_local_datasource.dart';
 import '../../auth/data/auth_repository_impl.dart';
 import '../../auth/domain/auth_repository.dart';

@@ -1,29 +1,45 @@
-import '../../../app/database_constants.dart';
+import '../../../core/constants/database_constants.dart';
 
-const ID_EVALUATOR = "evaluator_id";
-const EVALUATOR_NAME = "name";
-const EVALUATOR_SURNAME = "surname";
-const EMAIL = "email";
-const BIRTH_DATE_EVALUATOR = "birth_date";
-const SPECIALTY_EVALUATOR = "specialty";
-const CPF_EVALUATOR = "cpf";
-const USERNAME_EVALUATOR = "username";
-const PASSWORD_EVALUATOR = "password";
-const FIRST_LOGIN = "first_login";
-const IS_ADMIN = "is_admin";
+class EvaluatorFields {
+  static const id = "evaluator_id";
+  static const name = "name";
+  static const surname = "surname";
+  static const email = "email";
+  static const birthDate = "birth_date";
+  static const specialty = "specialty";
+  static const cpf = "cpf";
+  static const username = "username";
+  static const password = "password";
+  static const firstLogin = "first_login";
+  static const isAdmin = "is_admin";
 
-const SCRIPT_CREATE_TABLE_EVALUATORS = '''
-CREATE TABLE $TABLE_EVALUATORS (
-  $ID_EVALUATOR INTEGER PRIMARY KEY AUTOINCREMENT,
-  $EVALUATOR_NAME TEXT NOT NULL,
-  $EVALUATOR_SURNAME TEXT NOT NULL,
-  $EMAIL TEXT NOT NULL,
-  $BIRTH_DATE_EVALUATOR TIMESTAMP,
-  $SPECIALTY_EVALUATOR TEXT,
-  $CPF_EVALUATOR TEXT,
-  $USERNAME_EVALUATOR TEXT NOT NULL UNIQUE,
-  $PASSWORD_EVALUATOR TEXT NOT NULL DEFAULT '0000',
-  $FIRST_LOGIN INTEGER NOT NULL DEFAULT 0,
-  $IS_ADMIN INTEGER NOT NULL DEFAULT 0
+  static const all = [
+    id,
+    name,
+    surname,
+    email,
+    birthDate,
+    specialty,
+    cpf,
+    username,
+    password,
+    firstLogin,
+    isAdmin,
+  ];
+}
+
+const scriptCreateTableEvaluators = '''
+CREATE TABLE ${Tables.evaluators} (
+  ${EvaluatorFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
+  ${EvaluatorFields.name} TEXT NOT NULL,
+  ${EvaluatorFields.surname} TEXT NOT NULL,
+  ${EvaluatorFields.email} TEXT NOT NULL,
+  ${EvaluatorFields.birthDate} TIMESTAMP,
+  ${EvaluatorFields.specialty} TEXT,
+  ${EvaluatorFields.cpf} TEXT,
+  ${EvaluatorFields.username} TEXT NOT NULL UNIQUE,
+  ${EvaluatorFields.password} TEXT NOT NULL DEFAULT '0000',
+  ${EvaluatorFields.firstLogin} INTEGER NOT NULL DEFAULT 0,
+  ${EvaluatorFields.isAdmin} INTEGER NOT NULL DEFAULT 0
 );
 ''';

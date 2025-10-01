@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/login_screen.dart';
+import '../features/evaluator/presentation/evaluator_registration_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/evaluator/presentation/admin_registration_screen.dart';
@@ -29,6 +30,11 @@ final router = GoRouter(
       name: 'home',
       builder: (BuildContext context, GoRouterState state) => const HomeScreen(),
     ),
+    GoRoute(
+      path: '/evaluator-registration',
+      builder: (context, state) => const EvaluatorRegistrationScreen(),
+    ),
+
   ],
 );
 

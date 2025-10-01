@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'app/database_helper.dart';
+import 'database_helper.dart';
 import 'core/app_database.dart';
 import 'features/evaluator/data/evaluator_local_datasource.dart';
 import 'features/evaluator/data/evaluator_remote_datasource.dart';
