@@ -16,6 +16,7 @@ dependencies:
   http:
   sqflite_common_ffi: ^2.3.6
   syncfusion_flutter_datepicker: ^31.1.21
+  path_provider:
 
 dependency_overrides:
   math_expressions: 3.1.0

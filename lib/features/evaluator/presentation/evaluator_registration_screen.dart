@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import 'admin_registration_form.dart';
+import 'evaluator_registration_form.dart';
 
 class EvaluatorRegistrationScreen extends StatelessWidget {
   const EvaluatorRegistrationScreen({super.key});
@@ -26,7 +26,7 @@ class EvaluatorRegistrationScreen extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 700),
-              child: const AdminRegistrationForm(),
+              child: const EvaluatorRegistrationForm(),
             ),
           ),
         ),

@@ -19,7 +19,7 @@ class EvaluatorRegistrationData {
     required this.cpf,
     required this.username,
     required this.password,
-    this.isAdmin = true,
+    this.isAdmin = false,
     this.firstLogin = true,
   });
 

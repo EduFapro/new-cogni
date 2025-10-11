@@ -14,7 +14,7 @@ class EvaluatorModel extends EvaluatorEntity {
     required super.username,
     required super.password,
     super.firstLogin = true,
-    super.isAdmin = true,
+    super.isAdmin = false,
   });
 
   factory EvaluatorModel.fromMap(Map<String, dynamic> map) => EvaluatorModel(

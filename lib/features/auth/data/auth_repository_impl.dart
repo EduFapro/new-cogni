@@ -1,3 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
+
 import '../../auth/domain/auth_repository.dart';
 import '../../evaluator/data/evaluator_model.dart';
 import 'auth_local_datasource.dart';
@@ -22,39 +27,54 @@ class AuthRepositoryImpl implements AuthRepository {
     return null;
   }
 
-  /// Stores the current user in memory and database for persistence
+  Future<void> saveCurrentUser(EvaluatorModel user) async {
+    final file = await _getUserFile();
+    final content = jsonEncode(user.toMap());
+    await file.writeAsString(content);
+  }
+
+  Future<void> clearCachedUser() async {
+    final file = await _getUserFile();
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  Future<EvaluatorModel?> getCachedUser() async {
+    try {
+      final file = await _getUserFile();
+      if (!await file.exists()) return null;
+
+      final content = await file.readAsString();
+      final map = jsonDecode(content);
+      return EvaluatorModel.fromMap(map);
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Future<void> cacheUser(EvaluatorModel user) async {
     _cachedUser = user;
-    await _local.saveCurrentUser(user); // <- implement in AuthLocalDataSource
-  }
+    }
 
-  /// Clears cached user from memory and database
-  @override
-  Future<void> clearCachedUser() async {
-    _cachedUser = null;
-    await _local.clearCurrentUser(); // <- implement in AuthLocalDataSource
-  }
-
-  /// Returns user cached in memory (if any)
-  @override
-  Future<EvaluatorModel?> getCachedUser() async {
-    return _cachedUser;
-  }
-
-  /// Attempts to retrieve cached user from memory or database
   @override
   Future<EvaluatorModel?> fetchCurrentUserOrNull() async {
     if (_cachedUser != null) return _cachedUser;
 
-    final user = await _local.getCachedUser(); // <- implement in AuthLocalDataSource
+    final user = await _local.getCachedUser();
     _cachedUser = user;
     return user;
   }
 
-  /// Signs out and clears all cached user data
   @override
   Future<void> signOut() async {
     await clearCachedUser();
   }
+
+  Future<File> _getUserFile() async {
+    final dir = await getApplicationSupportDirectory();
+    return File('${dir.path}/current_user.json');
+  }
+
 }
