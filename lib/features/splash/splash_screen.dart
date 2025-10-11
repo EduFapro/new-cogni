@@ -77,8 +77,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<StartupState>>(startupProvider, (previous, next) {
+      print('Splash: startupProvider state = $next');
       next.whenData(_triggerNavigation);
     });
+
 
     return Scaffold(
       backgroundColor: Colors.deepPurple.shade400,

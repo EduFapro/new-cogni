@@ -10,16 +10,22 @@ import '../domain/evaluator_repository.dart';
 class EvaluatorRepositoryNotifier extends AsyncNotifier<EvaluatorRepository> {
   @override
   Future<EvaluatorRepository> build() async {
-    final env = ref.watch(environmentProvider);
+    try {
+      final env = ref.watch(environmentProvider);
 
-    if (env == AppEnv.local) {
-      final db = await AppDatabase.instance.db;
-      return EvaluatorRepositoryImpl.local(EvaluatorLocalDataSource(db));
-    } else {
-      return EvaluatorRepositoryImpl.remote(EvaluatorRemoteDataSource());
+      if (env == AppEnv.local) {
+        final db = await AppDatabase.instance.db;
+        return EvaluatorRepositoryImpl.local(EvaluatorLocalDataSource(db));
+      } else {
+        return EvaluatorRepositoryImpl.remote(EvaluatorRemoteDataSource());
+      }
+    } catch (e, st) {
+      print('DB init error: $e');
+      rethrow;
     }
   }
 }
+
 
 final evaluatorRepositoryProvider =
 AsyncNotifierProvider<EvaluatorRepositoryNotifier, EvaluatorRepository>(
