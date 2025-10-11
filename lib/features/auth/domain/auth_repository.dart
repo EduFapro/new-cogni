@@ -1,3 +1,10 @@
+import '../../evaluator/data/evaluator_model.dart';
+
 abstract class AuthRepository {
-  Future<bool> login(String email, String password);
+  Future<EvaluatorModel?> login(String email, String password);
+  Future<void> signOut();
+  Future<void> cacheUser(EvaluatorModel user);
+  Future<void> clearCachedUser();
+  Future<EvaluatorModel?> getCachedUser();
+  Future<EvaluatorModel?> fetchCurrentUserOrNull();
 }

@@ -1,5 +1,4 @@
 import 'package:sqflite_common/sqlite_api.dart';
-import 'package:sqflite_common/utils/utils.dart';
 
 import 'evaluator_model.dart';
 

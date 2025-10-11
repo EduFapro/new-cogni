@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'evaluator_model.dart';
 
 class EvaluatorRemoteDataSource {
   final String baseUrl;

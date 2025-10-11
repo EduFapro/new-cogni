@@ -1,24 +1,27 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class HomeScreen extends HookWidget {
+import '../../providers.dart';
+import '../evaluator/data/evaluator_model.dart';
+
+class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final userName = 'Eduardo';
-    final today = DateTime.now();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final EvaluatorModel? user = ref.watch(currentUserProvider);
 
     return NavigationView(
       content: ScaffoldPage.scrollable(
         header: PageHeader(
           title: Text(
-            "Bem-vindo, $userName 👋",
+            "Bem-vindo, ${user?.name ?? 'Usuário'} 👋",
             style: FluentTheme.of(context).typography.title,
           ),
         ),
         children: [
-          _buildQuickActions(),
+          _buildQuickActions(context, ref, user!),
           const SizedBox(height: 32),
           _buildPinnedProjects(),
           const SizedBox(height: 32),
@@ -28,7 +31,8 @@ class HomeScreen extends HookWidget {
     );
   }
 
-  Widget _buildQuickActions() {
+
+  Widget _buildQuickActions(BuildContext context, WidgetRef ref, EvaluatorModel user) {
     return Wrap(
       spacing: 16,
       runSpacing: 12,
@@ -38,11 +42,14 @@ class HomeScreen extends HookWidget {
           label: 'Novo Projeto',
           onPressed: () {},
         ),
-        _quickActionButton(
-          icon: FluentIcons.people_add,
-          label: 'Novo Avaliador',
-          onPressed: () {},
-        ),
+        if (user.isAdmin == true)
+          _quickActionButton(
+            icon: FluentIcons.people_add,
+            label: 'Novo Avaliador',
+            onPressed: () {
+              context.go('/evaluator-registration');
+            },
+          ),
         _quickActionButton(
           icon: FluentIcons.settings,
           label: 'Configurações',
@@ -67,15 +74,10 @@ class HomeScreen extends HookWidget {
       onPressed: onPressed,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
+        children: [Icon(icon), const SizedBox(width: 8), Text(label)],
       ),
     );
   }
-
 
   Widget _buildPinnedProjects() {
     return Column(
