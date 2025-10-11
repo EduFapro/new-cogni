@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../providers.dart';
+import '../features/evaluator/application/evaluator_notifier.dart';
 
 enum StartupState { initializing, needsEvaluatorAdmin, ready }
 

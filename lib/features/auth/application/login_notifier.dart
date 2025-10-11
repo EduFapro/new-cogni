@@ -9,47 +9,42 @@ import '../../auth/data/auth_repository_impl.dart';
 import '../../auth/domain/auth_repository.dart';
 import '../../../providers.dart'; // where currentUserProvider lives
 
-// --- DB Provider ---
-final dbProvider = FutureProvider<Database>((ref) async {
-  final dbHelper = DatabaseHelper();
-  return dbHelper.db;
-});
-
-// --- Auth Repository Provider ---
-final authRepositoryProvider = FutureProvider<AuthRepository>((ref) async {
-  final db = await ref.watch(dbProvider.future);
-  final localDataSource = AuthLocalDataSource(db);
-  return AuthRepositoryImpl(localDataSource);
-});
-
-// --- Login Provider ---
 final loginProvider =
 AsyncNotifierProvider<LoginNotifier, bool>(LoginNotifier.new);
 
 class LoginNotifier extends AsyncNotifier<bool> {
   late final AuthRepository _repository;
 
+  /// Just return the initial state — defer heavy logic to actual methods
   @override
   Future<bool> build() async {
-    _repository = await ref.watch(authRepositoryProvider.future);
-    return false; // initial state
+    return false;
   }
 
   Future<void> login(String email, String password) async {
     state = const AsyncLoading();
 
     try {
+      // Initialize repository only when needed (on demand)
+      _repository = await _initAuthRepository();
+
       final user = await _repository.login(email, password);
 
       if (user == null) {
         state = AsyncError('Credenciais inválidas', StackTrace.current);
       } else {
-        // store current user in the global provider
         ref.read(currentUserProvider.notifier).setUser(user);
         state = const AsyncData(true);
       }
     } catch (e, st) {
       state = AsyncError(e, st);
     }
+  }
+
+  /// Initializes AuthRepository directly (no need for a separate provider)
+  Future<AuthRepository> _initAuthRepository() async {
+    final db = await DatabaseHelper().db;
+    final local = AuthLocalDataSource(db);
+    return AuthRepositoryImpl(local);
   }
 }

@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../providers.dart';
+import '../application/evaluator_notifier.dart';
 import '../domain/evaluator_registration_data.dart';
 import '../domain/evaluator_repository.dart';
 
