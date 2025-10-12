@@ -18,6 +18,7 @@ dependencies:
   syncfusion_flutter_datepicker: ^31.1.21
   path_provider:
   logger:
+  flutter_dotenv:
 
 dependency_overrides:
   math_expressions: 3.1.0

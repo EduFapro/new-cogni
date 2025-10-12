@@ -1,6 +1,7 @@
 import 'package:path/path.dart';
 import 'package:segundo_cogni/seeders/seed_runner.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'core/constants/database_constants.dart';
 import 'core/logger/app_logger.dart';
 import 'features/evaluation/data/evaluation_constants.dart';
 import 'features/evaluator/data/evaluator_constants.dart';
@@ -16,7 +17,7 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('app.db');
+    _database = await _initDB(DatabaseConfig.name);
     return _database!;
   }
 
