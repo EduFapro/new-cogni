@@ -55,7 +55,7 @@ class TaskPromptLocalDataSource {
       final db = await _db;
       final result = await db.query(
         Tables.taskPrompts,
-        where: '${TaskPromptFields.taskId} = ?',
+        where: '${TaskPromptFields.taskID} = ?',
         whereArgs: [taskId],
       );
       return result.isNotEmpty ? TaskPromptModel.fromMap(result.first) : null;

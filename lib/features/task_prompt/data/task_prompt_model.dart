@@ -12,7 +12,7 @@ class TaskPromptModel extends TaskPromptEntity {
   factory TaskPromptModel.fromMap(Map<String, dynamic> map) {
     return TaskPromptModel(
       promptID: map[TaskPromptFields.promptID] as int?,
-      taskID: map[TaskPromptFields.taskId] as int, //
+      taskID: map[TaskPromptFields.taskID] as int, //
       filePath: map[TaskPromptFields.filePath] as String,
       transcription: map[TaskPromptFields.transcription] as String?,
     );
@@ -20,7 +20,7 @@ class TaskPromptModel extends TaskPromptEntity {
 
   Map<String, dynamic> toMap() => {
     TaskPromptFields.promptID: promptID,
-    TaskPromptFields.taskId: taskID,
+    TaskPromptFields.taskID: taskID,
     TaskPromptFields.filePath: filePath,
     TaskPromptFields.transcription: transcription,
   };

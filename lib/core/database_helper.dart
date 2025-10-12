@@ -6,6 +6,7 @@ import '../features/evaluator/data/evaluator_constants.dart';
 import '../features/module/data/module_constants.dart';
 import '../features/participant/data/participant_constants.dart';
 import '../features/task/data/task_constants.dart';
+import '../features/task_prompt/data/task_prompt_constants.dart';
 import 'constants/database_constants.dart';
 import 'logger/app_logger.dart';
 
@@ -48,6 +49,7 @@ class DatabaseHelper {
       await db.execute(scriptCreateTableEvaluations);
       await db.execute(scriptCreateTableModules);
       await db.execute(scriptCreateTableTasks);
+      await db.execute(scriptCreateTableTaskPrompts);
 
       AppLogger.seed('[SEED] Calling DatabaseSeeder.run(db)...');
       await DatabaseSeeder().run(db);
