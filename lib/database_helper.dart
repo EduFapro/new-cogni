@@ -72,15 +72,15 @@ class DatabaseHelper {
 // // import '../seeders/tasks/task_seeds.dart';
 //
 // import 'features/evaluation/data/evaluation_constants.dart';
-// import 'features/evaluator/data/evaluator_constants.dart';
+// import 'features/evaluator/data/recording_file_constants.dart';
 // import 'features/participant/data/participant_constants.dart';
 // import 'core/constants/database_constants.dart';
 // // import 'recording_file/recording_file_constants.dart';
-// // import 'task/task_constants.dart';
+// // import 'task/task_instance_constants.dart';
 // // import 'task_instance/task_instance_constants.dart';
-// // import 'task_prompt/task_prompt_constants.dart';
-// // import 'evaluator/evaluator_constants.dart';
-// // import 'module/task_constants.dart';
+// // import 'task_prompt/recording_file_constants.dart';
+// // import 'evaluator/recording_file_constants.dart';
+// // import 'module/task_instance_constants.dart';
 // // import 'module_instance/module_instance_constants.dart';
 //
 // class DatabaseHelper {

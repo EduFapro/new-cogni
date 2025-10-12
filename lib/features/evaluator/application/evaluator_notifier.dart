@@ -19,7 +19,7 @@ class EvaluatorRepositoryNotifier extends AsyncNotifier<EvaluatorRepository> {
       } else {
         return EvaluatorRepositoryImpl.remote(EvaluatorRemoteDataSource());
       }
-    } catch (e, st) {
+    } catch (e) {
       print('DB init error: $e');
       rethrow;
     }

@@ -12,6 +12,6 @@ class Tables {
   static const evaluationModules = "evaluation_modules";
   static const taskInstances = "task_instances";
   static const moduleInstances = "module_instances";
-  static const prompts = "prompts";
+  static const taskPrompts = "task_prompts";
   static const recordings = "recordings";
 }

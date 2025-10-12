@@ -10,7 +10,7 @@ class EvaluationFields {
     static const status = "status";
     static const language = "language";
 
-    static const all = [
+    static const values = [
         id,
         date,
         evaluatorId,
