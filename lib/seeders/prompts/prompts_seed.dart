@@ -2,7 +2,9 @@ library prompts_seeds;
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../../core/constants/database_constants.dart';
 import '../../core/logger/app_logger.dart';
+import '../../features/task_prompt/data/task_prompt_constants.dart';
 import '../../features/task_prompt/data/task_prompt_model.dart';
 import '../../features/task_prompt/domain/task_prompt_entity.dart';
 import '../../core/constants/audio_file_paths.dart';
@@ -27,8 +29,8 @@ Future<void> seedPrompts(Database db) async {
 
   for (final prompt in tasksPromptsList) {
     final result = await db.query(
-      'task_prompts',
-      where: 'promptID = ?',
+      Tables.taskPrompts,
+      where: '${TaskPromptFields.promptID} = ?',
       whereArgs: [prompt.promptID],
     );
     if (result.isEmpty) {

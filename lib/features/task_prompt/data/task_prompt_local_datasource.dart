@@ -116,8 +116,8 @@ class TaskPromptLocalDataSource {
   Future<bool> exists(String promptId) async {
     final db = await _db;
     final result = await db.query(
-      'prompts',
-      where: 'promptID = ?',
+      Tables.taskPrompts,
+      where: '${TaskPromptFields.promptID} = ?',
       whereArgs: [promptId],
       limit: 1,
     );
