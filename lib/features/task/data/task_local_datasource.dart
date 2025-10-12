@@ -1,7 +1,7 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import '../../../core/database_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/constants/database_constants.dart';
-import '../../../database_helper.dart';
 import 'task_constants.dart';
 import 'task_model.dart';
 

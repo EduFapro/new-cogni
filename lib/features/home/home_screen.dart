@@ -2,7 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../providers.dart';
+import '../../providers/providers.dart';
 import '../evaluator/data/evaluator_model.dart';
 
 class HomeScreen extends HookConsumerWidget {

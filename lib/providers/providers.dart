@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'features/evaluator/data/evaluator_model.dart';
+
+import '../features/evaluator/data/evaluator_model.dart';
 
 enum AppEnv { local, remote }
 

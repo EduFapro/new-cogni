@@ -1,13 +1,14 @@
 import 'package:path/path.dart';
 import 'package:segundo_cogni/seeders/seed_runner.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'core/constants/database_constants.dart';
-import 'core/logger/app_logger.dart';
-import 'features/evaluation/data/evaluation_constants.dart';
-import 'features/evaluator/data/evaluator_constants.dart';
-import 'features/module/data/module_constants.dart';
-import 'features/participant/data/participant_constants.dart';
-import 'features/task/data/task_constants.dart';
+
+import '../features/evaluation/data/evaluation_constants.dart';
+import '../features/evaluator/data/evaluator_constants.dart';
+import '../features/module/data/module_constants.dart';
+import '../features/participant/data/participant_constants.dart';
+import '../features/task/data/task_constants.dart';
+import 'constants/database_constants.dart';
+import 'logger/app_logger.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();

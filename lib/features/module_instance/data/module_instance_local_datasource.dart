@@ -1,8 +1,8 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import '../../../core/database_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/constants/database_constants.dart';
 import '../../../core/constants/enums/progress_status.dart';
-import '../../../database_helper.dart';
 import 'module_instance_constants.dart';
 import 'module_instance_model.dart';
 

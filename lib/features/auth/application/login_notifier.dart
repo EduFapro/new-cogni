@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../core/database_helper.dart';
 import '../../../core/logger/app_logger.dart';
-import '../../../database_helper.dart';
-import '../../../providers.dart';
+import '../../../providers/providers.dart';
 import '../data/auth_local_datasource.dart';
 import '../data/auth_repository_impl.dart';
 import '../domain/auth_repository.dart';
