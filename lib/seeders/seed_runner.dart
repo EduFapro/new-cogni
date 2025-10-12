@@ -2,15 +2,21 @@ import '../core/logger/app_logger.dart';
 import 'modules/modules_seeds.dart';
 import 'tasks/task_seeds.dart';
 import 'prompts/prompts_seed.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DatabaseSeeder {
-  Future<void> run() async {
+  Future<void> run(Database db) async {
     AppLogger.seed('Starting database seeding...');
 
-    await seedModules();
-    await seedTasks();
-    await seedPrompts();
+    try {
+      await seedModules(db);
+      await seedTasks(db);
+      await seedPrompts(db);
 
-    AppLogger.seed('Database seeding complete.');
+      AppLogger.seed('Database seeding complete ✅');
+    } catch (e, s) {
+      AppLogger.error('❌ [SEED] Database seeding failed', e, s);
+      rethrow;
+    }
   }
 }

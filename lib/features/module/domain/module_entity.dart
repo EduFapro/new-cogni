@@ -11,13 +11,25 @@ class ModuleEntity {
     this.tasks = const [],
   });
 
+  Map<String, dynamic> toMap() => {
+    'module_id': moduleID,
+    'title': title,
+  };
+
+  factory ModuleEntity.fromMap(Map<String, dynamic> map) {
+    return ModuleEntity(
+      moduleID: map['module_id'] as int?,
+      title: map['title'] as String,
+    );
+  }
+
   ModuleEntity copyWith({
-    int? id,
+    int? moduleID,
     String? title,
     List<TaskEntity>? tasks,
   }) {
     return ModuleEntity(
-      moduleID: id ?? this.moduleID,
+      moduleID: moduleID ?? this.moduleID,
       title: title ?? this.title,
       tasks: tasks ?? this.tasks,
     );

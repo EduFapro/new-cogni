@@ -125,7 +125,7 @@ class ModuleLocalDataSource {
     final db = await _db;
     final result = await db.query(
       'modules',
-      where: 'moduleID = ?',
+      where: '${ModuleFields.id} = ?',
       whereArgs: [moduleId],
       limit: 1,
     );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../core/logger/app_logger.dart';
 import '../../providers/startup_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -50,6 +51,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   void _triggerNavigation(StartupState state) {
+    AppLogger.info('[SPLASH] Trigger navigation → $state');
+
     if (hasNavigated || !mounted) return;
     hasNavigated = true;
 
@@ -77,8 +80,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<StartupState>>(startupProvider, (previous, next) {
-      print('Splash: startupProvider state = $next');
-      next.whenData(_triggerNavigation);
+      AppLogger.info('[SPLASH] startupProvider state = $next');
+      next.when(
+        data: (state) {
+          AppLogger.info('[SPLASH] startupProvider resolved: $state');
+          _triggerNavigation(state);
+        },
+        error: (e, s) => AppLogger.error('[SPLASH] startupProvider error', e, s),
+        loading: () => AppLogger.info('[SPLASH] startupProvider still loading...'),
+      );
     });
 
 

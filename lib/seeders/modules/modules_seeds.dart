@@ -1,14 +1,15 @@
 library module_seeds;
 
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
 import '../../core/logger/app_logger.dart';
-import '../../features/module/data/module_local_datasource.dart';
+import '../../features/module/data/module_constants.dart';
 import '../../features/module/data/module_model.dart';
 import '../../features/module/domain/module_entity.dart';
 part 'modules_seeds_constants.dart';
 
-Future<void> seedModules() async {
-  final datasource = ModuleLocalDataSource();
-
+Future<void> seedModules(Database db) async {
+  AppLogger.seed('[MODULES] Seeding modules...');
   final modules = [
     ModuleEntity(moduleID: 1, title: 'Sociodemographic Info'),
     ModuleEntity(moduleID: 2, title: 'Cognitive Functions'),
@@ -18,14 +19,19 @@ Future<void> seedModules() async {
   ];
 
   for (final module in modules) {
-    final exists = await datasource.exists(module.moduleID.toString());
-    if (!exists) {
-      await datasource.insertModule(module.toModel());
-      AppLogger.seed('Seeded module: ${module.moduleID} → ${module.title}');
+    final result = await db.query(
+      'modules',
+      where: '${ModuleFields.id} = ?',
+      whereArgs: [module.moduleID],
+    );
+    if (result.isEmpty) {
+      await db.insert('modules', module.toModel().toMap());
+      AppLogger.seed('[MODULES] Seeded module: ${module.moduleID} → ${module.title}');
     } else {
-      AppLogger.debug('Skipped existing module: ${module.moduleID}');
+      AppLogger.debug('[MODULES] Skipped existing module: ${module.moduleID}');
     }
   }
+  AppLogger.seed('[MODULES] Done seeding modules.');
 }
 
 extension ModuleEntityMapper on ModuleEntity {

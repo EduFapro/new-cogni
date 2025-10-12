@@ -1,7 +1,6 @@
 import 'package:path/path.dart';
 import 'package:segundo_cogni/seeders/seed_runner.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
 import '../features/evaluation/data/evaluation_constants.dart';
 import '../features/evaluator/data/evaluator_constants.dart';
 import '../features/module/data/module_constants.dart';
@@ -17,7 +16,10 @@ class DatabaseHelper {
   DatabaseHelper._init();
 
   Future<Database> get database async {
-    if (_database != null) return _database!;
+    if (_database != null) {
+      AppLogger.db('Database already initialized.');
+      return _database!;
+    }
     _database = await _initDB(DatabaseConfig.name);
     return _database!;
   }
@@ -26,7 +28,16 @@ class DatabaseHelper {
     AppLogger.db('Initializing database: $filePath');
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+
+    AppLogger.db('Database path resolved: $path');
+    final db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDB,
+      onOpen: (db) => AppLogger.db('Database opened successfully.'),
+    );
+    AppLogger.db('Database openDatabase() completed.');
+    return db;
   }
 
   Future _createDB(Database db, int version) async {
@@ -35,12 +46,14 @@ class DatabaseHelper {
       await db.execute(scriptCreateTableEvaluators);
       await db.execute(scriptCreateTableParticipants);
       await db.execute(scriptCreateTableEvaluations);
-
       await db.execute(scriptCreateTableModules);
       await db.execute(scriptCreateTableTasks);
-      await DatabaseSeeder().run();
+
+      AppLogger.seed('[SEED] Calling DatabaseSeeder.run(db)...');
+      await DatabaseSeeder().run(db);
+      AppLogger.seed('[SEED] DatabaseSeeder.run() finished.');
     } catch (e, s) {
-      AppLogger.error('Error creating DB schema', e, s);
+      AppLogger.error('❌ Error creating DB schema', e, s);
     }
   }
 
@@ -76,7 +89,8 @@ class DatabaseHelper {
     final db = await instance.database;
     AppLogger.db('Updating $table set=$values where=$where');
     try {
-      final count = await db.update(table, values, where: where, whereArgs: whereArgs);
+      final count =
+      await db.update(table, values, where: where, whereArgs: whereArgs);
       AppLogger.db('Update success [$table]: $count rows affected');
       return count;
     } catch (e, s) {
@@ -90,7 +104,8 @@ class DatabaseHelper {
     final db = await instance.database;
     AppLogger.db('Deleting from $table where=$where');
     try {
-      final count = await db.delete(table, where: where, whereArgs: whereArgs);
+      final count =
+      await db.delete(table, where: where, whereArgs: whereArgs);
       AppLogger.db('Delete success [$table]: $count rows removed');
       return count;
     } catch (e, s) {

@@ -9,13 +9,16 @@ import 'core/theme/app_theme.dart';
 import 'core/logger/app_logger.dart';
 
 Future<void> initDatabaseFactory() async {
+  AppLogger.info('Initializing database factory...');
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
-  AppLogger.info('Database factory initialized using FFI');
+  AppLogger.info('✅ Database factory initialized using FFI');
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppLogger.info('Flutter bindings initialized');
+
   await initDatabaseFactory();
 
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -27,7 +30,7 @@ void main() async {
     return true;
   };
 
-  AppLogger.info('Application starting...');
+  AppLogger.info('🚀 Application starting...');
   runApp(const ProviderScope(child: StartupApp()));
 }
 
@@ -36,6 +39,7 @@ class StartupApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppLogger.info('🏗️ Building StartupApp widget tree');
     return FluentApp.router(
       title: 'Novo Cogni',
       debugShowCheckedModeBanner: false,
