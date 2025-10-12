@@ -26,7 +26,7 @@ class TaskFields {
   ];
 }
 
-final SCRIPT_CREATE_TABLE_TASKS = '''
+const scriptCreateTableTasks = '''
 CREATE TABLE ${Tables.tasks} (
   ${TaskFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${TaskFields.moduleId} INTEGER NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE ${Tables.tasks} (
   ${TaskFields.mayRepeatPrompt} INTEGER NOT NULL,
   ${TaskFields.testOnly} INTEGER NOT NULL,
   ${TaskFields.timeForCompletion} INTEGER NOT NULL,
-  FOREIGN KEY (${TaskFields.moduleId}) REFERENCES modules(module_id),
+  FOREIGN KEY (${TaskFields.moduleId}) REFERENCES ${Tables.modules}(${TaskFields.moduleId}),
   CHECK(${TaskFields.mode} >= 0 AND ${TaskFields.mode} <= 1),
   CHECK(${TaskFields.mayRepeatPrompt} >= 0 AND ${TaskFields.mayRepeatPrompt} <= 1)
 )

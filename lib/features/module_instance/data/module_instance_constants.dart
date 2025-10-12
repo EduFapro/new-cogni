@@ -11,13 +11,13 @@ class ModuleInstanceFields {
   static const values = [id, moduleId, evaluationId, status];
 }
 
-final SCRIPT_CREATE_TABLE_MODULE_INSTANCES = '''
+const scriptCreateTableModuleInstances = '''
 CREATE TABLE ${Tables.moduleInstances} (
   ${ModuleInstanceFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${ModuleInstanceFields.moduleId} INTEGER NOT NULL,
   ${ModuleInstanceFields.evaluationId} INTEGER NOT NULL,
   ${ModuleInstanceFields.status} INT NOT NULL CHECK(${ModuleInstanceFields.status} >= 1 AND ${ModuleInstanceFields.status} <= 3),
-  FOREIGN KEY (${ModuleInstanceFields.moduleId}) REFERENCES ${ModuleFields.values[0]}(${ModuleFields.id}),
-  FOREIGN KEY (${ModuleInstanceFields.evaluationId}) REFERENCES ${EvaluationFields.values[0]}(${EvaluationFields.id})
+  FOREIGN KEY (${ModuleInstanceFields.moduleId}) REFERENCES ${Tables.modules}(${ModuleFields.id}),
+  FOREIGN KEY (${ModuleInstanceFields.evaluationId}) REFERENCES ${Tables.evaluations}(${EvaluationFields.id})
 )
 ''';

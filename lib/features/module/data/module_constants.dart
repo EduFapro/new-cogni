@@ -7,9 +7,7 @@ class ModuleFields {
   static const values = [id, title];
 }
 
-const TABLE_MODULES = 'modules';
-
-const SCRIPT_CREATE_TABLE_MODULES = '''
+const scriptCreateTableModules = '''
 CREATE TABLE ${Tables.modules} (
   ${ModuleFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${ModuleFields.title} TEXT NOT NULL
