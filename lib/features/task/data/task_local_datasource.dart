@@ -115,12 +115,11 @@ class TaskLocalDataSource {
   Future<bool> exists(String taskId) async {
     final db = await _db;
     final result = await db.query(
-      'tasks',
-      where: 'taskID = ?',
+      Tables.tasks,
+      where: '${TaskFields.id} = ?',
       whereArgs: [taskId],
       limit: 1,
     );
     return result.isNotEmpty;
   }
-
 }

@@ -4,7 +4,7 @@ class TaskFields {
   static const id = 'task_id';
   static const moduleId = 'module_id';
   static const title = 'title';
-  static const transcript = 'snake_case_transcript';
+  static const transcript = 'transcript';
   static const mode = 'mode';
   static const position = 'position';
   static const imagePath = 'image_path';
@@ -38,7 +38,7 @@ CREATE TABLE ${Tables.tasks} (
   ${TaskFields.mayRepeatPrompt} INTEGER NOT NULL,
   ${TaskFields.testOnly} INTEGER NOT NULL,
   ${TaskFields.timeForCompletion} INTEGER NOT NULL,
-  FOREIGN KEY (${TaskFields.moduleId}) REFERENCES ${Tables.modules}(${TaskFields.moduleId}),
+  FOREIGN KEY (${TaskFields.moduleId}) REFERENCES ${Tables.modules}(${TaskFields.id}),
   CHECK(${TaskFields.mode} >= 0 AND ${TaskFields.mode} <= 1),
   CHECK(${TaskFields.mayRepeatPrompt} >= 0 AND ${TaskFields.mayRepeatPrompt} <= 1)
 )

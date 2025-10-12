@@ -1,6 +1,6 @@
-
-
 import '../../../core/constants/enums/task_mode.dart';
+import '../../../core/constants/database_constants.dart';
+import '../data/task_constants.dart';
 
 class TaskEntity {
   final int? taskID;
@@ -27,12 +27,38 @@ class TaskEntity {
     this.transcript,
   });
 
+  Map<String, dynamic> toMap() => {
+    TaskFields.id: taskID,
+    TaskFields.moduleId: moduleID,
+    TaskFields.title: title,
+    TaskFields.transcript: transcript,
+    TaskFields.mode: taskMode.index,
+    TaskFields.position: position,
+    TaskFields.imagePath: imagePath,
+    TaskFields.timeForCompletion: timeForCompletion,
+    TaskFields.mayRepeatPrompt: mayRepeatPrompt ? 1 : 0,
+    TaskFields.testOnly: testOnly ? 1 : 0,
+  };
+
+  factory TaskEntity.fromMap(Map<String, dynamic> map) => TaskEntity(
+    taskID: map[TaskFields.id] as int?,
+    moduleID: map[TaskFields.moduleId] as int,
+    title: map[TaskFields.title] as String,
+    transcript: map[TaskFields.transcript] as String?,
+    taskMode: TaskMode.values[map[TaskFields.mode] as int],
+    position: map[TaskFields.position] as int,
+    imagePath: map[TaskFields.imagePath] as String,
+    timeForCompletion: map[TaskFields.timeForCompletion] as int,
+    mayRepeatPrompt: (map[TaskFields.mayRepeatPrompt] as int) == 1,
+    testOnly: (map[TaskFields.testOnly] as int) == 1,
+  );
+
   TaskEntity copyWith({
-    int? id,
-    int? moduleId,
+    int? taskID,
+    int? moduleID,
     String? title,
     String? transcript,
-    TaskMode? mode,
+    TaskMode? taskMode,
     int? position,
     String? imagePath,
     int? timeForCompletion,
@@ -40,11 +66,11 @@ class TaskEntity {
     bool? testOnly,
   }) {
     return TaskEntity(
-      taskID: id ?? this.taskID,
-      moduleID: moduleId ?? this.moduleID,
+      taskID: taskID ?? this.taskID,
+      moduleID: moduleID ?? this.moduleID,
       title: title ?? this.title,
       transcript: transcript ?? this.transcript,
-      taskMode: mode ?? this.taskMode,
+      taskMode: taskMode ?? this.taskMode,
       position: position ?? this.position,
       imagePath: imagePath ?? this.imagePath,
       timeForCompletion: timeForCompletion ?? this.timeForCompletion,
@@ -54,7 +80,6 @@ class TaskEntity {
   }
 
   @override
-  String toString() {
-    return 'TaskEntity(id: $taskID, title: $title, mode: $taskMode, moduleId: $moduleID, pos: $position)';
-  }
+  String toString() =>
+      'TaskEntity(id: $taskID, title: $title, mode: $taskMode, moduleId: $moduleID, pos: $position)';
 }

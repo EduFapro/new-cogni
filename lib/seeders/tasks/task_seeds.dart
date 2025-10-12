@@ -2,8 +2,10 @@ library task_seeds;
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../../core/constants/database_constants.dart';
 import '../../core/logger/app_logger.dart';
 import '../../core/constants/enums/task_mode.dart';
+import '../../features/task/data/task_constants.dart';
 import '../../features/task/data/task_model.dart';
 import '../../features/task/domain/task_entity.dart';
 import '../modules/modules_seeds.dart';
@@ -16,13 +18,16 @@ Future<void> seedTasks(Database db) async {
 
   for (final task in tasksList) {
     final result = await db.query(
-      'tasks',
-      where: 'taskID = ?',
+      Tables.tasks,
+      where: '${TaskFields.id} = ?',
       whereArgs: [task.taskID],
     );
+
     if (result.isEmpty) {
-      await db.insert('tasks', task.toModel().toMap());
-      AppLogger.seed('[TASKS] Seeded task: ${task.title} (module ${task.moduleID})');
+      await db.insert(Tables.tasks, task.toModel().toMap());
+      AppLogger.seed(
+        '[TASKS] Seeded task: ${task.title} (module ${task.moduleID})',
+      );
     } else {
       AppLogger.debug('[TASKS] Skipped existing task: ${task.title}');
     }
