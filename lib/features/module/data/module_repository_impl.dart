@@ -39,7 +39,7 @@ class ModuleRepositoryImpl implements ModuleRepository {
     final module = await localDataSource.getModuleByTitle(title);
     if (module == null) return null;
 
-    final tasks = await taskLocalDataSource.getTasksByModuleId(module.id!);
+    final tasks = await taskLocalDataSource.getTasksByModuleId(module.moduleID!);
     return module.toEntity().copyWith(tasks: tasks);
   }
 

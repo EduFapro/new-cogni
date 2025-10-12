@@ -4,10 +4,10 @@ import '../../task/data/task_constants.dart';
 
 class TaskModel extends TaskEntity {
   const TaskModel({
-    super.id,
-    required super.moduleId,
+    super.taskID,
+    required super.moduleID,
     required super.title,
-    required super.mode,
+    required super.taskMode,
     required super.position,
     super.imagePath = 'no_image',
     super.timeForCompletion = 60,
@@ -18,11 +18,11 @@ class TaskModel extends TaskEntity {
 
   factory TaskModel.fromMap(Map<String, dynamic> map) {
     return TaskModel(
-      id: map[TaskFields.id] as int?,
-      moduleId: map[TaskFields.moduleId] as int,
+      taskID: map[TaskFields.id] as int?,
+      moduleID: map[TaskFields.moduleId] as int,
       title: map[TaskFields.title] as String,
       transcript: map[TaskFields.transcript] as String?,
-      mode: TaskMode.fromValue(map[TaskFields.mode] as int),
+      taskMode: TaskMode.fromValue(map[TaskFields.mode] as int),
       position: map[TaskFields.position] as int,
       imagePath: map[TaskFields.imagePath] as String? ?? 'no_image',
       timeForCompletion: map[TaskFields.timeForCompletion] as int? ?? 60,
@@ -32,11 +32,11 @@ class TaskModel extends TaskEntity {
   }
 
   Map<String, dynamic> toMap() => {
-    TaskFields.id: id,
-    TaskFields.moduleId: moduleId,
+    TaskFields.id: taskID,
+    TaskFields.moduleId: moduleID,
     TaskFields.title: title,
     TaskFields.transcript: transcript,
-    TaskFields.mode: mode.numericValue,
+    TaskFields.mode: taskMode.numericValue,
     TaskFields.position: position,
     TaskFields.imagePath: imagePath,
     TaskFields.timeForCompletion: timeForCompletion,
@@ -45,11 +45,11 @@ class TaskModel extends TaskEntity {
   };
 
   factory TaskModel.fromEntity(TaskEntity entity) => TaskModel(
-    id: entity.id,
-    moduleId: entity.moduleId,
+    taskID: entity.taskID,
+    moduleID: entity.moduleID,
     title: entity.title,
     transcript: entity.transcript,
-    mode: entity.mode,
+    taskMode: entity.taskMode,
     position: entity.position,
     imagePath: entity.imagePath,
     timeForCompletion: entity.timeForCompletion,
@@ -58,11 +58,11 @@ class TaskModel extends TaskEntity {
   );
 
   TaskEntity toEntity() => TaskEntity(
-    id: id,
-    moduleId: moduleId,
+    taskID: taskID,
+    moduleID: moduleID,
     title: title,
     transcript: transcript,
-    mode: mode,
+    taskMode: taskMode,
     position: position,
     imagePath: imagePath,
     timeForCompletion: timeForCompletion,

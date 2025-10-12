@@ -72,19 +72,19 @@ class ModuleLocalDataSource {
   }
 
   Future<int> updateModule(ModuleModel module) async {
-    AppLogger.db('Updating module ID=${module.id}');
+    AppLogger.db('Updating module ID=${module.moduleID}');
     try {
       final db = await _db;
       final rows = await db.update(
         Tables.modules,
         module.toMap(),
         where: '${ModuleFields.id} = ?',
-        whereArgs: [module.id],
+        whereArgs: [module.moduleID],
       );
-      AppLogger.db('Updated $rows row(s) for module ID=${module.id}');
+      AppLogger.db('Updated $rows row(s) for module ID=${module.moduleID}');
       return rows;
     } catch (e, s) {
-      AppLogger.error('Error updating module ID=${module.id}', e, s);
+      AppLogger.error('Error updating module ID=${module.moduleID}', e, s);
       return 0;
     }
   }
@@ -120,4 +120,16 @@ class ModuleLocalDataSource {
       return 0;
     }
   }
+
+  Future<bool> exists(String moduleId) async {
+    final db = await _db;
+    final result = await db.query(
+      'modules',
+      where: 'moduleID = ?',
+      whereArgs: [moduleId],
+      limit: 1,
+    );
+    return result.isNotEmpty;
+  }
+
 }

@@ -1,25 +1,25 @@
 class TaskPromptEntity {
-  final int? id;
-  final int taskId;
+  final int? promptID;
+  final int taskID;
   final String filePath;
   final String? transcription;
 
   const TaskPromptEntity({
-    this.id,
-    required this.taskId,
+    this.promptID,
+    required this.taskID,
     required this.filePath,
     this.transcription,
   });
 
   TaskPromptEntity copyWith({
-    int? id,
+    int? promptID,
     int? taskId,
     String? filePath,
     String? transcription,
   }) {
     return TaskPromptEntity(
-      id: id ?? this.id,
-      taskId: taskId ?? this.taskId,
+      promptID: promptID ?? this.promptID,
+      taskID: taskId ?? this.taskID,
       filePath: filePath ?? this.filePath,
       transcription: transcription ?? this.transcription,
     );
@@ -27,5 +27,5 @@ class TaskPromptEntity {
 
   @override
   String toString() =>
-      'TaskPromptEntity(id: $id, taskId: $taskId, filePath: $filePath, transcription: $transcription)';
+      'TaskPromptEntity(id: $promptID, taskId: $taskID, filePath: $filePath, transcription: $transcription)';
 }

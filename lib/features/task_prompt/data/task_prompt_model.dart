@@ -3,39 +3,39 @@ import 'task_prompt_constants.dart';
 
 class TaskPromptModel extends TaskPromptEntity {
   const TaskPromptModel({
-    super.id,
-    required super.taskId,
+    super.promptID,
+    required super.taskID,
     required super.filePath,
     super.transcription,
   });
 
   factory TaskPromptModel.fromMap(Map<String, dynamic> map) {
     return TaskPromptModel(
-      id: map[TaskPromptFields.id] as int?,
-      taskId: map[TaskPromptFields.taskId] as int,
+      promptID: map[TaskPromptFields.promptID] as int?,
+      taskID: map[TaskPromptFields.taskId] as int, //
       filePath: map[TaskPromptFields.filePath] as String,
       transcription: map[TaskPromptFields.transcription] as String?,
     );
   }
 
   Map<String, dynamic> toMap() => {
-    TaskPromptFields.id: id,
-    TaskPromptFields.taskId: taskId,
+    TaskPromptFields.promptID: promptID,
+    TaskPromptFields.taskId: taskID,
     TaskPromptFields.filePath: filePath,
     TaskPromptFields.transcription: transcription,
   };
 
   factory TaskPromptModel.fromEntity(TaskPromptEntity entity) =>
       TaskPromptModel(
-        id: entity.id,
-        taskId: entity.taskId,
+        promptID: entity.promptID,
+        taskID: entity.taskID,
         filePath: entity.filePath,
         transcription: entity.transcription,
       );
 
   TaskPromptEntity toEntity() => TaskPromptEntity(
-    id: id,
-    taskId: taskId,
+    promptID: promptID,
+    taskID: taskID,
     filePath: filePath,
     transcription: transcription,
   );

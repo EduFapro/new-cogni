@@ -3,11 +3,11 @@
 import '../../../core/constants/enums/task_mode.dart';
 
 class TaskEntity {
-  final int? id;
-  final int moduleId;
+  final int? taskID;
+  final int moduleID;
   final String title;
   final String? transcript;
-  final TaskMode mode;
+  final TaskMode taskMode;
   final int position;
   final String imagePath;
   final int timeForCompletion;
@@ -15,10 +15,10 @@ class TaskEntity {
   final bool testOnly;
 
   const TaskEntity({
-    this.id,
-    required this.moduleId,
+    this.taskID,
+    required this.moduleID,
     required this.title,
-    required this.mode,
+    required this.taskMode,
     required this.position,
     this.imagePath = 'no_image',
     this.timeForCompletion = 60,
@@ -40,11 +40,11 @@ class TaskEntity {
     bool? testOnly,
   }) {
     return TaskEntity(
-      id: id ?? this.id,
-      moduleId: moduleId ?? this.moduleId,
+      taskID: id ?? this.taskID,
+      moduleID: moduleId ?? this.moduleID,
       title: title ?? this.title,
       transcript: transcript ?? this.transcript,
-      mode: mode ?? this.mode,
+      taskMode: mode ?? this.taskMode,
       position: position ?? this.position,
       imagePath: imagePath ?? this.imagePath,
       timeForCompletion: timeForCompletion ?? this.timeForCompletion,
@@ -55,6 +55,6 @@ class TaskEntity {
 
   @override
   String toString() {
-    return 'TaskEntity(id: $id, title: $title, mode: $mode, moduleId: $moduleId, pos: $position)';
+    return 'TaskEntity(id: $taskID, title: $title, mode: $taskMode, moduleId: $moduleID, pos: $position)';
   }
 }

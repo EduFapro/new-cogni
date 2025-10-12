@@ -78,19 +78,19 @@ class TaskLocalDataSource {
   }
 
   Future<int> updateTask(TaskModel task) async {
-    AppLogger.db('Updating task ID=${task.id}');
+    AppLogger.db('Updating task ID=${task.taskID}');
     try {
       final db = await _db;
       final rows = await db.update(
         Tables.tasks,
         task.toMap(),
         where: '${TaskFields.id} = ?',
-        whereArgs: [task.id],
+        whereArgs: [task.taskID],
       );
-      AppLogger.db('Updated $rows task(s) for ID=${task.id}');
+      AppLogger.db('Updated $rows task(s) for ID=${task.taskID}');
       return rows;
     } catch (e, s) {
-      AppLogger.error('Error updating task ID=${task.id}', e, s);
+      AppLogger.error('Error updating task ID=${task.taskID}', e, s);
       return 0;
     }
   }
@@ -111,4 +111,16 @@ class TaskLocalDataSource {
       return 0;
     }
   }
+
+  Future<bool> exists(String taskId) async {
+    final db = await _db;
+    final result = await db.query(
+      'tasks',
+      where: 'taskID = ?',
+      whereArgs: [taskId],
+      limit: 1,
+    );
+    return result.isNotEmpty;
+  }
+
 }

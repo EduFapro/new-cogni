@@ -17,7 +17,7 @@ class TaskPromptLocalDataSource {
   Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insert(TaskPromptModel model) async {
-    AppLogger.db('Inserting TaskPrompt for taskId=${model.taskId}');
+    AppLogger.db('Inserting TaskPrompt for taskId=${model.taskID}');
     try {
       final db = await _db;
       final id = await db.insert(
@@ -39,7 +39,7 @@ class TaskPromptLocalDataSource {
       final db = await _db;
       final result = await db.query(
         Tables.taskPrompts,
-        where: '${TaskPromptFields.id} = ?',
+        where: '${TaskPromptFields.promptID} = ?',
         whereArgs: [id],
       );
       return result.isNotEmpty ? TaskPromptModel.fromMap(result.first) : null;
@@ -79,19 +79,19 @@ class TaskPromptLocalDataSource {
   }
 
   Future<int> update(TaskPromptModel model) async {
-    AppLogger.db('Updating TaskPrompt ID=${model.id}');
+    AppLogger.db('Updating TaskPrompt ID=${model.promptID}');
     try {
       final db = await _db;
       final rows = await db.update(
         Tables.taskPrompts,
         model.toMap(),
-        where: '${TaskPromptFields.id} = ?',
-        whereArgs: [model.id],
+        where: '${TaskPromptFields.promptID} = ?',
+        whereArgs: [model.promptID],
       );
       AppLogger.db('Updated $rows TaskPrompt(s)');
       return rows;
     } catch (e, s) {
-      AppLogger.error('Error updating TaskPrompt ID=${model.id}', e, s);
+      AppLogger.error('Error updating TaskPrompt ID=${model.promptID}', e, s);
       return 0;
     }
   }
@@ -102,7 +102,7 @@ class TaskPromptLocalDataSource {
       final db = await _db;
       final count = await db.delete(
         Tables.taskPrompts,
-        where: '${TaskPromptFields.id} = ?',
+        where: '${TaskPromptFields.promptID} = ?',
         whereArgs: [id],
       );
       AppLogger.db('Deleted $count TaskPrompt(s)');
@@ -112,4 +112,16 @@ class TaskPromptLocalDataSource {
       return 0;
     }
   }
+
+  Future<bool> exists(String promptId) async {
+    final db = await _db;
+    final result = await db.query(
+      'prompts',
+      where: 'promptID = ?',
+      whereArgs: [promptId],
+      limit: 1,
+    );
+    return result.isNotEmpty;
+  }
+
 }

@@ -58,34 +58,37 @@ class AdminRegistrationForm extends HookConsumerWidget {
       };
     }, [manualUsername.value]);
 
-        ref.listen<AsyncValue<AdminRegistrationState>>(
-          adminRegistrationProvider,
-              (prev, next) {
-            next.whenData((value) async {
-              if (value == AdminRegistrationState.success) {
-                isRedirecting.value = true;
-                displayInfoBar(
-                  context,
-                  builder: (ctx, close) => InfoBar(
-                    title: const Text("Administrador registrado!"),
-                    content: const Text("Você será redirecionado para o login!"),
-                    severity: InfoBarSeverity.success,
-                    isLong: true,
-                    onClose: close,
-                  ),
-                );
+    ref.listen<AsyncValue<AdminRegistrationState>>(
+      adminRegistrationProvider,
+          (prev, next) {
+        next.whenData((value) async {
+          if (value == AdminRegistrationState.success) {
+            isRedirecting.value = true;
+            displayInfoBar(
+              context,
+              builder: (ctx, close) => InfoBar(
+                title: const Text("Administrador registrado!"),
+                content: const Text("Você será redirecionado para o login!"),
+                severity: InfoBarSeverity.success,
+                isLong: true,
+                onClose: close,
+              ),
+            );
 
-                await Future.delayed(const Duration(seconds: 2));
-                if (context.mounted) {
-                  context.go('/login');
-                }
+            await Future.delayed(const Duration(milliseconds: 300));
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                context.go('/login');
               }
             });
-          },
-        );
+          }
+        });
+      },
+    );
 
 
-        Future<void> _submit() async {
+    Future<void> _submit() async {
       if (!formKey.currentState!.validate() || selectedDate.value == null) {
         return;
       }

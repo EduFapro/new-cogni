@@ -3,33 +3,33 @@ import '../../../features/module/data/module_constants.dart';
 
 class ModuleModel extends ModuleEntity {
   const ModuleModel({
-    super.id,
+    super.moduleID,
     required super.title,
     super.tasks = const [],
   });
 
   factory ModuleModel.fromMap(Map<String, dynamic> map) {
     return ModuleModel(
-      id: map[ModuleFields.id] as int?,
+      moduleID: map[ModuleFields.id] as int?,
       title: map[ModuleFields.title] as String,
     );
   }
 
   Map<String, dynamic> toMap() => {
-    ModuleFields.id: id,
+    ModuleFields.id: moduleID,
     ModuleFields.title: title,
   };
 
   factory ModuleModel.fromEntity(ModuleEntity entity) {
     return ModuleModel(
-      id: entity.id,
+      moduleID: entity.moduleID,
       title: entity.title,
       tasks: entity.tasks,
     );
   }
 
   ModuleEntity toEntity() => ModuleEntity(
-    id: id,
+    moduleID: moduleID,
     title: title,
     tasks: tasks,
   );

@@ -53,4 +53,10 @@ class AppLogger {
     if (_isRelease) return;
     _logger.t(message);
   }
+
+  static void seed(String message) {
+    if (_isRelease) return;
+    _logger.i('[SEED] $message');
+  }
+
 }

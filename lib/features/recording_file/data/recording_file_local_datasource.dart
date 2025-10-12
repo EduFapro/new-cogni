@@ -3,6 +3,7 @@ import '../../../core/constants/database_constants.dart';
 import '../../../database_helper.dart';
 import '../../recording_file/data/recording_file_constants.dart';
 import '../../recording_file/data/recording_file_model.dart';
+import '../../../core/logger/app_logger.dart';
 
 class RecordingFileLocalDataSource {
   static final RecordingFileLocalDataSource _instance =
@@ -19,13 +20,15 @@ class RecordingFileLocalDataSource {
   Future<int?> insert(RecordingFileModel model) async {
     try {
       final db = await _db;
-      return await db.insert(
+      final id = await db.insert(
         Tables.recordings,
         model.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-    } catch (e) {
-      print('❌ Error inserting RecordingFile: $e');
+      AppLogger.db('Inserted RecordingFile (id=$id)');
+      return id;
+    } catch (e, s) {
+      AppLogger.error('Error inserting RecordingFile', e, s);
       return null;
     }
   }
@@ -38,12 +41,9 @@ class RecordingFileLocalDataSource {
         where: '${RecordingFileFields.id} = ?',
         whereArgs: [id],
       );
-      if (result.isNotEmpty) {
-        return RecordingFileModel.fromMap(result.first);
-      }
-      return null;
-    } catch (e) {
-      print('❌ Error fetching RecordingFile by ID: $e');
+      return result.isNotEmpty ? RecordingFileModel.fromMap(result.first) : null;
+    } catch (e, s) {
+      AppLogger.error('Error fetching RecordingFile by ID: $id', e, s);
       return null;
     }
   }
@@ -56,12 +56,9 @@ class RecordingFileLocalDataSource {
         where: '${RecordingFileFields.taskInstanceId} = ?',
         whereArgs: [taskInstanceId],
       );
-      if (result.isNotEmpty) {
-        return RecordingFileModel.fromMap(result.first);
-      }
-      return null;
-    } catch (e) {
-      print('❌ Error fetching RecordingFile by TaskInstanceId: $e');
+      return result.isNotEmpty ? RecordingFileModel.fromMap(result.first) : null;
+    } catch (e, s) {
+      AppLogger.error('Error fetching RecordingFile by TaskInstanceId: $taskInstanceId', e, s);
       return null;
     }
   }
@@ -71,8 +68,8 @@ class RecordingFileLocalDataSource {
       final db = await _db;
       final result = await db.query(Tables.recordings);
       return result.map(RecordingFileModel.fromMap).toList();
-    } catch (e) {
-      print('❌ Error fetching all RecordingFiles: $e');
+    } catch (e, s) {
+      AppLogger.error('Error fetching all RecordingFiles', e, s);
       return [];
     }
   }
@@ -86,8 +83,8 @@ class RecordingFileLocalDataSource {
         where: '${RecordingFileFields.id} = ?',
         whereArgs: [model.id],
       );
-    } catch (e) {
-      print('❌ Error updating RecordingFile: $e');
+    } catch (e, s) {
+      AppLogger.error('Error updating RecordingFile ID=${model.id}', e, s);
       return -1;
     }
   }
@@ -100,8 +97,8 @@ class RecordingFileLocalDataSource {
         where: '${RecordingFileFields.id} = ?',
         whereArgs: [id],
       );
-    } catch (e) {
-      print('❌ Error deleting RecordingFile: $e');
+    } catch (e, s) {
+      AppLogger.error('Error deleting RecordingFile ID=$id', e, s);
       return -1;
     }
   }

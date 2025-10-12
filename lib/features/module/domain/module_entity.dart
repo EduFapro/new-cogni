@@ -1,12 +1,12 @@
 import '../../task/domain/task_entity.dart';
 
 class ModuleEntity {
-  final int? id;
+  final int? moduleID;
   final String title;
   final List<TaskEntity> tasks;
 
   const ModuleEntity({
-    this.id,
+    this.moduleID,
     required this.title,
     this.tasks = const [],
   });
@@ -17,12 +17,12 @@ class ModuleEntity {
     List<TaskEntity>? tasks,
   }) {
     return ModuleEntity(
-      id: id ?? this.id,
+      moduleID: id ?? this.moduleID,
       title: title ?? this.title,
       tasks: tasks ?? this.tasks,
     );
   }
 
   @override
-  String toString() => 'ModuleEntity(id: $id, title: $title, tasks: $tasks)';
+  String toString() => 'ModuleEntity(id: $moduleID, title: $title, tasks: $tasks)';
 }
