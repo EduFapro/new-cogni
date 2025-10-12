@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/logger/app_logger.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../domain/evaluator_registration_data.dart';
 import 'evaluator_registration_provider.dart';
@@ -14,6 +15,8 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    AppLogger.nav('Opened EvaluatorRegistrationForm');
+
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final nameController = useTextEditingController();
     final surnameController = useTextEditingController();
@@ -30,7 +33,6 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
     final manualUsername = useState(false);
     final isDateExpanded = useState(false);
     final isRedirecting = useState(false);
-
 
     final state = ref.watch(evaluatorRegistrationProvider);
     final notifier = ref.read(evaluatorRegistrationProvider.notifier);
@@ -58,37 +60,43 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
       };
     }, [manualUsername.value]);
 
-        ref.listen<AsyncValue<EvaluatorRegistrationState>>(
-          evaluatorRegistrationProvider,
-              (prev, next) {
-            next.whenData((value) async {
-              if (value == EvaluatorRegistrationState.success) {
-                isRedirecting.value = true;
-                displayInfoBar(
-                  context,
-                  builder: (ctx, close) => InfoBar(
-                    title: const Text("Avaliador registrado!"),
-                    content: const Text("Você será redirecionado para o home!"),
-                    severity: InfoBarSeverity.success,
-                    isLong: true,
-                    onClose: close,
-                  ),
-                );
+    // Listen for registration result
+    ref.listen<AsyncValue<EvaluatorRegistrationState>>(
+      evaluatorRegistrationProvider,
+          (prev, next) {
+        next.whenData((value) async {
+          if (value == EvaluatorRegistrationState.success) {
+            AppLogger.info('Evaluator registered successfully — redirecting');
+            isRedirecting.value = true;
 
-                await Future.delayed(const Duration(seconds: 2));
-                if (context.mounted) {
-                  context.go('/home');
-                }
-              }
-            });
-          },
-        );
+            displayInfoBar(
+              context,
+              builder: (ctx, close) => InfoBar(
+                title: const Text("Avaliador registrado!"),
+                content:
+                const Text("Você será redirecionado para o home!"),
+                severity: InfoBarSeverity.success,
+                isLong: true,
+                onClose: close,
+              ),
+            );
 
+            await Future.delayed(const Duration(seconds: 2));
+            if (context.mounted) {
+              AppLogger.nav('Navigating to /home after registration');
+              context.go('/home');
+            }
+          }
+        });
+      },
+    );
 
-        Future<void> _submit() async {
+    Future<void> _submit() async {
       if (!formKey.currentState!.validate() || selectedDate.value == null) {
+        AppLogger.warning('Registration form validation failed');
         return;
       }
+
       final data = EvaluatorRegistrationData(
         name: nameController.text,
         surname: surnameController.text,
@@ -100,6 +108,8 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
         specialty: specialtyController.text,
         isAdmin: false,
       );
+
+      AppLogger.info('Submitting evaluator registration for ${data.email}');
       await notifier.registerEvaluator(data);
     }
 
@@ -107,10 +117,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF141E30), // very dark navy
-            Color(0xFF243B55), // slightly lighter blue
-          ],
+          colors: [Color(0xFF141E30), Color(0xFF243B55)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -173,7 +180,11 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
                     child: Checkbox(
                       content: const Text("Definir usuário manualmente"),
                       checked: manualUsername.value,
-                      onChanged: (v) => manualUsername.value = v ?? false,
+                      onChanged: (v) {
+                        manualUsername.value = v ?? false;
+                        AppLogger.debug(
+                            'Manual username mode: ${manualUsername.value}');
+                      },
                     ),
                   ),
                 ],
@@ -184,56 +195,19 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: InfoLabel(
-                    label: "Senha",
-                    child: TextFormBox(
-                      controller: passwordController,
-                      obscureText: !showPassword.value,
-                      placeholder: "Digite a senha",
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return "Digite a senha";
-                        }
-                        if (v.length < 6) {
-                          return "Mínimo 6 caracteres";
-                        }
-                        return null;
-                      },
-                      suffix: IconButton(
-                        icon: Icon(showPassword.value
-                            ? FluentIcons.hide3
-                            : FluentIcons.view),
-                        onPressed: () =>
-                        showPassword.value = !showPassword.value,
-                      ),
-                    ),
+                  child: _buildPasswordField(
+                    "Senha",
+                    passwordController,
+                    showPassword,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: InfoLabel(
-                    label: "Confirmar Senha",
-                    child: TextFormBox(
-                      controller: confirmPasswordController,
-                      obscureText: !showConfirmPassword.value,
-                      placeholder: "Repita a senha",
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return "Confirme a senha";
-                        }
-                        if (v != passwordController.text) {
-                          return "As senhas não coincidem";
-                        }
-                        return null;
-                      },
-                      suffix: IconButton(
-                        icon: Icon(showConfirmPassword.value
-                            ? FluentIcons.hide3
-                            : FluentIcons.view),
-                        onPressed: () => showConfirmPassword.value =
-                        !showConfirmPassword.value,
-                      ),
-                    ),
+                  child: _buildPasswordField(
+                    "Confirmar Senha",
+                    confirmPasswordController,
+                    showConfirmPassword,
+                    confirm: passwordController,
                   ),
                 ),
               ],
@@ -247,16 +221,20 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
               child: Expander(
                 key: ValueKey(isDateExpanded.value),
                 initiallyExpanded: isDateExpanded.value,
-                onStateChanged: (open) => isDateExpanded.value = open,
+                onStateChanged: (open) =>
+                isDateExpanded.value = open,
                 header: Text(
                   selectedDate.value != null
-                      ? DateFormat('dd/MM/yyyy').format(selectedDate.value!)
+                      ? DateFormat('dd/MM/yyyy')
+                      .format(selectedDate.value!)
                       : "Selecionar data",
                 ),
                 content: SfDateRangePicker(
                   onSelectionChanged: (args) {
                     selectedDate.value = args.value;
                     isDateExpanded.value = false;
+                    AppLogger.debug(
+                        'Selected birth date: ${selectedDate.value}');
                   },
                   selectionMode: DateRangePickerSelectionMode.single,
                   initialSelectedDate: selectedDate.value,
@@ -268,11 +246,9 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
             ),
 
             const SizedBox(height: 16),
-
-            // specialty
             _buildTextField("Especialidade", specialtyController),
-
             const SizedBox(height: 24),
+
             FilledButton(
               style: ButtonStyle(
                 backgroundColor: ButtonState.all(AppColors.primary),
@@ -296,6 +272,37 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
         child: TextFormBox(
           controller: controller,
           validator: (v) => v!.isEmpty ? "Campo obrigatório" : null,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(String label, TextEditingController controller,
+      ValueNotifier<bool> show, {TextEditingController? confirm}) {
+    return InfoLabel(
+      label: label,
+      child: TextFormBox(
+        controller: controller,
+        obscureText: !show.value,
+        placeholder: label == "Senha"
+            ? "Digite a senha"
+            : "Repita a senha",
+        validator: (v) {
+          if (v == null || v.isEmpty) return "Campo obrigatório";
+          if (label == "Confirmar Senha" &&
+              v != confirm?.text) {
+            return "As senhas não coincidem";
+          }
+          if (label == "Senha" && v.length < 6) {
+            return "Mínimo 6 caracteres";
+          }
+          return null;
+        },
+        suffix: IconButton(
+          icon: Icon(show.value
+              ? FluentIcons.hide3
+              : FluentIcons.view),
+          onPressed: () => show.value = !show.value,
         ),
       ),
     );
