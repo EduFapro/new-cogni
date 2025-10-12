@@ -5,9 +5,9 @@ import 'task_constants.dart';
 import 'task_model.dart';
 
 class TaskLocalDataSource {
-  final dbHelper = DatabaseHelper();
+  final dbHelper = DatabaseHelper.instance;
 
-  Future<Database> get _db async => dbHelper.db;
+  Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insertTask(TaskModel task) async {
     final db = await _db;

@@ -1,97 +1,87 @@
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'core/logger/app_logger.dart';
 
-import '../../core/constants/database_constants.dart';
-
-import '../../features/evaluator/data/evaluator_constants.dart';
-import '../../features/participant/data/participant_constants.dart';
-import '../../features/evaluation/data/evaluation_constants.dart';
-import '../../features/module/data/module_constants.dart';
-import '../../features/task/data/task_constants.dart';
-import '../../features/module_instance/data/module_instance_constants.dart';
-import '../../features/task_instance/data/task_instance_constants.dart';
-import '../../features/task_prompt/data/task_prompt_constants.dart';
-import '../../features/recording_file/data/recording_file_constants.dart';
-
-/// Handles database initialization, schema creation, and access.
 class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._internal();
-  factory DatabaseHelper() => instance;
+  static final DatabaseHelper instance = DatabaseHelper._init();
+  static Database? _database;
 
-  static Database? _db;
-  static String? _dbPath;
+  DatabaseHelper._init();
 
-  DatabaseHelper._internal();
-
-  Future<Database> get db async {
-    if (_db != null) {
-      print('📂 Database already opened at: $_dbPath');
-      return _db!;
-    }
-
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-
-    _dbPath = await databaseFactory.getDatabasesPath();
-    final path = join(_dbPath!, DatabaseConfig.name);
-
-    _db = await databaseFactory.openDatabase(
-      path,
-      options: OpenDatabaseOptions(
-        version: DatabaseConfig.version,
-        onCreate: _onCreate,
-      ),
-    );
-
-    // Enable FK constraints
-    await _db!.execute("PRAGMA foreign_keys = ON;");
-    print('✅ Database initialized at: $path');
-    return _db!;
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDB('app.db');
+    return _database!;
   }
 
-  // Check if admin evaluator exists
-  Future<bool> isAdminConfigured() async {
-    final db = await this.db;
-    var result = await db.query(
-      Tables.evaluators,
-      where: "${EvaluatorFields.isAdmin} = ?",
-      whereArgs: [1],
-    );
-    return result.isNotEmpty;
+  Future<Database> _initDB(String filePath) async {
+    AppLogger.db('Initializing database: $filePath');
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, filePath);
+    return await openDatabase(path, version: 1, onCreate: _createDB);
   }
 
-  /// Handles the creation of all tables (executed once)
-  Future<void> _onCreate(Database db, int newVersion) async {
-    print('🧱 Creating database schema (version $newVersion)...');
-
+  Future _createDB(Database db, int version) async {
+    AppLogger.db('Creating database schema, version=$version');
     try {
-      // --- ORDER MATTERS: Foreign keys depend on prior tables ---
-      await db.execute(scriptCreateTableEvaluators);
-      await db.execute(scriptCreateTableParticipants);
-      await db.execute(scriptCreateTableEvaluations);
+      // your table creation code here
+    } catch (e, s) {
+      AppLogger.error('Error creating DB schema', e, s);
+    }
+  }
 
-      await db.execute(scriptCreateTableModules);
-      await db.execute(scriptCreateTableTasks);
-
-      await db.execute(scriptCreateTableModuleInstances);
-      await db.execute(scriptCreateTableTaskInstances);
-
-      await db.execute(scriptCreateTableTaskPrompts);
-      await db.execute(scriptCreateTableRecordings);
-
-      print('✅ All tables created successfully');
-    } catch (e, st) {
-      print('❌ Error creating tables: $e');
-      print(st);
+  Future<int> insert(String table, Map<String, dynamic> values) async {
+    final db = await instance.database;
+    AppLogger.db('Inserting into $table: $values');
+    try {
+      final id = await db.insert(table, values);
+      AppLogger.db('Insert success [$table]: id=$id');
+      return id;
+    } catch (e, s) {
+      AppLogger.error('Insert failed [$table]', e, s);
       rethrow;
     }
   }
 
-  /// Optional utility to reset the database
-  Future<void> resetDatabase() async {
-    final path = join(_dbPath ?? await databaseFactory.getDatabasesPath(), DatabaseConfig.name);
-    await databaseFactory.deleteDatabase(path);
-    _db = null;
-    print('🗑️ Database deleted at: $path');
+  Future<List<Map<String, dynamic>>> query(String table,
+      {String? where, List<Object?>? whereArgs}) async {
+    final db = await instance.database;
+    AppLogger.db('Querying table=$table where=$where args=$whereArgs');
+    try {
+      final result = await db.query(table, where: where, whereArgs: whereArgs);
+      AppLogger.db('Query success [$table]: ${result.length} rows');
+      return result;
+    } catch (e, s) {
+      AppLogger.error('Query failed [$table]', e, s);
+      rethrow;
+    }
+  }
+
+  Future<int> update(String table, Map<String, dynamic> values,
+      {String? where, List<Object?>? whereArgs}) async {
+    final db = await instance.database;
+    AppLogger.db('Updating $table set=$values where=$where');
+    try {
+      final count = await db.update(table, values, where: where, whereArgs: whereArgs);
+      AppLogger.db('Update success [$table]: $count rows affected');
+      return count;
+    } catch (e, s) {
+      AppLogger.error('Update failed [$table]', e, s);
+      rethrow;
+    }
+  }
+
+  Future<int> delete(String table,
+      {String? where, List<Object?>? whereArgs}) async {
+    final db = await instance.database;
+    AppLogger.db('Deleting from $table where=$where');
+    try {
+      final count = await db.delete(table, where: where, whereArgs: whereArgs);
+      AppLogger.db('Delete success [$table]: $count rows removed');
+      return count;
+    } catch (e, s) {
+      AppLogger.error('Delete failed [$table]', e, s);
+      rethrow;
+    }
   }
 }

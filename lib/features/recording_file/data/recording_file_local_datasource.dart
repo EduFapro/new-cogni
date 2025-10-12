@@ -12,9 +12,9 @@ class RecordingFileLocalDataSource {
 
   RecordingFileLocalDataSource._internal();
 
-  final dbHelper = DatabaseHelper();
+  final dbHelper = DatabaseHelper.instance;
 
-  Future<Database> get _db async => dbHelper.db;
+  Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insert(RecordingFileModel model) async {
     try {

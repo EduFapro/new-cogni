@@ -7,9 +7,9 @@ import 'module_instance_constants.dart';
 import 'module_instance_model.dart';
 
 class ModuleInstanceLocalDataSource {
-  final dbHelper = DatabaseHelper();
+  final dbHelper = DatabaseHelper.instance;
 
-  Future<Database> get _db async => dbHelper.db;
+  Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insertModuleInstance(ModuleInstanceModel instance) async {
     final db = await _db;

@@ -17,11 +17,10 @@ class TaskInstanceLocalDataSource {
 
   TaskInstanceLocalDataSource._internal();
 
-  final dbHelper = DatabaseHelper();
+  final dbHelper = DatabaseHelper.instance;
 
-  Future<Database> get _db async => dbHelper.db;
+  Future<Database> get _db async => dbHelper.database;
 
-  /// Inserts a new [TaskInstanceModel] into the database.
   Future<int?> create(TaskInstanceModel model) async {
     try {
       final db = await _db;
@@ -36,7 +35,6 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  /// Retrieves a task instance by ID.
   Future<TaskInstanceModel?> getTaskInstance(int id) async {
     try {
       final db = await _db;
@@ -55,7 +53,6 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  /// Updates a task instance in the database.
   Future<int> updateTaskInstance(TaskInstanceModel model) async {
     try {
       final db = await _db;
@@ -71,7 +68,6 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  /// Deletes a task instance by ID.
   Future<int> deleteTaskInstance(int id) async {
     try {
       final db = await _db;
@@ -86,7 +82,6 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  /// Retrieves all task instances.
   Future<List<TaskInstanceModel>> getAllTaskInstances() async {
     try {
       final db = await _db;
@@ -98,7 +93,6 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  /// Retrieves all task instances belonging to a specific module instance.
   Future<List<TaskInstanceModel>> getTaskInstancesForModuleInstance(int moduleInstanceId) async {
     try {
       final db = await _db;
@@ -114,7 +108,6 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  /// Returns the total number of task instances in the database.
   Future<int?> getNumberOfTaskInstances() async {
     try {
       final db = await _db;
@@ -147,7 +140,6 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  /// Marks a task instance as completed with optional completion time.
   Future<int> markAsCompleted(int id, {String? duration}) async {
     try {
       final db = await _db;

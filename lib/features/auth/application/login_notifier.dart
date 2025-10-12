@@ -36,10 +36,12 @@ class LoginNotifier extends AsyncNotifier<bool> {
       state = AsyncError(e, st);
     }
   }
-  
+
   Future<AuthRepository> _initAuthRepository() async {
-    final db = await DatabaseHelper().db;
+    final dbHelper = DatabaseHelper.instance;
+    final db = await dbHelper.database;
     final local = AuthLocalDataSource(db);
     return AuthRepositoryImpl(local);
   }
+
 }

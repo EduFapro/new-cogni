@@ -14,7 +14,7 @@ class EvaluatorRepositoryNotifier extends AsyncNotifier<EvaluatorRepository> {
       final env = ref.watch(environmentProvider);
 
       if (env == AppEnv.local) {
-        final db = await DatabaseHelper.instance.db;
+        final db = await DatabaseHelper.instance.database;
         return EvaluatorRepositoryImpl.local(EvaluatorLocalDataSource(db));
       } else {
         return EvaluatorRepositoryImpl.remote(EvaluatorRemoteDataSource());

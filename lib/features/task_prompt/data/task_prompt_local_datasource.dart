@@ -12,9 +12,9 @@ class TaskPromptLocalDataSource {
 
   TaskPromptLocalDataSource._internal();
 
-  final dbHelper = DatabaseHelper();
+  final dbHelper = DatabaseHelper.instance;
 
-  Future<Database> get _db async => dbHelper.db;
+  Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insert(TaskPromptModel model) async {
     try {
