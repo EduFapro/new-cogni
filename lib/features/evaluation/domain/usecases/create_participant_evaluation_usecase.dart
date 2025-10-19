@@ -1,11 +1,10 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/constants/enums/progress_status.dart';
 import '../../../participant/domain/participant_entity.dart';
 import '../../../participant/data/participant_local_datasource.dart';
-import '../../../evaluation/domain/evaluation_entity.dart';
 import '../../../evaluation/data/evaluation_local_datasource.dart';
+import '../../../evaluation/domain/evaluation_entity.dart';
 import '../../../module/data/module_local_datasource.dart';
 import '../../../module_instance/domain/module_instance_entity.dart';
 import '../../../module_instance/domain/module_instance_repository.dart';
@@ -32,20 +31,22 @@ class CreateParticipantEvaluationUseCase {
     required this.db,
   });
 
-  Future<void> execute({
+  Future<ParticipantEntity> execute({
     required ParticipantEntity participant,
     required int evaluatorId,
     int language = 1,
   }) async {
-    AppLogger.info('[USECASE] Starting participant creation → ${participant.fullName}');
+    AppLogger.info('[USECASE] Starting participant creation: ${participant.name}');
+
+    late final ParticipantEntity createdParticipant;
 
     await db.transaction((txn) async {
       // 1️⃣ Create participant
       final participantId =
       await participantDataSource.insertParticipant(txn, participant.toMap());
-      AppLogger.db('Inserted participant ID=$participantId');
+      AppLogger.db('Participant inserted: id=$participantId');
 
-      // 2️⃣ Create evaluation linked to evaluator + participant
+      // 2️⃣ Create evaluation linking evaluator & participant
       final evaluation = EvaluationEntity(
         evaluatorID: evaluatorId,
         participantID: participantId!,
@@ -54,9 +55,9 @@ class CreateParticipantEvaluationUseCase {
       );
       final evaluationId =
       await evaluationDataSource.insertEvaluation(txn, evaluation.toMap());
-      AppLogger.db('Created evaluation ID=$evaluationId');
+      AppLogger.db('Evaluation created: id=$evaluationId');
 
-      // 3️⃣ Create module instances + task instances
+      // 3️⃣ Fetch modules and create module instances
       final modules = await moduleDataSource.getAllModules();
       for (final module in modules) {
         final moduleInstance = ModuleInstanceEntity(
@@ -64,11 +65,11 @@ class CreateParticipantEvaluationUseCase {
           evaluationId: evaluationId!,
           status: ModuleStatus.pending,
         );
+        final moduleInstanceId = await moduleInstanceRepository
+            .createModuleInstance(moduleInstance)
+            .then((m) => m?.id);
 
-        final createdModuleInstance =
-        await moduleInstanceRepository.createModuleInstance(moduleInstance);
-        final moduleInstanceId = createdModuleInstance?.id;
-
+        // 4️⃣ For each module, create task instances
         final tasks = await taskDataSource.getTasksByModuleId(module.moduleID!);
         for (final task in tasks) {
           final taskInstance = TaskInstanceEntity(
@@ -80,7 +81,11 @@ class CreateParticipantEvaluationUseCase {
         }
       }
 
-      AppLogger.info('[USECASE] ✅ Participant + Evaluation hierarchy created successfully');
+      createdParticipant = participant.copyWith(participantID: participantId);
+      AppLogger.info('[USECASE] ✅ Participant + Evaluation hierarchy created.');
     });
+
+
+    return createdParticipant;
   }
 }

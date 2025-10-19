@@ -1,9 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../providers/providers.dart';
-import '../participant/presentation/providers/create_participant_evaluation_provider.dart';
+import '../../core/logger/app_logger.dart';
 import '../evaluator/data/evaluator_model.dart';
+import '../../providers/providers.dart';
+import '../participant/domain/participant_entity.dart';
+import '../participant/presentation/create_participant_evaluation_provider.dart';
 
 class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});
@@ -11,23 +13,12 @@ class HomeScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final EvaluatorModel? user = ref.watch(currentUserProvider);
-    final createParticipant = ref.watch(createParticipantEvaluationProvider);
 
-    // 🎯 Listen for async state changes (success / error)
+    // Listen for creation state changes
     ref.listen(createParticipantEvaluationProvider, (_, next) {
       next.whenOrNull(
-        data: (_) => _showInfoBar(
-          context,
-          'Sucesso',
-          'Participante e avaliação criados!',
-          InfoBarSeverity.success,
-        ),
-        error: (e, s) => _showInfoBar(
-          context,
-          'Erro',
-          'Falha ao criar participante: $e',
-          InfoBarSeverity.error,
-        ),
+        data: (participant) => _showSuccessInfoBar(context, ref, participant),
+        error: (e, _) => _showErrorInfoBar(context, e.toString()),
       );
     });
 
@@ -48,24 +39,8 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 
-  /// ✅ InfoBar helper
-  void _showInfoBar(BuildContext context, String title, String message, InfoBarSeverity severity) {
-    displayInfoBar(
-      context,
-      builder: (ctx, close) => InfoBar(
-        title: Text(title),
-        content: Text(message),
-        severity: severity,
-        action: IconButton(
-          icon: const Icon(FluentIcons.clear),
-          onPressed: close,
-        ),
-      ),
-    );
-  }
-
-  /// ✅ Quick actions section
-  Widget _buildQuickActions(BuildContext context, WidgetRef ref, EvaluatorModel? user) {
+  Widget _buildQuickActions(
+      BuildContext context, WidgetRef ref, EvaluatorModel? user) {
     return Wrap(
       spacing: 16,
       runSpacing: 12,
@@ -77,7 +52,7 @@ class HomeScreen extends HookConsumerWidget {
             ref
                 .read(createParticipantEvaluationProvider.notifier)
                 .createParticipantWithEvaluation(
-              evaluatorId: user?.evaluatorId ?? 1, // fallback to dummy
+              evaluatorId: user?.evaluatorId ?? 1,
             );
           },
         ),
@@ -94,16 +69,11 @@ class HomeScreen extends HookConsumerWidget {
       onPressed: onPressed,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon),
-          const SizedBox(width: 8),
-          Text(label),
-        ],
+        children: [Icon(icon), const SizedBox(width: 8), Text(label)],
       ),
     );
   }
 
-  /// ✅ Placeholder until evaluation history is implemented
   Widget _buildRecentActivity() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,8 +83,80 @@ class HomeScreen extends HookConsumerWidget {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 12),
-        Text("Criação de participantes será exibida aqui futuramente."),
+        Text("Criações recentes aparecerão aqui em breve."),
       ],
+    );
+  }
+
+  // === FEEDBACK ===
+  void _showSuccessInfoBar(
+      BuildContext context,
+      WidgetRef ref,
+      ParticipantEntity? participant,
+      ) {
+    AppLogger.info('[UI] Participant created successfully.');
+
+    if (participant == null) return;
+
+    displayInfoBar(
+      context,
+      builder: (ctx, close) => InfoBar(
+        title: const Text('Sucesso'),
+        content: Text(
+          'Participante "${participant.fullName}" e avaliação criados com sucesso!',
+        ),
+        severity: InfoBarSeverity.success,
+        action: IconButton(
+          icon: const Icon(FluentIcons.info),
+          onPressed: () {
+            close();
+            _showParticipantDetailsDialog(context, participant);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showErrorInfoBar(BuildContext context, String message) {
+    AppLogger.warning('[UI] Participant creation failed: $message');
+    displayInfoBar(
+      context,
+      builder: (ctx, close) => InfoBar(
+        title: const Text('Erro'),
+        content: Text(message),
+        severity: InfoBarSeverity.error,
+        action: IconButton(
+          icon: const Icon(FluentIcons.clear),
+          onPressed: close,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showParticipantDetailsDialog(
+      BuildContext context,
+      ParticipantEntity participant,
+      ) async {
+    await showDialog(
+      context: context,
+      builder: (ctx) => ContentDialog(
+        title: const Text('Novo Participante Criado'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('🧍 Nome: ${participant.fullName}'),
+            Text('🎂 Nascimento: ${participant.birthDate.toLocal()}'),
+            Text('🎓 Educação: ${participant.educationLevel}'),
+            const Text('📊 Status da Avaliação: Pendente'),
+          ],
+        ),
+        actions: [
+          Button(
+            child: const Text('Fechar'),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+        ],
+      ),
     );
   }
 }

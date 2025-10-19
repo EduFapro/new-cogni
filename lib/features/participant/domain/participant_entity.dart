@@ -38,9 +38,27 @@ class ParticipantEntity {
     ParticipantFields.educationLevel: educationLevel.numericValue,
   };
 
+  ParticipantEntity copyWith({
+    int? participantID,
+    String? name,
+    String? surname,
+    DateTime? birthDate,
+    Sex? sex,
+    EducationLevel? educationLevel,
+  }) {
+    return ParticipantEntity(
+      participantID: participantID ?? this.participantID,
+      name: name ?? this.name,
+      surname: surname ?? this.surname,
+      birthDate: birthDate ?? this.birthDate,
+      sex: sex ?? this.sex,
+      educationLevel: educationLevel ?? this.educationLevel,
+    );
+  }
+
   @override
   String toString() =>
-      'ParticipantEntity{participantID: $participantID, name: $name, surname: $surname, sex: $sex}';
+      'ParticipantEntity(id: $participantID, name: $name, surname: $surname, sex: $sex, education: $educationLevel)';
 
   String get fullName => '$name $surname';
 }
