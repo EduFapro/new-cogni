@@ -14,9 +14,10 @@ class DatabaseSeeder {
       await seedTasks(db);
       await seedPrompts(db);
       await seedDummyEvaluator(db);
+
       AppLogger.seed('Database seeding complete ✅');
     } catch (e, s) {
-      AppLogger.error('❌ [SEED] Database seeding failed', e, s);
+      AppLogger.error('❌ Database seeding failed', e, s);
       rethrow;
     }
   }

@@ -1,22 +1,25 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/database_helper.dart';
+import '../../core/logger/app_logger.dart';
+import '../../features/evaluator/data/evaluator_local_datasource.dart';
 
-import '../features/evaluator/application/evaluator_notifier.dart';
-
-enum StartupState { initializing, needsEvaluatorAdmin, ready }
-
-class StartupNotifier extends AsyncNotifier<StartupState> {
-  @override
-  Future<StartupState> build() async {
-    final repository = await ref.watch(evaluatorRepositoryProvider.future);
-    final hasAdmin = await repository.hasAnyEvaluatorAdmin();
-
-    return hasAdmin
-        ? StartupState.ready
-        : StartupState.needsEvaluatorAdmin;
-  }
-
-}
-
+enum StartupState { ready }
 
 final startupProvider =
-AsyncNotifierProvider<StartupNotifier, StartupState>(StartupNotifier.new);
+FutureProvider<StartupState>((ref) async {
+  AppLogger.info('[STARTUP] Checking evaluator presence...');
+  final db = await DatabaseHelper.instance.database;
+  final evaluatorDS = EvaluatorLocalDataSource(db);
+
+  final evaluators = await evaluatorDS.getAll();
+
+  if (evaluators.isEmpty) {
+    AppLogger.warning(
+        '[STARTUP] No evaluators found — seeder might not have run yet');
+  } else {
+    AppLogger.info(
+        '[STARTUP] Found ${evaluators.length} evaluator(s), proceeding to login');
+  }
+
+  return StartupState.ready;
+});

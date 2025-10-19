@@ -3,6 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../providers/providers.dart';
+import '../../core/logger/app_logger.dart';
+import '../participant/presentation/providers/create_participant_evaluation_provider.dart';
 import '../evaluator/data/evaluator_model.dart';
 
 class HomeScreen extends HookConsumerWidget {
@@ -11,6 +13,17 @@ class HomeScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final EvaluatorModel? user = ref.watch(currentUserProvider);
+
+    // ✅ Correct Riverpod 3 listener
+    ref.listen(createParticipantEvaluationProvider, (previous, next) {
+      next.when(
+        data: (_) => AppLogger.info('[HOME] ✅ Participant + Evaluation created'),
+        error: (e, s) =>
+            AppLogger.error('[HOME] ❌ Error creating participant', e, s),
+        loading: () =>
+            AppLogger.info('[HOME] Creating participant...'),
+      );
+    });
 
     return NavigationView(
       content: ScaffoldPage.scrollable(
@@ -21,7 +34,7 @@ class HomeScreen extends HookConsumerWidget {
           ),
         ),
         children: [
-          _buildQuickActions(context, ref, user!),
+          _buildQuickActions(context, ref, user),
           const SizedBox(height: 32),
           _buildPinnedProjects(),
           const SizedBox(height: 32),
@@ -31,8 +44,8 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 
-
-  Widget _buildQuickActions(BuildContext context, WidgetRef ref, EvaluatorModel user) {
+  Widget _buildQuickActions(
+      BuildContext context, WidgetRef ref, EvaluatorModel? user) {
     return Wrap(
       spacing: 16,
       runSpacing: 12,
@@ -40,19 +53,37 @@ class HomeScreen extends HookConsumerWidget {
         _quickActionButton(
           icon: FluentIcons.add,
           label: 'Novo Projeto',
-          onPressed: () {},
+          onPressed: () {
+            displayInfoBar(context, builder: (ctx, close) {
+              return InfoBar(
+                title: const Text('Em breve'),
+                content: const Text('Esta funcionalidade será adicionada.'),
+                severity: InfoBarSeverity.info,
+                isLong: true,
+                action: IconButton(
+                  icon: const Icon(FluentIcons.clear),
+                  onPressed: close,
+                ),
+              );
+            });
+          },
         ),
-          _quickActionButton(
-            icon: FluentIcons.people_add,
-            label: 'Novo Participante',
-            onPressed: () {
-              context.push('/participant/create');
-            },
-          ),
+        _quickActionButton(
+          icon: FluentIcons.people_add,
+          label: 'Novo Participante',
+          onPressed: () async {
+            AppLogger.info('[HOME] Create Participant tapped');
+            await ref
+                .read(createParticipantEvaluationProvider.notifier)
+                .createParticipantWithEvaluation(
+              evaluatorId: user?.evaluatorId ?? 1, // fallback to dummy
+            );
+          },
+        ),
         _quickActionButton(
           icon: FluentIcons.settings,
           label: 'Configurações',
-          onPressed: () {},
+          onPressed: () => context.push('/settings'),
         ),
       ],
     );

@@ -14,7 +14,6 @@ class EvaluatorModel extends EvaluatorEntity {
     required super.username,
     required super.password,
     super.firstLogin = true,
-    super.isAdmin = false,
   });
 
   factory EvaluatorModel.fromMap(Map<String, dynamic> map) => EvaluatorModel(
@@ -28,7 +27,6 @@ class EvaluatorModel extends EvaluatorEntity {
     username: map[EvaluatorFields.username],
     password: map[EvaluatorFields.password],
     firstLogin: (map[EvaluatorFields.firstLogin] as int) == 1,
-    isAdmin: (map[EvaluatorFields.isAdmin] as int) == 1,
   );
 
   Map<String, dynamic> toMap() => {
@@ -42,7 +40,6 @@ class EvaluatorModel extends EvaluatorEntity {
     EvaluatorFields.username: username,
     EvaluatorFields.password: password,
     EvaluatorFields.firstLogin: firstLogin ? 1 : 0,
-    EvaluatorFields.isAdmin: isAdmin ? 1 : 0,
   };
 
   Map<String, dynamic> toJson() => {
@@ -56,7 +53,6 @@ class EvaluatorModel extends EvaluatorEntity {
     'username': username,
     'password': password,
     'firstLogin': firstLogin,
-    'isAdmin': isAdmin,
   };
 
   factory EvaluatorModel.fromEntity(EvaluatorEntity entity) => EvaluatorModel(
@@ -70,7 +66,6 @@ class EvaluatorModel extends EvaluatorEntity {
     username: entity.username,
     password: entity.password,
     firstLogin: entity.firstLogin,
-    isAdmin: entity.isAdmin,
   );
 
   factory EvaluatorModel.fromDTO(EvaluatorRegistrationData dto) {
@@ -83,7 +78,6 @@ class EvaluatorModel extends EvaluatorEntity {
       cpfOrNif: dto.cpf,
       username: dto.username,
       password: dto.password,
-      isAdmin: dto.isAdmin,
       firstLogin: dto.firstLogin,
     );
   }

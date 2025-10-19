@@ -21,26 +21,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   bool showLogo = false;
   bool fadeOut = false;
-  bool hasNavigated = false;
 
   @override
   void initState() {
     super.initState();
-
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 700),
       vsync: this,
     );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
-    );
-
-    _dotsController = AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
-    )..repeat();
+    _fadeAnimation =
+        CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
+    _dotsController =
+    AnimationController(duration: const Duration(seconds: 1), vsync: this)
+      ..repeat();
 
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
@@ -50,28 +43,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
   }
 
-  void _triggerNavigation(StartupState state) {
-    AppLogger.info('[SPLASH] Trigger navigation → $state');
-
-    if (hasNavigated || !mounted) return;
-    hasNavigated = true;
-
-    Future.delayed(const Duration(seconds: 3), () {
+  void _navigateToLogin() {
+    Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
       setState(() => fadeOut = true);
-
       Future.delayed(const Duration(milliseconds: 600), () {
-        if (!mounted) return;
-
-        switch (state) {
-          case StartupState.needsEvaluatorAdmin:
-            context.goNamed('admin_register');
-            break;
-          case StartupState.ready:
-            context.go('/login');
-            break;
-          default:
-            context.go('/login');
+        if (mounted) {
+          AppLogger.nav('[SPLASH] Navigating → /login');
+          context.go('/login');
         }
       });
     });
@@ -80,17 +59,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<StartupState>>(startupProvider, (previous, next) {
-      AppLogger.info('[SPLASH] startupProvider state = $next');
       next.when(
-        data: (state) {
-          AppLogger.info('[SPLASH] startupProvider resolved: $state');
-          _triggerNavigation(state);
-        },
-        error: (e, s) => AppLogger.error('[SPLASH] startupProvider error', e, s),
-        loading: () => AppLogger.info('[SPLASH] startupProvider still loading...'),
+        data: (_) => _navigateToLogin(),
+        error: (e, s) =>
+            AppLogger.error('[SPLASH] startupProvider error', e, s),
+        loading: () =>
+            AppLogger.info('[SPLASH] startupProvider still loading...'),
       );
     });
-
 
     return Scaffold(
       backgroundColor: Colors.deepPurple.shade400,
@@ -111,9 +87,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     width: 100,
                     height: 100,
                     colorFilter: const ColorFilter.mode(
-                      Colors.white,
-                      BlendMode.srcIn,
-                    ),
+                        Colors.white, BlendMode.srcIn),
                   ),
                 ),
                 const SizedBox(height: 24),

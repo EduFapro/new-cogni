@@ -18,7 +18,6 @@ Future<void> seedDummyEvaluator(Database db) async {
     cpfOrNif: '00000000000',
     username: 'dummy',
     password: '123456',
-    isAdmin: false,
   );
 
   final exists = await datasource.existsByEmail(dummy.email);
