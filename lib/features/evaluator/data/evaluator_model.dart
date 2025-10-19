@@ -87,4 +87,7 @@ class EvaluatorModel extends EvaluatorEntity {
       firstLogin: dto.firstLogin,
     );
   }
+
+
+
 }

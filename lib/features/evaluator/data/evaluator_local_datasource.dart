@@ -68,4 +68,29 @@ class EvaluatorLocalDataSource {
       return false;
     }
   }
+
+  Future<bool> existsByEmail(String email) async {
+    AppLogger.db('Checking if evaluator exists: $email');
+    final result = await _db.query(
+      Tables.evaluators,
+      where: '${EvaluatorFields.email} = ?',
+      whereArgs: [email],
+      limit: 1,
+    );
+    return result.isNotEmpty;
+  }
+
+  Future<EvaluatorModel?> getFirstEvaluator() async {
+    AppLogger.db('Fetching first evaluator');
+    final result = await _db.query(
+      Tables.evaluators,
+      limit: 1,
+    );
+    if (result.isEmpty) {
+      AppLogger.db('No evaluator found');
+      return null;
+    }
+    return EvaluatorModel.fromMap(result.first);
+  }
+
 }

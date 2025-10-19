@@ -23,7 +23,6 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
     AppLogger.info('EvaluatorRepositoryImpl running in REMOTE mode');
   }
 
-  @override
   Future<List<EvaluatorModel>> getAllEvaluators() async {
     AppLogger.info('Fetching all evaluators ($_mode)');
     try {

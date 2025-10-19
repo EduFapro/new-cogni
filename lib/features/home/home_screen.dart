@@ -42,12 +42,11 @@ class HomeScreen extends HookConsumerWidget {
           label: 'Novo Projeto',
           onPressed: () {},
         ),
-        if (user.isAdmin == true)
           _quickActionButton(
             icon: FluentIcons.people_add,
-            label: 'Novo Avaliador',
+            label: 'Novo Participante',
             onPressed: () {
-              context.go('/evaluator-registration');
+              context.push('/participant/create');
             },
           ),
         _quickActionButton(
