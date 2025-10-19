@@ -34,9 +34,9 @@ class CreateParticipantEvaluationNotifier extends AsyncNotifier<void> {
     final Database db = await DatabaseHelper.instance.database;
 
     _useCase = CreateParticipantEvaluationUseCase(
-      participantDataSource: ParticipantLocalDataSource(db),
-      evaluationDataSource: EvaluationLocalDataSource(db),
-      moduleDataSource: ModuleLocalDataSource(db),
+      participantDataSource: ParticipantLocalDataSource(),
+      evaluationDataSource: EvaluationLocalDataSource(),
+      moduleDataSource: ModuleLocalDataSource(),
       moduleInstanceRepository: ModuleInstanceRepositoryImpl(
         localDataSource: ModuleInstanceLocalDataSource(),
       ),
