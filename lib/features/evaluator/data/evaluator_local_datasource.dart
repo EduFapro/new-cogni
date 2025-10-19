@@ -8,15 +8,16 @@ class EvaluatorLocalDataSource {
   final Database _db;
   EvaluatorLocalDataSource(this._db);
 
+  /// Fetch all evaluators
   Future<List<EvaluatorModel>> getAll() async {
-    AppLogger.db('Querying all evaluators from local DB');
+    AppLogger.db('[EVALUATOR] Fetching all evaluators');
     final result = await _db.query(Tables.evaluators);
-    AppLogger.db('Fetched ${result.length} evaluators');
     return result.map(EvaluatorModel.fromMap).toList();
   }
 
+  /// Insert evaluator (replace on conflict)
   Future<void> insert(EvaluatorModel evaluator) async {
-    AppLogger.db('Inserting evaluator: ${evaluator.email}');
+    AppLogger.db('[EVALUATOR] Inserting evaluator: ${evaluator.email}');
     await _db.insert(
       Tables.evaluators,
       evaluator.toMap(),
@@ -24,73 +25,64 @@ class EvaluatorLocalDataSource {
     );
   }
 
+  /// Get evaluator by ID
   Future<EvaluatorModel?> getById(int id) async {
-    AppLogger.db('Querying evaluator by ID: $id');
     final result = await _db.query(
       Tables.evaluators,
       where: '${EvaluatorFields.id} = ?',
       whereArgs: [id],
       limit: 1,
     );
-    if (result.isEmpty) {
-      AppLogger.db('No evaluator found for ID=$id');
-      return null;
-    }
-    AppLogger.db('Evaluator found for ID=$id');
-    return EvaluatorModel.fromMap(result.first);
+    return result.isNotEmpty ? EvaluatorModel.fromMap(result.first) : null;
   }
 
-  Future<int> deleteById(int id) async {
-    AppLogger.db('Deleting evaluator ID=$id');
-    final count = await _db.delete(
-      Tables.evaluators,
-      where: '${EvaluatorFields.id} = ?',
-      whereArgs: [id],
-    );
-    AppLogger.db('Deleted $count evaluator(s)');
-    return count;
-  }
-
-  Future<bool> hasAnyEvaluatorAdmin() async {
-    AppLogger.db('Checking if any evaluator admin exists...');
-    try {
-      final result = await _db.query(
-        Tables.evaluators,
-        where: '${EvaluatorFields.isAdmin} = ?',
-        whereArgs: [1], // since isAdmin is stored as INTEGER (0 or 1)
-        limit: 1,
-      );
-      final exists = result.isNotEmpty;
-      AppLogger.db('Admin evaluator exists: $exists');
-      return exists;
-    } catch (e, s) {
-      AppLogger.error('Error checking for evaluator admin', e, s);
-      return false;
-    }
-  }
-
-  Future<bool> existsByEmail(String email) async {
-    AppLogger.db('Checking if evaluator exists: $email');
+  Future<EvaluatorModel?> getFirstEvaluator() async {
     final result = await _db.query(
       Tables.evaluators,
-      where: '${EvaluatorFields.email} = ?',
-      whereArgs: [email],
+      orderBy: '${EvaluatorFields.id} ASC',
+      limit: 1,
+    );
+    return result.isNotEmpty ? EvaluatorModel.fromMap(result.first) : null;
+  }
+
+
+  /// ✅ NEW: Check if there is any evaluator admin (legacy support)
+  Future<bool> hasAnyEvaluatorAdmin() async {
+    AppLogger.db('[EVALUATOR] Checking if any admin evaluator exists...');
+    final result = await _db.query(
+      Tables.evaluators,
+      where: '${EvaluatorFields.isAdmin} = ?',
+      whereArgs: [1],
       limit: 1,
     );
     return result.isNotEmpty;
   }
 
-  Future<EvaluatorModel?> getFirstEvaluator() async {
-    AppLogger.db('Fetching first evaluator');
-    final result = await _db.query(
+  /// Delete evaluator
+  Future<int> deleteById(int id) async {
+    return await _db.delete(
       Tables.evaluators,
-      limit: 1,
+      where: '${EvaluatorFields.id} = ?',
+      whereArgs: [id],
     );
-    if (result.isEmpty) {
-      AppLogger.db('No evaluator found');
-      return null;
+  }
+
+  Future<bool> existsByEmail(String email) async {
+    AppLogger.db('[EVALUATOR] Checking if evaluator exists for email: $email');
+    try {
+      final result = await _db.query(
+        Tables.evaluators,
+        where: '${EvaluatorFields.email} = ?',
+        whereArgs: [email],
+        limit: 1,
+      );
+      final exists = result.isNotEmpty;
+      AppLogger.db('[EVALUATOR] existsByEmail($email) → $exists');
+      return exists;
+    } catch (e, s) {
+      AppLogger.error('[EVALUATOR] Error checking existsByEmail', e, s);
+      return false;
     }
-    return EvaluatorModel.fromMap(result.first);
   }
 
 }

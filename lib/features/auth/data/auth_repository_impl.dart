@@ -16,7 +16,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<EvaluatorModel?> login(String email, String password) async {
     AppLogger.info('Repository: login called for $email');
-    final admin = await _local.getAdminByEmail(email);
+    final admin = await _local.getEvaluatorByEmail(email);
 
     if (admin != null && admin.password == password) {
       AppLogger.info('Password verified for $email');

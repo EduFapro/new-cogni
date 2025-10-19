@@ -5,7 +5,6 @@ import '../features/auth/presentation/login_screen.dart';
 import '../features/evaluator/presentation/evaluator_registration_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/splash/splash_screen.dart';
-import '../features/evaluator/presentation/admin_registration_screen.dart';
 import 'logger/app_logger.dart';
 
 final router = GoRouter(
@@ -21,12 +20,6 @@ final router = GoRouter(
       const SplashScreen(),
     ),
     GoRoute(
-      path: '/admin/register',
-      name: 'admin_register',
-      builder: (BuildContext context, GoRouterState state) =>
-      const AdminRegistrationScreen(),
-    ),
-    GoRoute(
       path: '/login',
       name: 'login',
       builder: (BuildContext context, GoRouterState state) =>
@@ -39,7 +32,7 @@ final router = GoRouter(
       const HomeScreen(),
     ),
     GoRoute(
-      path: '/evaluator-registration',
+      path: '/register',
       name: 'evaluator_registration',
       builder: (context, state) => const EvaluatorRegistrationScreen(),
     ),

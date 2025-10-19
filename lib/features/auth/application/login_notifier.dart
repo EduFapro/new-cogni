@@ -20,7 +20,6 @@ class LoginNotifier extends AsyncNotifier<bool> {
     AppLogger.info('Login attempt started for $email');
 
     if (email.isEmpty || password.isEmpty) {
-      AppLogger.warning('Validation failed: empty email or password');
       state = AsyncError('E-mail e senha são obrigatórios', StackTrace.current);
       return;
     }
@@ -30,15 +29,12 @@ class LoginNotifier extends AsyncNotifier<bool> {
       final user = await _repository!.login(email, password);
 
       if (user == null) {
-        AppLogger.warning('Invalid credentials for $email');
         state = AsyncError('Credenciais inválidas', StackTrace.current);
       } else {
-        AppLogger.info('Login successful for ${user.email}');
         ref.read(currentUserProvider.notifier).setUser(user);
         state = const AsyncData(true);
       }
     } catch (e, st) {
-      AppLogger.error('Login failed for $email', e, st);
       state = AsyncError(e, st);
     } finally {
       AppLogger.info('Login attempt finished for $email');
@@ -47,8 +43,6 @@ class LoginNotifier extends AsyncNotifier<bool> {
 
   Future<AuthRepository> _initAuthRepository() async {
     final db = await DatabaseHelper.instance.database;
-    AppLogger.db('AuthRepository initialized with DB instance');
-    final local = AuthLocalDataSource(db);
-    return AuthRepositoryImpl(local);
+    return AuthRepositoryImpl(AuthLocalDataSource(db));
   }
 }

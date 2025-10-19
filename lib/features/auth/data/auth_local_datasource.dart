@@ -1,4 +1,5 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import '../../../core/constants/database_constants.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../evaluator/data/evaluator_model.dart';
 import '../../evaluator/data/evaluator_constants.dart';
@@ -7,19 +8,19 @@ class AuthLocalDataSource {
   final Database _db;
   AuthLocalDataSource(this._db);
 
-  Future<EvaluatorModel?> getAdminByEmail(String email) async {
-    AppLogger.db('Query admin by email: $email');
+  Future<EvaluatorModel?> getEvaluatorByEmail(String email) async {
+    AppLogger.db('Query evaluator by email: $email');
     final result = await _db.query(
-      'evaluators',
+      Tables.evaluators,
       where: '${EvaluatorFields.email} = ?',
       whereArgs: [email],
       limit: 1,
     );
     if (result.isEmpty) {
-      AppLogger.db('No admin found for $email');
+      AppLogger.db('No evaluator found for $email');
       return null;
     }
-    AppLogger.db('Admin found for $email');
+    AppLogger.db('Evaluator found for $email');
     return EvaluatorModel.fromMap(result.first);
   }
 

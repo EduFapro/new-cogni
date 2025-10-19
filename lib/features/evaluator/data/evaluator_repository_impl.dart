@@ -1,7 +1,6 @@
-import 'package:segundo_cogni/features/evaluator/domain/evaluator_registration_data.dart';
-
 import '../../../core/logger/app_logger.dart';
 import '../domain/evaluator_repository.dart';
+import '../domain/evaluator_registration_data.dart';
 import 'evaluator_local_datasource.dart';
 import 'evaluator_remote_datasource.dart';
 import 'evaluator_model.dart';
@@ -14,17 +13,19 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
   EvaluatorRepositoryImpl.local(this._local)
       : _remote = null,
         _isLocal = true {
-    AppLogger.info('EvaluatorRepositoryImpl running in LOCAL mode');
+    AppLogger.info('[REPO] EvaluatorRepositoryImpl running in LOCAL mode');
   }
 
   EvaluatorRepositoryImpl.remote(this._remote)
       : _local = null,
         _isLocal = false {
-    AppLogger.info('EvaluatorRepositoryImpl running in REMOTE mode');
+    AppLogger.info('[REPO] EvaluatorRepositoryImpl running in REMOTE mode');
   }
 
+  String get _mode => _isLocal ? 'LOCAL' : 'REMOTE';
+
   Future<List<EvaluatorModel>> getAllEvaluators() async {
-    AppLogger.info('Fetching all evaluators ($_mode)');
+    AppLogger.info('[REPO] Fetching all evaluators ($_mode)');
     try {
       if (_isLocal) {
         final list = await _local!.getAll();
@@ -36,29 +37,26 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
         return list;
       }
     } catch (e, s) {
-      AppLogger.error('Error fetching all evaluators ($_mode)', e, s);
+      AppLogger.error('[REPO] Error fetching all evaluators ($_mode)', e, s);
       rethrow;
     }
   }
 
-  @override
   Future<void> addEvaluator(EvaluatorModel evaluator) async {
-    AppLogger.info('Adding evaluator ${evaluator.email} ($_mode)');
+    AppLogger.info('[REPO] Adding evaluator ${evaluator.email} ($_mode)');
     try {
       if (_isLocal) {
         await _local!.insert(evaluator);
-        AppLogger.db('Evaluator inserted into local DB: ${evaluator.email}');
+        AppLogger.db('[REPO] Evaluator inserted into local DB');
       } else {
         await _remote!.createEvaluator(evaluator);
-        AppLogger.info('Evaluator created remotely: ${evaluator.email}');
+        AppLogger.info('[REPO] Evaluator created remotely');
       }
     } catch (e, s) {
-      AppLogger.error('Failed to add evaluator ${evaluator.email}', e, s);
+      AppLogger.error('[REPO] Failed to add evaluator', e, s);
       rethrow;
     }
   }
-
-  String get _mode => _isLocal ? 'LOCAL' : 'REMOTE';
 
   @override
   Future<void> insertEvaluator(EvaluatorRegistrationData data) async {

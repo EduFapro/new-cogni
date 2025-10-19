@@ -1,7 +1,7 @@
 import 'package:path/path.dart';
-import 'package:segundo_cogni/seeders/seed_runner.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../features/evaluation/data/evaluation_constants.dart';
+import '../features/evaluator/data/current_user_constants.dart';
 import '../features/evaluator/data/evaluator_constants.dart';
 import '../features/module/data/module_constants.dart';
 import '../features/participant/data/participant_constants.dart';
@@ -50,14 +50,13 @@ class DatabaseHelper {
       await db.execute(scriptCreateTableModules);
       await db.execute(scriptCreateTableTasks);
       await db.execute(scriptCreateTableTaskPrompts);
-
-      AppLogger.seed('[SEED] Calling DatabaseSeeder.run(db)...');
-      await DatabaseSeeder().run(db);
-      AppLogger.seed('[SEED] DatabaseSeeder.run() finished.');
+      await db.execute(scriptCreateTableCurrentUser);
+      AppLogger.db('✅ Database schema created successfully.');
     } catch (e, s) {
       AppLogger.error('❌ Error creating DB schema', e, s);
     }
   }
+
 
   Future<int> insert(String table, Map<String, dynamic> values) async {
     final db = await instance.database;
