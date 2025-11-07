@@ -4,7 +4,7 @@ class ParticipantFields {
   static const id = "participant_id";
   static const name = "name";
   static const surname = "surname";
-  static const educationLevel = "education";
+  static const educationLevel = "education_level";
   static const sex = "sex";
   static const birthDate = "birth_date";
 
