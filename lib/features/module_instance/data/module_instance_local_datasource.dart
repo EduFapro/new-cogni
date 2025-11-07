@@ -1,13 +1,16 @@
 import 'package:sqflite_common/sqlite_api.dart';
-import '../../../core/database_helper.dart';
-import '../../../core/logger/app_logger.dart';
 import '../../../core/constants/database_constants.dart';
 import '../../../core/constants/enums/progress_status.dart';
+import '../../../core/database/base_database_helper.dart';
+import '../../../core/logger/app_logger.dart';
 import 'module_instance_constants.dart';
 import 'module_instance_model.dart';
 
 class ModuleInstanceLocalDataSource {
-  final dbHelper = DatabaseHelper.instance;
+  final BaseDatabaseHelper dbHelper;
+
+  ModuleInstanceLocalDataSource({required this.dbHelper});
+
   Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insertModuleInstance(ModuleInstanceModel instance) async {
@@ -56,7 +59,8 @@ class ModuleInstanceLocalDataSource {
     }
   }
 
-  Future<List<ModuleInstanceModel>> getModuleInstancesByEvaluationId(int evaluationId) async {
+  Future<List<ModuleInstanceModel>> getModuleInstancesByEvaluationId(
+      int evaluationId) async {
     AppLogger.db('Fetching module instances by evaluationId=$evaluationId');
     try {
       final db = await _db;
@@ -112,7 +116,8 @@ class ModuleInstanceLocalDataSource {
     AppLogger.db('Counting module instances');
     try {
       final db = await _db;
-      final result = await db.rawQuery('SELECT COUNT(*) AS count FROM ${Tables.moduleInstances}');
+      final result = await db
+          .rawQuery('SELECT COUNT(*) AS count FROM ${Tables.moduleInstances}');
       final count = (result.first['count'] as int?) ?? 0;
       AppLogger.db('Module instance count: $count');
       return count;

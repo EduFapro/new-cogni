@@ -11,7 +11,7 @@ void main() {
 
   setUp(() async {
     dbHelper = TestDatabaseHelper.instance;
-    ds = TaskLocalDataSource();
+    ds = TaskLocalDataSource(dbHelper: dbHelper);
     await dbHelper.database;
   });
 

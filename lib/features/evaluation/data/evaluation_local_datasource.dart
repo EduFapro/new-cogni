@@ -1,11 +1,13 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
-import '../../../core/database_helper.dart';
+import '../../../core/database/base_database_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../domain/evaluation_entity.dart';
 
 class EvaluationLocalDataSource {
-  final dbHelper = DatabaseHelper.instance;
+  final BaseDatabaseHelper dbHelper;
+  EvaluationLocalDataSource({required this.dbHelper});
+
   Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insertEvaluation(DatabaseExecutor txn, Map<String, dynamic> data) async {

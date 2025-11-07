@@ -1,14 +1,15 @@
 import 'package:sqflite_common/sqlite_api.dart';
-import '../../../core/database_helper.dart';
+import '../../../core/database/base_database_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/constants/database_constants.dart';
 import 'task_constants.dart';
 import 'task_model.dart';
 
 class TaskLocalDataSource {
-  final dbHelper = DatabaseHelper.instance;
-  Future<Database> get _db async => dbHelper.database;
+  final BaseDatabaseHelper dbHelper;
+  TaskLocalDataSource({required this.dbHelper});
 
+  Future<Database> get _db async => dbHelper.database;
   Future<int?> insertTask(TaskModel task) async {
     AppLogger.db('Inserting task: ${task.title}');
     try {

@@ -1,21 +1,18 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import '../../../core/database_helper.dart';
-import '../../../core/logger/app_logger.dart';
+import 'package:sqflite_common/sqlite_api.dart';
+
 import '../../../core/constants/database_constants.dart';
+import '../../../core/constants/enums/progress_status.dart';
+import '../../../core/database/base_database_helper.dart';
+import '../../../core/logger/app_logger.dart';
 import '../../task/data/task_constants.dart';
 import '../../task_instance/data/task_instance_constants.dart';
 import '../../task_instance/data/task_instance_model.dart';
-import '../../../core/constants/enums/progress_status.dart';
 
 class TaskInstanceLocalDataSource {
-  static final TaskInstanceLocalDataSource _instance =
-  TaskInstanceLocalDataSource._internal();
+  final BaseDatabaseHelper dbHelper;
 
-  factory TaskInstanceLocalDataSource() => _instance;
+  TaskInstanceLocalDataSource({required this.dbHelper});
 
-  TaskInstanceLocalDataSource._internal();
-
-  final dbHelper = DatabaseHelper.instance;
   Future<Database> get _db async => dbHelper.database;
 
   Future<int?> create(TaskInstanceModel model) async {
@@ -104,8 +101,10 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  Future<List<TaskInstanceModel>> getTaskInstancesForModuleInstance(int moduleInstanceId) async {
-    AppLogger.db('Fetching task instances for moduleInstanceId=$moduleInstanceId');
+  Future<List<TaskInstanceModel>> getTaskInstancesForModuleInstance(
+      int moduleInstanceId) async {
+    AppLogger.db(
+        'Fetching task instances for moduleInstanceId=$moduleInstanceId');
     try {
       final db = await _db;
       final maps = await db.query(
@@ -113,10 +112,14 @@ class TaskInstanceLocalDataSource {
         where: '${TaskInstanceFields.moduleInstanceId} = ?',
         whereArgs: [moduleInstanceId],
       );
-      AppLogger.db('Fetched ${maps.length} task instances for moduleInstanceId=$moduleInstanceId');
+      AppLogger.db(
+          'Fetched ${maps.length} task instances for moduleInstanceId=$moduleInstanceId');
       return maps.map(TaskInstanceModel.fromMap).toList();
     } catch (e, s) {
-      AppLogger.error('Error fetching task instances for moduleInstanceId=$moduleInstanceId', e, s);
+      AppLogger.error(
+          'Error fetching task instances for moduleInstanceId=$moduleInstanceId',
+          e,
+          s);
       return [];
     }
   }
@@ -125,7 +128,8 @@ class TaskInstanceLocalDataSource {
     AppLogger.db('Counting task instances');
     try {
       final db = await _db;
-      final result = await db.rawQuery('SELECT COUNT(*) as count FROM ${Tables.taskInstances}');
+      final result = await db
+          .rawQuery('SELECT COUNT(*) as count FROM ${Tables.taskInstances}');
       final count = result.first['count'] as int?;
       AppLogger.db('Task instance count: $count');
       return count;
@@ -147,7 +151,8 @@ class TaskInstanceLocalDataSource {
         LIMIT 1
       ''');
       if (result.isNotEmpty) {
-        AppLogger.db('Found pending task instance ID=${result.first[TaskInstanceFields.id]}');
+        AppLogger.db(
+            'Found pending task instance ID=${result.first[TaskInstanceFields.id]}');
         return TaskInstanceModel.fromMap(result.first);
       }
       AppLogger.db('No pending task instance found');
@@ -172,10 +177,12 @@ class TaskInstanceLocalDataSource {
         where: '${TaskInstanceFields.id} = ?',
         whereArgs: [id],
       );
-      AppLogger.db('Task instance ID=$id marked as completed ($rows row(s) affected)');
+      AppLogger.db(
+          'Task instance ID=$id marked as completed ($rows row(s) affected)');
       return rows;
     } catch (e, s) {
-      AppLogger.error('Error marking task instance ID=$id as completed', e, s);
+      AppLogger.error(
+          'Error marking task instance ID=$id as completed', e, s);
       return 0;
     }
   }

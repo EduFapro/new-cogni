@@ -1,11 +1,13 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
-import '../../../core/database_helper.dart';
+import '../../../core/database/base_database_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../domain/participant_entity.dart';
 
 class ParticipantLocalDataSource {
-  final dbHelper = DatabaseHelper.instance;
+  final BaseDatabaseHelper dbHelper;
+  ParticipantLocalDataSource({required this.dbHelper});
+
   Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insertParticipant(DatabaseExecutor txn, Map<String, dynamic> data) async {
@@ -28,8 +30,11 @@ class ParticipantLocalDataSource {
 
   Future<ParticipantEntity?> getById(int id) async {
     final db = await _db;
-    final result = await db.query(Tables.participants,
-        where: 'participant_id = ?', whereArgs: [id]);
+    final result = await db.query(
+      Tables.participants,
+      where: 'participant_id = ?',
+      whereArgs: [id],
+    );
     return result.isNotEmpty ? ParticipantEntity.fromMap(result.first) : null;
   }
 }

@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../core/constants/enums/person_enums.dart';
-import '../../../core/database_helper.dart';
+import '../../../core/database/base_database_helper.dart';
+import '../../../core/database/prod_database_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../evaluation/data/evaluation_local_datasource.dart';
 import '../../evaluation/domain/usecases/create_participant_evaluation_usecase.dart';
@@ -17,6 +18,10 @@ import '../../task_instance/data/task_instance_repository_impl.dart';
 import '../data/participant_local_datasource.dart';
 import '../domain/participant_entity.dart';
 
+final dbHelperProvider = Provider<BaseDatabaseHelper>((ref) {
+  return ProdDatabaseHelper.instance;
+});
+
 final createParticipantEvaluationProvider =
 AsyncNotifierProvider<CreateParticipantEvaluationNotifier, ParticipantEntity?>(
   CreateParticipantEvaluationNotifier.new,
@@ -27,17 +32,20 @@ class CreateParticipantEvaluationNotifier extends AsyncNotifier<ParticipantEntit
 
   @override
   FutureOr<ParticipantEntity?> build() async {
-    final Database db = await DatabaseHelper.instance.database;
+    final dbHelper = ref.read(dbHelperProvider);
+    final db = await dbHelper.database;
 
     _useCase = CreateParticipantEvaluationUseCase(
-      participantDataSource: ParticipantLocalDataSource(),
-      evaluationDataSource: EvaluationLocalDataSource(),
-      moduleDataSource: ModuleLocalDataSource(),
-      moduleInstanceRepository:
-      ModuleInstanceRepositoryImpl(localDataSource: ModuleInstanceLocalDataSource()),
-      taskDataSource: TaskLocalDataSource(),
-      taskInstanceRepository:
-      TaskInstanceRepositoryImpl(localDataSource: TaskInstanceLocalDataSource()),
+      participantDataSource: ParticipantLocalDataSource(dbHelper: dbHelper),
+      evaluationDataSource: EvaluationLocalDataSource(dbHelper: dbHelper),
+      moduleDataSource: ModuleLocalDataSource(dbHelper: dbHelper),
+      moduleInstanceRepository: ModuleInstanceRepositoryImpl(
+        localDataSource: ModuleInstanceLocalDataSource(dbHelper: dbHelper),
+      ),
+      taskDataSource: TaskLocalDataSource(dbHelper: dbHelper),
+      taskInstanceRepository: TaskInstanceRepositoryImpl(
+        localDataSource: TaskInstanceLocalDataSource(dbHelper: dbHelper),
+      ),
       db: db,
     );
 

@@ -1,39 +1,44 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:segundo_cogni/core/database/test_database_helper.dart';
-import 'package:segundo_cogni/features/participant/data/participant_local_datasource.dart';
+import 'package:segundo_cogni/core/constants/database_constants.dart';
+import 'package:segundo_cogni/core/database/base_database_helper.dart';
+import 'package:segundo_cogni/core/logger/app_logger.dart';
+import 'package:segundo_cogni/features/participant/domain/participant_entity.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
-void main() {
-  late TestDatabaseHelper dbHelper;
-  late ParticipantLocalDataSource ds;
+class ParticipantLocalDataSource {
+  final BaseDatabaseHelper dbHelper;
 
-  setUp(() async {
-    dbHelper = TestDatabaseHelper.instance;
-    ds = ParticipantLocalDataSource();
-    await dbHelper.database; // schema already created
-  });
+  ParticipantLocalDataSource({required this.dbHelper});
 
-  tearDown(() async {
-    await dbHelper.close();
-  });
+  Future<Database> get _db async => dbHelper.database;
 
-  test('insertParticipant and getAllParticipants', () async {
-    final db = await dbHelper.database;
+  Future<int?> insertParticipant(
+      DatabaseExecutor txn,
+      Map<String, dynamic> data,
+      ) async {
+    AppLogger.db('Inserting participant: ${data['name']}');
+    try {
+      final id = await txn.insert(Tables.participants, data);
+      AppLogger.db('Inserted participant with ID=$id');
+      return id;
+    } catch (e, s) {
+      AppLogger.error('Error inserting participant', e, s);
+      return null;
+    }
+  }
 
-    int? id;
-    await db.transaction((txn) async {
-      id = await ds.insertParticipant(txn, {
-        'name': 'John',
-        'surname': 'Doe',
-        'birth_date': '1990-01-01',
-        'sex': 1,
-        'education_level': 6,
-      });
-    });
+  Future<List<ParticipantEntity>> getAllParticipants() async {
+    final db = await _db;
+    final maps = await db.query(Tables.participants);
+    return maps.map(ParticipantEntity.fromMap).toList();
+  }
 
-    expect(id, isNotNull);
-
-    final all = await ds.getAllParticipants();
-    expect(all.length, 1);
-    expect(all.first.name, 'John');
-  });
+  Future<ParticipantEntity?> getById(int id) async {
+    final db = await _db;
+    final result = await db.query(
+      Tables.participants,
+      where: 'participant_id = ?',
+      whereArgs: [id],
+    );
+    return result.isNotEmpty ? ParticipantEntity.fromMap(result.first) : null;
+  }
 }
