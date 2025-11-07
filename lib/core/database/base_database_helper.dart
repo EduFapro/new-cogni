@@ -9,9 +9,13 @@ abstract class BaseDatabaseHelper {
   final String dbName;
   Database? _db;
 
+  /// Override in subclasses if you bump schema.
   int get dbVersion => 1;
 
+  /// Implement schema creation.
   Future<void> onCreate(Database db, int version);
+
+  /// Implement if you have migrations.
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {}
 
   Future<Database> get database async {
@@ -19,14 +23,18 @@ abstract class BaseDatabaseHelper {
       AppLogger.db('Database already initialized.');
       return _db!;
     }
-    _db = await _initDB();
+    _db = await initDb();
     return _db!;
   }
 
-  Future<Database> _initDB() async {
+  /// Default implementation: file-based DB using global `databaseFactory`.
+  /// Test helpers / special environments can override this.
+  Future<Database> initDb() async {
     AppLogger.db('Initializing database: $dbName');
+
     final dbPath = await databaseFactory.getDatabasesPath();
     final path = p.join(dbPath, dbName);
+    AppLogger.db('Database path resolved: $path');
 
     final db = await databaseFactory.openDatabase(
       path,
@@ -51,7 +59,7 @@ abstract class BaseDatabaseHelper {
     if (_db != null) {
       await _db!.close();
       _db = null;
-      AppLogger.db('Database closed.');
+      AppLogger.db('Database closed and reset.');
     }
   }
 
