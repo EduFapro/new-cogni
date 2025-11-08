@@ -2,20 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:segundo_cogni/core/utils/validation_helper.dart';
 
 void main() {
-  test('✅ Valid email format passes', () {
-    expect(ValidationHelper.isValidEmail('user@example.com'), isTrue);
+  test('valid email format passes', () {
+    expect(ValidationHelper.isValidEmail('a@b.com'), true);
   });
 
-  test('❌ Invalid email format fails', () {
-    expect(ValidationHelper.isValidEmail('invalid@com'), isFalse);
-    expect(ValidationHelper.isValidEmail('missingdomain@'), isFalse);
+  test('invalid email format fails', () {
+    expect(ValidationHelper.isValidEmail('not-email'), false);
+    expect(ValidationHelper.isValidEmail('a@b'), false);
+    expect(ValidationHelper.isValidEmail('@b.com'), false);
   });
 
-  test('✅ Valid password passes (>= 8 chars)', () {
-    expect(ValidationHelper.isValidPassword('12345678'), isTrue);
-  });
-
-  test('❌ Invalid password fails (< 8 chars)', () {
-    expect(ValidationHelper.isValidPassword('abc123'), isFalse);
+  test('password at least 8 chars', () {
+    expect(ValidationHelper.isValidPassword('12345678'), true);
+    expect(ValidationHelper.isValidPassword('abc12345'), true);
+    expect(ValidationHelper.isValidPassword('abc12'), false);
+    expect(ValidationHelper.isValidPassword(''), false);
   });
 }

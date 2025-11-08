@@ -5,9 +5,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../core/logger/app_logger.dart';
 import '../../core/database_helper.dart';
 import '../../features/evaluator/data/evaluator_local_datasource.dart';
-import '../../features/evaluator/data/evaluator_model.dart';
 import '../../seeders/seed_runner.dart';
 import '../auth/data/auth_local_datasource.dart';
+import '../auth/data/auth_repository_impl.dart';
+import '../../providers/providers.dart'; // ✅ This is where currentUserProvider lives
 
 class SplashScreen extends HookConsumerWidget {
   const SplashScreen({super.key});
@@ -15,7 +16,7 @@ class SplashScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Initialize app safely after the first frame
-    Future.microtask(() => _initializeApp(context));
+    Future.microtask(() => _initializeApp(context, ref));
 
     return NavigationView(
       content: ScaffoldPage(
@@ -36,27 +37,32 @@ class SplashScreen extends HookConsumerWidget {
     );
   }
 
-  Future<void> _initializeApp(BuildContext context) async {
+  Future<void> _initializeApp(BuildContext context, WidgetRef ref) async {
     try {
       AppLogger.seed('[SPLASH] Starting database seeding...');
       await SeedRunner().run();
 
       final db = await DatabaseHelper.instance.database;
+
+      // Try to restore cached session
+      final evaluatorDataSource = EvaluatorLocalDataSource(db);
       final auth = AuthLocalDataSource(db);
-      final currentUser = await auth.getCachedUser();
+      final repository = AuthRepositoryImpl(auth);
+
+      final currentUser = await repository.fetchCurrentUserOrNull();
 
       if (currentUser != null) {
-        AppLogger.seed('[SPLASH] Auto-login: current_user found → ${currentUser.email}');
+        AppLogger.seed('[SPLASH] Auto-login success: ${currentUser.email}');
+        ref.read(currentUserProvider.notifier).setUser(currentUser);
         context.go('/home');
         return;
       }
 
-      // Fallback: is this the first run?
-      final evaluatorDS = EvaluatorLocalDataSource(db);
-      final EvaluatorModel? evaluator = await evaluatorDS.getFirstEvaluator();
+      // If no session: check if there's any evaluator in DB
+      final anyEvaluator = await evaluatorDataSource.getFirstEvaluator();
 
-      if (evaluator != null) {
-        AppLogger.seed('[SPLASH] Evaluator found, but no active session → go to login');
+      if (anyEvaluator != null) {
+        AppLogger.seed('[SPLASH] Evaluator exists → go to login');
         context.go('/login');
       } else {
         AppLogger.seed('[SPLASH] No evaluator found → go to registration');
@@ -69,7 +75,6 @@ class SplashScreen extends HookConsumerWidget {
       }
     }
   }
-
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(

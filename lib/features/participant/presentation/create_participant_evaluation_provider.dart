@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../core/constants/enums/person_enums.dart';
 import '../../../core/database/base_database_helper.dart';

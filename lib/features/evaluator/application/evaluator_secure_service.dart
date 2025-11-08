@@ -30,4 +30,20 @@ class EvaluatorSecureService {
 
   static String hash(String input) =>
       sha256.convert(utf8.encode(input)).toString();
+
+  static EvaluatorModel decryptEvaluator(EvaluatorModel model) {
+    return EvaluatorModel(
+      evaluatorId: model.evaluatorId,
+      name: EncryptionHelper.decryptText(model.name),
+      surname: EncryptionHelper.decryptText(model.surname),
+      email: EncryptionHelper.decryptText(model.email),
+      birthDate: EncryptionHelper.decryptText(model.birthDate),
+      specialty: EncryptionHelper.decryptText(model.specialty),
+      cpfOrNif: EncryptionHelper.decryptText(model.cpfOrNif),
+      username: EncryptionHelper.decryptText(model.username),
+      password: model.password,
+      firstLogin: model.firstLogin,
+    );
+  }
+
 }

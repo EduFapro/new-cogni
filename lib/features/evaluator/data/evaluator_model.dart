@@ -98,5 +98,20 @@ class EvaluatorModel extends EvaluatorEntity {
     );
   }
 
+  factory EvaluatorModel.decrypted(Map<String, dynamic> map) {
+    return EvaluatorModel(
+      evaluatorId: map[EvaluatorFields.id],
+      name: EncryptionHelper.decryptText(map[EvaluatorFields.name]),
+      surname: EncryptionHelper.decryptText(map[EvaluatorFields.surname]),
+      email: EncryptionHelper.decryptText(map[EvaluatorFields.email]),
+      birthDate: EncryptionHelper.decryptText(map[EvaluatorFields.birthDate]),
+      specialty: EncryptionHelper.decryptText(map[EvaluatorFields.specialty]),
+      cpfOrNif: EncryptionHelper.decryptText(map[EvaluatorFields.cpf]),
+      username: EncryptionHelper.decryptText(map[EvaluatorFields.username]),
+      password: map[EvaluatorFields.password], // don't decrypt password
+      firstLogin: (map[EvaluatorFields.firstLogin] as int) == 1,
+    );
+  }
+
 
 }

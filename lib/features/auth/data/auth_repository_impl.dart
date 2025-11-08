@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../core/logger/app_logger.dart';
 import '../../auth/domain/auth_repository.dart';
+import '../../evaluator/application/evaluator_secure_service.dart';
 import '../../evaluator/data/evaluator_model.dart';
 import 'auth_local_datasource.dart';
 
@@ -30,7 +31,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<void> saveCurrentUser(EvaluatorModel user) async {
     final file = await _getUserFile();
-    final content = jsonEncode(user.toMap());
+    final encrypted = EvaluatorSecureService.processEvaluatorForStorage(user);
+    final content = jsonEncode(encrypted.toMap());
     await file.writeAsString(content);
     AppLogger.db('Saved current user to file: ${file.path}');
   }
@@ -51,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final content = await file.readAsString();
       final map = jsonDecode(content);
       AppLogger.db('Loaded cached user from file');
-      return EvaluatorModel.fromMap(map);
+      return EvaluatorSecureService.decryptEvaluator(EvaluatorModel.fromMap(map));
     } catch (e, s) {
       AppLogger.error('Failed to read cached user file', e, s);
       return null;

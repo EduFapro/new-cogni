@@ -2,6 +2,7 @@ import 'package:segundo_cogni/features/evaluator/data/evaluator_model_extensions
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
 import '../../../core/logger/app_logger.dart';
+import '../../evaluator/application/evaluator_secure_service.dart';
 import '../../evaluator/data/evaluator_model.dart';
 import '../../evaluator/data/evaluator_constants.dart';
 
@@ -34,16 +35,14 @@ class AuthLocalDataSource {
     AppLogger.db('Fetching cached user from DB');
     final result = await _db.query('current_user', limit: 1);
     if (result.isEmpty) return null;
-    EvaluatorModel.fromMap(result.first).decrypted();
+    return EvaluatorSecureService.decryptEvaluator(EvaluatorModel.fromMap(result.first));
   }
 
   Future<void> saveCurrentUser(EvaluatorModel user) async {
-    AppLogger.db('Saving current user to DB');
-
-    final encryptedUser = user.encrypted();
+    AppLogger.db('Encrypting and saving current user to DB');
+    final encrypted = EvaluatorSecureService.processEvaluatorForStorage(user);
     await _db.delete('current_user');
-    await _db.insert('current_user', encryptedUser.toMap());
+    await _db.insert('current_user', encrypted.toMap());
   }
-
 
 }

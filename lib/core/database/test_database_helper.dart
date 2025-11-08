@@ -1,4 +1,3 @@
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:segundo_cogni/core/database/base_database_helper.dart';
 import 'package:segundo_cogni/core/database/database_schema.dart';
