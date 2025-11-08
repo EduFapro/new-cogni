@@ -36,12 +36,12 @@ class AuthLocalDataSource {
     if (result.isEmpty) return null;
 
     final encrypted = EvaluatorModel.fromMap(result.first);
-    return EvaluatorSecureService.decrypt(encrypted); // ✅ NEW
+    return EvaluatorSecureService.decrypt(encrypted);
   }
 
   Future<void> saveCurrentUser(EvaluatorModel user) async {
     AppLogger.db('Encrypting and saving current user to DB');
-    final encrypted = EvaluatorSecureService.encrypt(user); // ✅ NEW
+    final encrypted = EvaluatorSecureService.encrypt(user);
     await _db.delete('current_user');
     await _db.insert('current_user', encrypted.toMap());
   }

@@ -2,7 +2,10 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../core/database_helper.dart';
 import '../../providers/providers.dart';
+import '../auth/data/auth_local_datasource.dart';
+import '../auth/data/auth_repository_impl.dart';
 
 class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});
@@ -38,10 +41,17 @@ class HomeScreen extends HookConsumerWidget {
           PaneItem(
             icon: const Icon(FluentIcons.sign_out),
             title: const Text('Sair'),
-            onTap: () {
+            onTap: () async {
+              final repository = AuthRepositoryImpl(AuthLocalDataSource(
+                await DatabaseHelper.instance.database,
+              ));
+
+              await repository.signOut(); // 🔥 clears DB
+
               ref.read(currentUserProvider.notifier).setUser(null);
               if (context.mounted) context.go('/login');
             },
+
             body: const SizedBox.shrink(), // Required, can't be null
           ),
         ],

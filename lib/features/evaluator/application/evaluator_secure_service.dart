@@ -4,7 +4,6 @@ import '../../../core/utils/encryption_helper.dart';
 import '../data/evaluator_model.dart';
 
 class EvaluatorSecureService {
-  /// Encrypts all fields including hashing the password
   static EvaluatorModel encrypt(EvaluatorModel model) {
     return model.copyWith(
       name: EncryptionHelper.encryptText(model.name),
@@ -18,7 +17,6 @@ class EvaluatorSecureService {
     );
   }
 
-  /// Decrypts all fields except password (hash remains)
   static EvaluatorModel decrypt(EvaluatorModel model) {
     return model.copyWith(
       name: EncryptionHelper.decryptText(model.name),
