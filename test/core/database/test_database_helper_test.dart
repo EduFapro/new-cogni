@@ -7,11 +7,11 @@ void main() {
 
   setUp(() async {
     dbHelper = TestDatabaseHelper.instance;
-    await dbHelper.database;
+    await dbHelper.initDb(); // ✅ Ensures schema creation
   });
 
   tearDown(() async {
-    await dbHelper.close();
+    await dbHelper.close(); // ✅ Ensures clean reset between tests
   });
 
   test('creates all expected tables', () async {
@@ -35,7 +35,7 @@ void main() {
     ]) {
       expect(names.contains(table), true, reason: 'Missing table: $table');
     }
-  });
+  }, timeout: Timeout(Duration(seconds: 5))); // ✅ Prevents hanging
 
   test('dropAll removes tables', () async {
     final db = await dbHelper.database;
@@ -46,13 +46,8 @@ void main() {
     );
     final names = result.map((e) => e['name'] as String).toSet();
 
-    // core sqlite tables will still exist; we just assert ours are gone
-    for (final table in [
-      'evaluators',
-      'participants',
-      'evaluations',
-    ]) {
+    for (final table in ['evaluators', 'participants', 'evaluations']) {
       expect(names.contains(table), false);
     }
-  });
+  }, timeout: Timeout(Duration(seconds: 5))); // ✅ Prevents hanging
 }

@@ -1,7 +1,8 @@
 import 'package:path/path.dart' as p;
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:segundo_cogni/core/logger/app_logger.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:meta/meta.dart';
+
 
 abstract class BaseDatabaseHelper {
   BaseDatabaseHelper(this.dbName);
@@ -9,13 +10,9 @@ abstract class BaseDatabaseHelper {
   final String dbName;
   Database? _db;
 
-  /// Override in subclasses if you bump schema.
   int get dbVersion => 1;
 
-  /// Implement schema creation.
   Future<void> onCreate(Database db, int version);
-
-  /// Implement if you have migrations.
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {}
 
   Future<Database> get database async {
@@ -27,8 +24,6 @@ abstract class BaseDatabaseHelper {
     return _db!;
   }
 
-  /// Default implementation: file-based DB using global `databaseFactory`.
-  /// Test helpers / special environments can override this.
   Future<Database> initDb() async {
     AppLogger.db('Initializing database: $dbName');
 
@@ -70,4 +65,13 @@ abstract class BaseDatabaseHelper {
     _db = null;
     AppLogger.db('Database deleted: $dbName');
   }
+
+  @protected
+  Database? get dbInstance => _db;
+
+  @protected
+  void setDbInstance(Database db) {
+    _db = db;
+  }
+
 }

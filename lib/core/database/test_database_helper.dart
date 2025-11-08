@@ -11,26 +11,33 @@ class TestDatabaseHelper extends BaseDatabaseHelper {
 
   @override
   Future<Database> initDb() async {
-    // Configure sqflite for FFI (needed in tests)
+    if (dbInstance != null && dbInstance!.isOpen) {
+      AppLogger.db('✅ Test DB already initialized.');
+      return dbInstance!;
+    }
+
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
 
-    AppLogger.db('Creating in-memory test database...');
+    AppLogger.db('🛠️ Creating in-memory test database...');
 
     final db = await databaseFactory.openDatabase(
       inMemoryDatabasePath,
       options: OpenDatabaseOptions(
         version: dbVersion,
         onCreate: (db, version) async {
-          AppLogger.db('Creating test schema...');
+          AppLogger.db('📦 Creating test schema...');
           await onCreate(db, version);
         },
         onUpgrade: (db, oldV, newV) async {
-          AppLogger.db('Upgrading test DB $oldV → $newV (recreating schema)');
+          AppLogger.db('🔄 Upgrading test DB $oldV → $newV (recreating schema)');
           await onUpgrade(db, oldV, newV);
         },
       ),
     );
+
+    // Use protected setter to store the opened DB
+    setDbInstance(db);
 
     return db;
   }
@@ -42,7 +49,6 @@ class TestDatabaseHelper extends BaseDatabaseHelper {
 
   @override
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // For tests, simplest is: rebuild everything
     await DatabaseSchema.dropAll(db);
     await DatabaseSchema.createAll(db);
   }
