@@ -1,7 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/logger/app_logger.dart';
-import '../../../providers/auth_providers.dart';
-import '../../evaluator/data/evaluator_model.dart';
 import '../domain/auth_repository.dart';
 import '../../../providers/providers.dart';
 
