@@ -1,44 +1,26 @@
-import 'package:segundo_cogni/core/constants/database_constants.dart';
-import 'package:segundo_cogni/core/database/base_database_helper.dart';
-import 'package:segundo_cogni/core/logger/app_logger.dart';
-import 'package:segundo_cogni/features/participant/domain/participant_entity.dart';
-import 'package:sqflite_common/sqlite_api.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:segundo_cogni/features/participant/data/participant_local_datasource.dart';
+import 'package:segundo_cogni/core/database/test_database_helper.dart';
 
-class ParticipantLocalDataSource {
-  final BaseDatabaseHelper dbHelper;
+void main() {
+  late ParticipantLocalDataSource dataSource;
 
-  ParticipantLocalDataSource({required this.dbHelper});
+  setUp(() async {
+    final dbHelper = TestDatabaseHelper.instance;
+    await dbHelper.initDb();
+    dataSource = ParticipantLocalDataSource(dbHelper: dbHelper);
+  });
 
-  Future<Database> get _db async => dbHelper.database;
+  test('insert and retrieve participant', () async {
+    final db = await TestDatabaseHelper.instance.database;
 
-  Future<int?> insertParticipant(
-      DatabaseExecutor txn,
-      Map<String, dynamic> data,
-      ) async {
-    AppLogger.db('Inserting participant: ${data['name']}');
-    try {
-      final id = await txn.insert(Tables.participants, data);
-      AppLogger.db('Inserted participant with ID=$id');
-      return id;
-    } catch (e, s) {
-      AppLogger.error('Error inserting participant', e, s);
-      return null;
-    }
-  }
+    final id = await dataSource.insertParticipant(db, {
+      'name': 'Test User',
+    });
 
-  Future<List<ParticipantEntity>> getAllParticipants() async {
-    final db = await _db;
-    final maps = await db.query(Tables.participants);
-    return maps.map(ParticipantEntity.fromMap).toList();
-  }
+    expect(id, isNotNull);
 
-  Future<ParticipantEntity?> getById(int id) async {
-    final db = await _db;
-    final result = await db.query(
-      Tables.participants,
-      where: 'participant_id = ?',
-      whereArgs: [id],
-    );
-    return result.isNotEmpty ? ParticipantEntity.fromMap(result.first) : null;
-  }
+    final participant = await dataSource.getById(id!);
+    expect(participant?.name, equals('Test User'));
+  });
 }
