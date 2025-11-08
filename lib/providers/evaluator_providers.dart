@@ -10,6 +10,6 @@ class CurrentUserNotifier extends Notifier<EvaluatorModel?> {
   @override
   EvaluatorModel? build() => null;
 
-  void setUser(EvaluatorModel user) => state = user;
+  void setUser(EvaluatorModel? user) => state = user;
   void clearUser() => state = null;
 }
