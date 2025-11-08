@@ -1,6 +1,11 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
 import '../../../core/logger/app_logger.dart';
+import '../../../core/utils/encryption_helper.dart';
+import '../application/evaluator_secure_service.dart';
 import 'evaluator_model.dart';
 import 'evaluator_constants.dart';
 
@@ -83,6 +88,22 @@ class EvaluatorLocalDataSource {
       AppLogger.error('[EVALUATOR] Error checking existsByEmail', e, s);
       return false;
     }
+  }
+
+
+
+  Future<EvaluatorModel?> login(String username, String password) async {
+    final encryptedUsername = EncryptionHelper.encryptText(username);
+    final hashedPassword = EvaluatorSecureService.hash(password);
+
+    final result = await _db.query(
+      Tables.evaluators,
+      where: '${EvaluatorFields.username} = ? AND ${EvaluatorFields.password} = ?',
+      whereArgs: [encryptedUsername, hashedPassword],
+      limit: 1,
+    );
+
+    return result.isNotEmpty ? EvaluatorModel.fromMap(result.first) : null;
   }
 
 }

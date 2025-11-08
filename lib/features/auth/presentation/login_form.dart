@@ -125,7 +125,35 @@ class LoginForm extends HookConsumerWidget {
                   : const Text("Sign in"),
               onPressed: loginState.isLoading ? null : onLoginPressed,
             ),
+            const SizedBox(height: 12),
+
+// 👇 New: Register link
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Don't have an account?",
+                  style: TextStyle(
+                    color: AppColors.softWhite,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                HyperlinkButton(
+                  onPressed: () {
+                    context.go('/register'); // must match your router
+                  },
+                  child: const Text(
+                    "Create one",
+                    style: TextStyle(
+                      color: AppColors.skyBlue,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
+
 
             // Info bar
             if (showInfoBar.value)

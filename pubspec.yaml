@@ -19,6 +19,8 @@ dependencies:
   path_provider:
   logger:
   flutter_dotenv:
+  encrypt:
+  crypto:
 
 dependency_overrides:
   math_expressions: 3.1.0
