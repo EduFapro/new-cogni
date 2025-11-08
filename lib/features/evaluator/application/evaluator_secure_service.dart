@@ -3,8 +3,8 @@ import 'package:crypto/crypto.dart';
 import '../../../core/utils/encryption_helper.dart';
 import '../data/evaluator_model.dart';
 
-/// Encryption and hashing only — no validation
 class EvaluatorSecureService {
+  /// Encrypts all fields including hashing the password
   static EvaluatorModel encrypt(EvaluatorModel model) {
     return model.copyWith(
       name: EncryptionHelper.encryptText(model.name),
@@ -14,10 +14,11 @@ class EvaluatorSecureService {
       specialty: EncryptionHelper.encryptText(model.specialty),
       cpfOrNif: EncryptionHelper.encryptText(model.cpfOrNif),
       username: EncryptionHelper.encryptText(model.username),
-      password: _hash(model.password),
+      password: hash(model.password),
     );
   }
 
+  /// Decrypts all fields except password (hash remains)
   static EvaluatorModel decrypt(EvaluatorModel model) {
     return model.copyWith(
       name: EncryptionHelper.decryptText(model.name),
@@ -30,7 +31,7 @@ class EvaluatorSecureService {
     );
   }
 
-  static String _hash(String input) {
+  static String hash(String input) {
     return sha256.convert(utf8.encode(input)).toString();
   }
 }

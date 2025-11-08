@@ -142,7 +142,7 @@ void main() {
   });
 
   test('❌ Login fails with wrong password', () async {
-    final evaluator = EvaluatorSecureService.processEvaluatorForStorage(
+    final evaluator = EvaluatorSecureService.encrypt(
       EvaluatorModel(
         evaluatorId: null,
         name: 'Jane',
@@ -163,7 +163,7 @@ void main() {
   });
 
   test('❌ Login fails with wrong username', () async {
-    final evaluator = EvaluatorSecureService.processEvaluatorForStorage(
+    final evaluator = EvaluatorSecureService.encrypt(
       EvaluatorModel(
         evaluatorId: null,
         name: 'Jane',

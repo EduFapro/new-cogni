@@ -5,7 +5,6 @@ import '../../core/logger/app_logger.dart';
 import '../evaluator/data/evaluator_model.dart';
 import '../../providers/providers.dart';
 import '../participant/domain/participant_entity.dart';
-import '../participant/presentation/create_participant_evaluation_provider.dart';
 
 class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});

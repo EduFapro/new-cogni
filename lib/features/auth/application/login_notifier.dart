@@ -10,7 +10,7 @@ class LoginNotifier extends AsyncNotifier<bool> {
 
   @override
   Future<bool> build() async {
-    _repository = ref.read(authRepositoryProvider);
+    _repository = await ref.read(authRepositoryProvider.future);
     return false;
   }
 

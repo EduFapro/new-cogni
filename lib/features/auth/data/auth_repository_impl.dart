@@ -31,7 +31,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<void> saveCurrentUser(EvaluatorModel user) async {
     final file = await _getUserFile();
-    final encrypted = EvaluatorSecureService.processEvaluatorForStorage(user);
+    final encrypted = EvaluatorSecureService.encrypt(user);
     final content = jsonEncode(encrypted.toMap());
     await file.writeAsString(content);
     AppLogger.db('Saved current user to file: ${file.path}');
@@ -53,7 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final content = await file.readAsString();
       final map = jsonDecode(content);
       AppLogger.db('Loaded cached user from file');
-      return EvaluatorSecureService.decryptEvaluator(EvaluatorModel.fromMap(map));
+      return EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(map));
     } catch (e, s) {
       AppLogger.error('Failed to read cached user file', e, s);
       return null;
