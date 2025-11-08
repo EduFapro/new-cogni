@@ -8,15 +8,17 @@ import '../../features/evaluator/data/evaluator_local_datasource.dart';
 import '../../seeders/seed_runner.dart';
 import '../auth/data/auth_local_datasource.dart';
 import '../auth/data/auth_repository_impl.dart';
-import '../../providers/providers.dart'; // ✅ This is where currentUserProvider lives
+import '../../providers/providers.dart';
 
 class SplashScreen extends HookConsumerWidget {
   const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Initialize app safely after the first frame
-    Future.microtask(() => _initializeApp(context, ref));
+    Future.microtask(() async {
+      if (!context.mounted) return; // 🔐 Ensure still mounted before async logic
+      await _initializeApp(context, ref);
+    });
 
     return NavigationView(
       content: ScaffoldPage(
@@ -44,35 +46,33 @@ class SplashScreen extends HookConsumerWidget {
 
       final db = await DatabaseHelper.instance.database;
 
-      // Try to restore cached session
       final evaluatorDataSource = EvaluatorLocalDataSource(db);
       final auth = AuthLocalDataSource(db);
       final repository = AuthRepositoryImpl(auth);
 
       final currentUser = await repository.fetchCurrentUserOrNull();
 
+      if (!context.mounted) return; // ✅ Prevent context usage after unmount
+
       if (currentUser != null) {
         AppLogger.seed('[SPLASH] Auto-login success: ${currentUser.email}');
         ref.read(currentUserProvider.notifier).setUser(currentUser);
-        if (context.mounted) {
-          context.go('/home');
-        }
+        context.go('/home');
         return;
       }
 
       final anyEvaluator = await evaluatorDataSource.getFirstEvaluator();
 
+      if (!context.mounted) return;
+
       if (anyEvaluator != null) {
         AppLogger.seed('[SPLASH] Evaluator exists → go to login');
-        if (context.mounted) {
-          context.go('/login');
-        }
+        context.go('/login');
       } else {
         AppLogger.seed('[SPLASH] No evaluator found → go to registration');
-        if (context.mounted) {
-          context.go('/register');
-        }}}
-    catch (e, s) {
+        context.go('/register');
+      }
+    } catch (e, s) {
       AppLogger.error('[SPLASH] Error during initialization', e, s);
       if (context.mounted) {
         _showErrorDialog(context, e.toString());

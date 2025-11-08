@@ -70,7 +70,7 @@ abstract class BaseDatabaseHelper {
   Database? get dbInstance => _db;
 
   @protected
-  void setDbInstance(Database db) {
+  void setDbInstance(Database? db) {
     _db = db;
   }
 

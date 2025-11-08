@@ -45,6 +45,13 @@ class TestDatabaseHelper extends BaseDatabaseHelper {
   Future<void> onCreate(Database db, int version) async {
     await DatabaseSchema.createAll(db);
   }
+  static Future<void> delete() async {
+    if (instance.dbInstance != null && instance.dbInstance!.isOpen) {
+      await instance.dbInstance!.close();
+      instance.setDbInstance(null);
+      AppLogger.db('🧹 In-memory test DB reset.');
+    }
+  }
 
   @override
   Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {

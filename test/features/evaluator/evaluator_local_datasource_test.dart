@@ -11,10 +11,12 @@ void main() {
   late EvaluatorLocalDataSource ds;
 
   setUp(() async {
+    await TestDatabaseHelper.delete(); // ✅ clean start
     dbHelper = TestDatabaseHelper.instance;
     await dbHelper.database;
     ds = EvaluatorLocalDataSource(await dbHelper.database);
   });
+
 
   tearDown(() async {
     await dbHelper.close();

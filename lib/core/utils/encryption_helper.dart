@@ -1,17 +1,32 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart' as encrypt;
 
 class EncryptionHelper {
-  static final _key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1'); // Must be 32 chars
-  static final _iv = encrypt.IV.fromLength(16);
-  static final _encrypter = encrypt.Encrypter(encrypt.AES(_key));
+  static final _key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1');
 
   static String encryptText(String plainText) {
     if (plainText.isEmpty) return '';
-    return _encrypter.encrypt(plainText, iv: _iv).base64;
+    final iv = encrypt.IV.fromSecureRandom(16);
+    final encrypter = encrypt.Encrypter(encrypt.AES(_key));
+    final encrypted = encrypter.encrypt(plainText, iv: iv);
+    final combined = Uint8List.fromList(iv.bytes + encrypted.bytes);
+    return base64Encode(combined);
   }
 
   static String decryptText(String encryptedText) {
     if (encryptedText.isEmpty) return '';
-    return _encrypter.decrypt64(encryptedText, iv: _iv);
+    try {
+      final raw = base64Decode(encryptedText);
+      final iv = encrypt.IV(Uint8List.fromList(raw.sublist(0, 16)));
+      final ciphertext = raw.sublist(16);
+      final encrypter = encrypt.Encrypter(encrypt.AES(_key));
+      return encrypter.decrypt(
+        encrypt.Encrypted(Uint8List.fromList(ciphertext)),
+        iv: iv,
+      );
+    } catch (e) {
+      return '[DECRYPTION_FAILED]';
+    }
   }
 }
