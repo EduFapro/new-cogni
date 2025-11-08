@@ -14,4 +14,5 @@ class Tables {
   static const moduleInstances = "module_instances";
   static const taskPrompts = "task_prompts";
   static const recordings = "recordings";
+  static const currentUser = "current_user";
 }

@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/logger/app_logger.dart';
+import '../../../core/utils/error_parser.dart';
 import '../../../providers/auth_providers.dart';
 
 class LoginNotifier extends AsyncNotifier<bool> {
@@ -31,7 +32,9 @@ class LoginNotifier extends AsyncNotifier<bool> {
       }
 
     } catch (e, st) {
-      state = AsyncError(e, st);
+      AppLogger.error('Login exception',  e,  st);
+      final userFriendly = parseLoginError(e);
+      state = AsyncError(userFriendly, st);
     } finally {
       AppLogger.info('Login attempt finished for $email');
     }

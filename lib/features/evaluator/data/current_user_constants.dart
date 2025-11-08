@@ -6,7 +6,7 @@ CREATE TABLE current_user (
   email TEXT NOT NULL,
   birth_date TEXT,
   specialty TEXT,
-  cpf_or_nif TEXT,
+  cpf TEXT,
   username TEXT,
   password TEXT,
   first_login INTEGER NOT NULL DEFAULT 1,

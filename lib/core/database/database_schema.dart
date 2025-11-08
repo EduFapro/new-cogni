@@ -1,4 +1,5 @@
 import 'package:sqflite_common/sqlite_api.dart';
+import '../../features/evaluator/data/current_user_constants.dart';
 import '../constants/database_constants.dart';
 import 'package:segundo_cogni/core/logger/app_logger.dart';
 
@@ -24,6 +25,7 @@ class DatabaseSchema {
     scriptCreateTableModuleInstances,
     scriptCreateTableTaskInstances,
     scriptCreateTableRecordings,
+    scriptCreateTableCurrentUser
   ];
 
   static final List<String> _tableNames = [
@@ -36,6 +38,7 @@ class DatabaseSchema {
     Tables.moduleInstances,
     Tables.taskInstances,
     Tables.recordings,
+    Tables.currentUser
   ];
 
   /// Creates all tables and verifies that they were created successfully.

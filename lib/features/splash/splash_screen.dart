@@ -54,21 +54,25 @@ class SplashScreen extends HookConsumerWidget {
       if (currentUser != null) {
         AppLogger.seed('[SPLASH] Auto-login success: ${currentUser.email}');
         ref.read(currentUserProvider.notifier).setUser(currentUser);
-        context.go('/home');
+        if (context.mounted) {
+          context.go('/home');
+        }
         return;
       }
 
-      // If no session: check if there's any evaluator in DB
       final anyEvaluator = await evaluatorDataSource.getFirstEvaluator();
 
       if (anyEvaluator != null) {
         AppLogger.seed('[SPLASH] Evaluator exists → go to login');
-        context.go('/login');
+        if (context.mounted) {
+          context.go('/login');
+        }
       } else {
         AppLogger.seed('[SPLASH] No evaluator found → go to registration');
-        context.go('/register');
-      }
-    } catch (e, s) {
+        if (context.mounted) {
+          context.go('/register');
+        }}}
+    catch (e, s) {
       AppLogger.error('[SPLASH] Error during initialization', e, s);
       if (context.mounted) {
         _showErrorDialog(context, e.toString());
