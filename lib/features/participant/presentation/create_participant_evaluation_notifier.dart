@@ -1,11 +1,8 @@
 import 'dart:async';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/constants/enums/person_enums.dart';
-import '../../../core/database/base_database_helper.dart';
-import '../../../core/database/prod_database_helper.dart';
 import '../../../core/logger/app_logger.dart';
+import '../../../core/constants/enums/person_enums.dart';
 import '../../evaluation/data/evaluation_local_datasource.dart';
 import '../../evaluation/domain/usecases/create_participant_evaluation_usecase.dart';
 import '../../module/data/module_local_datasource.dart';
@@ -17,21 +14,15 @@ import '../../task_instance/data/task_instance_repository_impl.dart';
 import '../data/participant_local_datasource.dart';
 import '../domain/participant_entity.dart';
 
-final dbHelperProvider = Provider<BaseDatabaseHelper>((ref) {
-  return ProdDatabaseHelper.instance;
-});
+import '../../../providers/participant_providers.dart';
 
-final createParticipantEvaluationProvider =
-AsyncNotifierProvider<CreateParticipantEvaluationNotifier, ParticipantEntity?>(
-  CreateParticipantEvaluationNotifier.new,
-);
-
-class CreateParticipantEvaluationNotifier extends AsyncNotifier<ParticipantEntity?> {
+class CreateParticipantEvaluationNotifier
+    extends AsyncNotifier<ParticipantEntity?> {
   late final CreateParticipantEvaluationUseCase _useCase;
 
   @override
   FutureOr<ParticipantEntity?> build() async {
-    final dbHelper = ref.read(dbHelperProvider);
+    final dbHelper = ref.read(participantDbHelperProvider);
     final db = await dbHelper.database;
 
     _useCase = CreateParticipantEvaluationUseCase(

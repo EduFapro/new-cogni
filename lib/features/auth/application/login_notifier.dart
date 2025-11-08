@@ -1,19 +1,18 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../core/database_helper.dart';
 import '../../../core/logger/app_logger.dart';
-import '../../../providers/providers.dart';
-import '../data/auth_local_datasource.dart';
-import '../data/auth_repository_impl.dart';
+import '../../../providers/auth_providers.dart';
+import '../../evaluator/data/evaluator_model.dart';
 import '../domain/auth_repository.dart';
-
-final loginProvider =
-AsyncNotifierProvider<LoginNotifier, bool>(LoginNotifier.new);
+import '../../../providers/providers.dart';
 
 class LoginNotifier extends AsyncNotifier<bool> {
-  AuthRepository? _repository;
+  late final AuthRepository _repository;
 
   @override
-  Future<bool> build() async => false;
+  Future<bool> build() async {
+    _repository = ref.read(authRepositoryProvider);
+    return false;
+  }
 
   Future<void> login(String email, String password) async {
     state = const AsyncLoading();
@@ -25,16 +24,13 @@ class LoginNotifier extends AsyncNotifier<bool> {
     }
 
     try {
-      _repository ??= await _initAuthRepository();
-      final user = await _repository!.login(email, password);
+      final user = await _repository.login(email, password);
 
       if (user == null) {
         state = AsyncError('Credenciais inválidas', StackTrace.current);
       } else {
-        await _repository!.saveCurrentUserToDB(user);
-        // Set in-memory current user
+        await _repository.saveCurrentUserToDB(user);
         ref.read(currentUserProvider.notifier).setUser(user);
-
         state = const AsyncData(true);
       }
 
@@ -43,10 +39,5 @@ class LoginNotifier extends AsyncNotifier<bool> {
     } finally {
       AppLogger.info('Login attempt finished for $email');
     }
-  }
-
-  Future<AuthRepository> _initAuthRepository() async {
-    final db = await DatabaseHelper.instance.database;
-    return AuthRepositoryImpl(AuthLocalDataSource(db));
   }
 }
