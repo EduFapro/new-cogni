@@ -84,7 +84,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
             await Future.delayed(const Duration(seconds: 2));
             if (context.mounted) {
               AppLogger.nav('Navigating to /home after registration');
-              context.go('/home');
+              context.go('/login');
             }
           }
         });

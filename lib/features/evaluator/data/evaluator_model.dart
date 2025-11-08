@@ -1,4 +1,5 @@
 import 'package:segundo_cogni/features/evaluator/domain/evaluator_registration_data.dart';
+import '../../../core/utils/encryption_helper.dart';
 import '../domain/evaluator_entity.dart';
 import 'evaluator_constants.dart';
 
@@ -82,6 +83,20 @@ class EvaluatorModel extends EvaluatorEntity {
     );
   }
 
+  EvaluatorModel encrypted() {
+    return EvaluatorModel(
+      evaluatorId: evaluatorId,
+      name: EncryptionHelper.encryptText(name),
+      surname: EncryptionHelper.encryptText(surname),
+      email: EncryptionHelper.encryptText(email),
+      birthDate: EncryptionHelper.encryptText(birthDate),
+      specialty: EncryptionHelper.encryptText(specialty),
+      cpfOrNif: EncryptionHelper.encryptText(cpfOrNif),
+      username: EncryptionHelper.encryptText(username),
+      password: password, // already hashed
+      firstLogin: firstLogin,
+    );
+  }
 
 
 }

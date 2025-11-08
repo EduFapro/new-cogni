@@ -87,4 +87,14 @@ class AuthRepositoryImpl implements AuthRepository {
     final dir = await getApplicationSupportDirectory();
     return File('${dir.path}/current_user.json');
   }
+
+  @override
+  Future<void> saveCurrentUserToDB(EvaluatorModel user) async {
+    await _local.saveCurrentUser(user);
+  }
+  @override
+  Future<void> clearCurrentUserFromDB() async {
+    await _local.clearCurrentUser();
+  }
+
 }

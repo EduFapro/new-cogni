@@ -7,6 +7,7 @@ import '../../core/database_helper.dart';
 import '../../features/evaluator/data/evaluator_local_datasource.dart';
 import '../../features/evaluator/data/evaluator_model.dart';
 import '../../seeders/seed_runner.dart';
+import '../auth/data/auth_local_datasource.dart';
 
 class SplashScreen extends HookConsumerWidget {
   const SplashScreen({super.key});
@@ -41,16 +42,24 @@ class SplashScreen extends HookConsumerWidget {
       await SeedRunner().run();
 
       final db = await DatabaseHelper.instance.database;
-      final ds = EvaluatorLocalDataSource(db);
+      final auth = AuthLocalDataSource(db);
+      final currentUser = await auth.getCachedUser();
 
-      final EvaluatorModel? evaluator = await ds.getFirstEvaluator();
+      if (currentUser != null) {
+        AppLogger.seed('[SPLASH] Auto-login: current_user found → ${currentUser.email}');
+        context.go('/home');
+        return;
+      }
+
+      // Fallback: is this the first run?
+      final evaluatorDS = EvaluatorLocalDataSource(db);
+      final EvaluatorModel? evaluator = await evaluatorDS.getFirstEvaluator();
 
       if (evaluator != null) {
-        AppLogger.seed('[SPLASH] Found evaluator: ${evaluator.email}');
-        await Future.delayed(const Duration(milliseconds: 800));
-        if (context.mounted) context.go('/login');
+        AppLogger.seed('[SPLASH] Evaluator found, but no active session → go to login');
+        context.go('/login');
       } else {
-        AppLogger.seed('[SPLASH] No evaluator found — going to registration.');
+        AppLogger.seed('[SPLASH] No evaluator found → go to registration');
         context.go('/register');
       }
     } catch (e, s) {
@@ -60,6 +69,7 @@ class SplashScreen extends HookConsumerWidget {
       }
     }
   }
+
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(

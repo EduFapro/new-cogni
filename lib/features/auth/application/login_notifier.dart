@@ -31,9 +31,13 @@ class LoginNotifier extends AsyncNotifier<bool> {
       if (user == null) {
         state = AsyncError('Credenciais inválidas', StackTrace.current);
       } else {
+        await _repository!.saveCurrentUserToDB(user);
+        // Set in-memory current user
         ref.read(currentUserProvider.notifier).setUser(user);
+
         state = const AsyncData(true);
       }
+
     } catch (e, st) {
       state = AsyncError(e, st);
     } finally {
