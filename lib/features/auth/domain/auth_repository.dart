@@ -9,4 +9,5 @@ abstract class AuthRepository {
   Future<EvaluatorModel?> fetchCurrentUserOrNull();
   Future<void> saveCurrentUserToDB(EvaluatorModel user);
   Future<void> clearCurrentUserFromDB();
+  Future<void> clearCurrentUser();
 }
