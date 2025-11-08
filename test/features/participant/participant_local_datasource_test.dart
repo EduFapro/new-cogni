@@ -16,7 +16,12 @@ void main() {
 
     final id = await dataSource.insertParticipant(db, {
       'name': 'Test User',
+      'surname': 'User',
+      'birth_date': '2000-01-01',       // must match schema
+      'sex': 1,                         // assuming numeric enum value
+      'education_level': 3,            // assuming numeric enum value
     });
+
 
     expect(id, isNotNull);
 

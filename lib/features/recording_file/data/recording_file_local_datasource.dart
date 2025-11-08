@@ -1,19 +1,15 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../../core/constants/database_constants.dart';
+import '../../../core/database/base_database_helper.dart';
 import '../../../core/database_helper.dart';
 import '../../recording_file/data/recording_file_constants.dart';
 import '../../recording_file/data/recording_file_model.dart';
 import '../../../core/logger/app_logger.dart';
 
 class RecordingFileLocalDataSource {
-  static final RecordingFileLocalDataSource _instance =
-  RecordingFileLocalDataSource._internal();
+  final BaseDatabaseHelper dbHelper;
 
-  factory RecordingFileLocalDataSource() => _instance;
-
-  RecordingFileLocalDataSource._internal();
-
-  final dbHelper = DatabaseHelper.instance;
+  RecordingFileLocalDataSource({required this.dbHelper});
 
   Future<Database> get _db async => dbHelper.database;
 
