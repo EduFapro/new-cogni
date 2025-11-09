@@ -7,8 +7,6 @@ import 'prompts/prompts_seed.dart';
 import 'evaluators/evaluator_seed.dart';
 
 class SeedRunner {
-  /// Runs all database seeders in a controlled order.
-  /// You can call this without parameters — it will automatically open the DB.
   Future<void> run({Database? db}) async {
     AppLogger.seed('Starting database seeding...');
     final database = db ?? await DatabaseHelper.instance.database;
@@ -17,7 +15,7 @@ class SeedRunner {
       await seedModules(database);
       await seedTasks(database);
       await seedPrompts(database);
-      await seedDummyEvaluator();
+      await seedDummyEvaluator(db: database);
 
       AppLogger.seed('✅ Database seeding complete.');
     } catch (e, s) {
