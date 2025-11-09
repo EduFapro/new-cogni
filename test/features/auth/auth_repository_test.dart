@@ -24,8 +24,7 @@ void main() {
   );
 
   Future<void> seedUser() async {
-    final encrypted = dummyUser.encryptedAndHashed();
-    await authDataSource.saveCurrentUser(encrypted);
+    await authDataSource.saveCurrentUser(dummyUser);
   }
 
   setUp(() async {
@@ -69,19 +68,16 @@ void main() {
     expect(user, isNull);
   });
 
-  test(' Auto-login returns correct decrypted user from DB', () async {
+  test('🚀 Auto-login returns correct decrypted user from DB', () async {
     await seedUser();
+    final user = await authRepository.fetchCurrentUserOrNull();
 
-    final fetched = await authRepository.fetchCurrentUserOrNull();
-    expect(fetched, isNotNull);
-
-    // Decrypt expected user for comparison
-    final expected = EvaluatorSecureService.decrypt(dummyUser.encryptedAndHashed());
-
-    expect(fetched!.email, expected.email);
-    expect(fetched.name, expected.name);
-    expect(fetched.username, expected.username);
+    expect(user, isNotNull);
+    expect(user!.email, dummyUser.email);
+    expect(user.name, dummyUser.name);
+    expect(user.username, dummyUser.username);
   });
+
 
 
 }
