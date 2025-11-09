@@ -42,18 +42,14 @@ class CreateParticipantEvaluationNotifier
     return null;
   }
 
-  Future<void> createParticipantWithEvaluation({required int evaluatorId}) async {
+  Future<void> createParticipantWithEvaluation({
+    required ParticipantEntity participant,
+    required int evaluatorId,
+  }) async {
     state = const AsyncLoading();
     AppLogger.info('[PROVIDER] Creating participant for evaluator=$evaluatorId');
-    try {
-      final participant = ParticipantEntity(
-        name: 'Novo',
-        surname: 'Participante',
-        birthDate: DateTime(1990, 1, 1),
-        sex: Sex.male,
-        educationLevel: EducationLevel.completeCollege,
-      );
 
+    try {
       final created = await _useCase.execute(
         participant: participant,
         evaluatorId: evaluatorId,
@@ -66,4 +62,5 @@ class CreateParticipantEvaluationNotifier
       state = AsyncError(e, s);
     }
   }
+
 }
