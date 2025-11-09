@@ -1,26 +1,32 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 import '../core/logger/app_logger.dart';
-import '../core/database_helper.dart';
+
+import 'evaluators/evaluator_seed.dart';
 import 'modules/modules_seeds.dart';
 import 'tasks/task_seeds.dart';
-import 'prompts/prompts_seed.dart';
-import 'evaluators/evaluator_seed.dart';
 
 class SeedRunner {
-  Future<void> run({Database? db}) async {
-    AppLogger.seed('Starting database seeding...');
-    final database = db ?? await DatabaseHelper.instance.database;
+  const SeedRunner();
+
+  /// Run all seeders using the provided [db] (Database or Transaction).
+  ///
+  /// The caller is responsible for wrapping this in a transaction if atomicity
+  /// is desired. All seeding steps use this same DatabaseExecutor.
+  Future<void> run({required DatabaseExecutor db}) async {
+    AppLogger.seed('🚀 Starting seed runner with shared executor...');
 
     try {
-      await seedModules(database);
-      await seedTasks(database);
-      await seedPrompts(database);
-      await seedDummyEvaluator(db: database);
+      // Order matters if there are FKs:
+      await seedModules(db);
+      await seedTasks(db);
+      await seedTaskPrompts(db);
+      await seedDummyEvaluator(db);
+      // await seedWhateverElse(db);
 
-      AppLogger.seed('✅ Database seeding complete.');
+      AppLogger.seed('✅ Seed runner completed successfully.');
     } catch (e, s) {
-      AppLogger.error('❌ Database seeding failed', e, s);
-      rethrow;
+      AppLogger.error('❌ Seed runner failed', e, s);
+      rethrow; // Let the caller/transaction handle rollback.
     }
   }
 }

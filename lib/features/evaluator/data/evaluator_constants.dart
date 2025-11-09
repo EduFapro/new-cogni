@@ -26,6 +26,9 @@ class EvaluatorFields {
     firstLogin,
     isAdmin,
   ];
+
+  // Alias so tests (and everyone else) can use .values consistently.
+  static const values = all;
 }
 
 const scriptCreateTableEvaluators = '''

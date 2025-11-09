@@ -8,17 +8,9 @@ import 'evaluator_model.dart';
 import 'evaluator_constants.dart';
 
 class EvaluatorLocalDataSource {
-  final Database _db;
+  final DatabaseExecutor _db;
   EvaluatorLocalDataSource(this._db);
 
-  /// Fetch all evaluators
-  Future<List<EvaluatorModel>> getAll() async {
-    AppLogger.db('[EVALUATOR] Fetching all evaluators');
-    final result = await _db.query(Tables.evaluators);
-    return result.map(EvaluatorModel.fromMap).toList();
-  }
-
-  /// Insert evaluator (replace on conflict)
   Future<void> insert(EvaluatorModel evaluator) async {
     AppLogger.db('[EVALUATOR] Inserting evaluator: ${evaluator.email}');
     await _db.insert(
@@ -26,6 +18,13 @@ class EvaluatorLocalDataSource {
       evaluator.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  /// Fetch all evaluators
+  Future<List<EvaluatorModel>> getAll() async {
+    AppLogger.db('[EVALUATOR] Fetching all evaluators');
+    final result = await _db.query(Tables.evaluators);
+    return result.map(EvaluatorModel.fromMap).toList();
   }
 
   /// Get evaluator by ID

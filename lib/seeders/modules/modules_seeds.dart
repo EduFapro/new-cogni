@@ -60,31 +60,20 @@ extension ModuleEntityMapper on ModuleEntity {
 
 /// --- seeder ---
 
-Future<void> seedModules(Database db) async {
+Future<void> seedModules(DatabaseExecutor db) async {
   AppLogger.seed('[MODULES] Seeding modules...');
 
-  for (final module in modulesList) {
-    final existing = await db.query(
+  for (final module in modulesSeedData) {
+    await db.insert(
       Tables.modules,
-      where: '${ModuleFields.id} = ?',
-      whereArgs: [module.moduleID],
+      module,
+      conflictAlgorithm: ConflictAlgorithm.ignore,
     );
-
-    if (existing.isEmpty) {
-      await db.insert(Tables.modules, module.toModel().toMap());
-      AppLogger.seed(
-        '[MODULES] Seeded module: ${module.title} (id=${module.moduleID})',
-      );
-    } else {
-      AppLogger.debug(
-        '[MODULES] Skipped existing module: ${module.title} (id=${module.moduleID})',
-      );
-    }
+    AppLogger.seed('[MODULES] Seeded module: ${module['name']} (id=${module['module_id']})');
   }
 
   AppLogger.seed('[MODULES] Done seeding modules.');
 }
-
 void printModules() {
   for (var i = 0; i < modulesList.length; i++) {
     AppLogger.seed('Module ${modulesList[i].moduleID}: ${modulesList[i].title}');
