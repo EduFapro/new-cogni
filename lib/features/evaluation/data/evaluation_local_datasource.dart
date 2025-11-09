@@ -3,6 +3,7 @@ import '../../../core/constants/database_constants.dart';
 import '../../../core/database/base_database_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../domain/evaluation_entity.dart';
+import '../data/evaluation_constants.dart';
 
 class EvaluationLocalDataSource {
   final BaseDatabaseHelper dbHelper;
@@ -12,7 +13,7 @@ class EvaluationLocalDataSource {
   Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insertEvaluation(DatabaseExecutor txn, Map<String, dynamic> data) async {
-    AppLogger.db('Inserting evaluation for participantId=${data['participant_id']}');
+    AppLogger.db('Inserting evaluation for participantId=${data[EvaluationFields.participantId]}');
     try {
       final id = await txn.insert(Tables.evaluations, data);
       AppLogger.db('Inserted evaluation with ID=$id');
@@ -32,14 +33,14 @@ class EvaluationLocalDataSource {
   Future<EvaluationEntity?> getById(Database db, int id) async {
     final maps = await db.query(
       Tables.evaluations,
-      where: 'id = ?',
+      where: '${EvaluationFields.id} = ?',
       whereArgs: [id],
+      limit: 1,
     );
 
     if (maps.isNotEmpty) {
       return EvaluationEntity.fromMap(maps.first);
-    } else {
-      return null;
     }
+    return null;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:segundo_cogni/core/constants/database_constants.dart';
 import 'package:segundo_cogni/core/database/test_database_helper.dart';
+import 'package:segundo_cogni/features/module/data/module_constants.dart';
 import 'package:segundo_cogni/seeders/modules/modules_seeds.dart';
 
 void main() {
@@ -57,7 +58,9 @@ void main() {
       await seedModules(db);
       final rows = await db.query(Tables.modules);
 
-      final ids = rows.map((m) => m['id'] as int).toList();
+      final ids = rows
+          .map((m) => m[ModuleFields.id] as int)
+          .toList();
       final uniqueIds = ids.toSet();
 
       expect(
