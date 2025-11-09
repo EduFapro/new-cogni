@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -15,14 +16,17 @@ class HomeScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
 
+    // 👇 keep track of the selected menu item
+    final selectedIndex = useState(0);
+
     return NavigationView(
       appBar: const NavigationAppBar(
         title: Text('CogniVoice Home'),
       ),
       pane: NavigationPane(
-        selected: 0,
+        selected: selectedIndex.value,
         onChanged: (index) {
-          // Optional: Add logic for selected index
+          selectedIndex.value = index;
         },
         displayMode: PaneDisplayMode.auto,
         items: [
@@ -42,30 +46,27 @@ class HomeScreen extends HookConsumerWidget {
             body: const CreatePatientScreen(),
           ),
         ],
-
         footerItems: [
           PaneItemSeparator(),
           PaneItem(
             icon: const Icon(FluentIcons.sign_out),
             title: const Text('Sair'),
             onTap: () async {
-              final repository = AuthRepositoryImpl(AuthLocalDataSource(
-                await DatabaseHelper.instance.database,
-              ));
-
-              await repository.signOut(); // 🔥 clears DB
-
+              final repository = AuthRepositoryImpl(
+                AuthLocalDataSource(await DatabaseHelper.instance.database),
+              );
+              await repository.signOut();
               ref.read(currentUserProvider.notifier).setUser(null);
               if (context.mounted) context.go('/login');
             },
-
-            body: const SizedBox.shrink(), // Required, can't be null
+            body: const SizedBox.shrink(),
           ),
         ],
       ),
     );
   }
 }
+
 
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});

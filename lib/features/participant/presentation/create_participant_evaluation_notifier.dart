@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/logger/app_logger.dart';
 import '../../../core/constants/enums/person_enums.dart';
+import '../../../providers/participant_providers.dart';
 import '../../evaluation/data/evaluation_local_datasource.dart';
 import '../../evaluation/domain/usecases/create_participant_evaluation_usecase.dart';
 import '../../module/data/module_local_datasource.dart';
@@ -14,8 +15,6 @@ import '../../task_instance/data/task_instance_repository_impl.dart';
 import '../data/participant_local_datasource.dart';
 import '../domain/participant_entity.dart';
 
-import '../../../providers/participant_providers.dart';
-
 class CreateParticipantEvaluationNotifier
     extends AsyncNotifier<ParticipantEntity?> {
   late final CreateParticipantEvaluationUseCase _useCase;
@@ -24,6 +23,9 @@ class CreateParticipantEvaluationNotifier
   FutureOr<ParticipantEntity?> build() async {
     final dbHelper = ref.read(participantDbHelperProvider);
     final db = await dbHelper.database;
+
+    AppLogger.info(
+        '[PROVIDER] Initializing CreateParticipantEvaluationUseCase in CreateParticipantEvaluationNotifier');
 
     _useCase = CreateParticipantEvaluationUseCase(
       participantDataSource: ParticipantLocalDataSource(dbHelper: dbHelper),
@@ -47,7 +49,9 @@ class CreateParticipantEvaluationNotifier
     required int evaluatorId,
   }) async {
     state = const AsyncLoading();
-    AppLogger.info('[PROVIDER] Creating participant for evaluator=$evaluatorId');
+    AppLogger.info(
+      '[PROVIDER] Creating participant with evaluation for evaluatorId=$evaluatorId',
+    );
 
     try {
       final created = await _useCase.execute(
@@ -55,12 +59,17 @@ class CreateParticipantEvaluationNotifier
         evaluatorId: evaluatorId,
       );
 
-      AppLogger.info('[PROVIDER] ✅ Participant + Evaluation created successfully');
+      AppLogger.info(
+        '[PROVIDER] ✅ Participant + Evaluation hierarchy created successfully (participantId=${created.participantID})',
+      );
       state = AsyncData(created);
     } catch (e, s) {
-      AppLogger.error('[PROVIDER] ❌ Failed to create participant', e, s);
+      AppLogger.error(
+        '[PROVIDER] ❌ Failed to create participant with evaluation',
+        e,
+        s,
+      );
       state = AsyncError(e, s);
     }
   }
-
 }

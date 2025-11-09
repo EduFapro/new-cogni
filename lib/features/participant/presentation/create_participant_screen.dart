@@ -1,5 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
-
+import '../../../core/logger/app_logger.dart';
 import 'create_participant_form.dart';
 
 class CreatePatientScreen extends StatelessWidget {
@@ -7,12 +7,12 @@ class CreatePatientScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppLogger.nav('Navigated to CreatePatientScreen');
     return ScaffoldPage.scrollable(
-      header: const PageHeader(title: Text('Criar Novo Paciente')),
-      children: const [
+      header: PageHeader(title: Text('Criar Novo Paciente')),
+      children: [
         ParticipantRegistrationForm(),
       ],
-
     );
   }
 }

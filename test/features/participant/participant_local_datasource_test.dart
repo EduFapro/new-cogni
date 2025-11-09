@@ -1,4 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:segundo_cogni/core/constants/enums/laterality_enums.dart';
+import 'package:segundo_cogni/core/logger/app_logger.dart';
+import 'package:segundo_cogni/features/participant/data/participant_constants.dart';
 import 'package:segundo_cogni/features/participant/data/participant_local_datasource.dart';
 import 'package:segundo_cogni/core/database/test_database_helper.dart';
 
@@ -15,14 +18,16 @@ void main() {
     final db = await TestDatabaseHelper.instance.database;
 
     final id = await dataSource.insertParticipant(db, {
-      'name': 'Test User',
-      'surname': 'User',
-      'birth_date': '2000-01-01',       // must match schema
-      'sex': 1,                         // assuming numeric enum value
-      'education_level': 3,            // assuming numeric enum value
+      ParticipantFields.name: 'Test User',
+      ParticipantFields.surname: 'User',
+      ParticipantFields.birthDate: '2000-01-01',       // must match schema
+      ParticipantFields.sex: 1,                         // assuming numeric enum value
+      ParticipantFields.educationLevel: 3,            // assuming numeric enum value
+      ParticipantFields.laterality: Laterality.ambidextrous,
     });
 
 
+    AppLogger.info('Test inserted participant with id=$id');
     expect(id, isNotNull);
 
     final participant = await dataSource.getById(id!);

@@ -1,3 +1,4 @@
+import '../../../core/logger/app_logger.dart';
 import '../domain/evaluation_entity.dart';
 import '../domain/evaluation_repository.dart';
 import 'evaluation_local_datasource.dart';
@@ -9,19 +10,30 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
 
   @override
   Future<void> insertEvaluation(EvaluationEntity evaluation) async {
+    AppLogger.db(
+      'EvaluationRepositoryImpl.insertEvaluation → participantId=${evaluation.participantID}, evaluatorId=${evaluation.evaluatorID}',
+    );
     final db = await local.dbHelper.database;
     await local.insertEvaluation(db, evaluation.toMap());
   }
 
   @override
   Future<List<EvaluationEntity>> getAllEvaluations() async {
+    AppLogger.db('EvaluationRepositoryImpl.getAllEvaluations → fetching');
     final db = await local.dbHelper.database;
-    return local.getAllEvaluations();
+    final list = await local.getAllEvaluations();
+    AppLogger.db('EvaluationRepositoryImpl.getAllEvaluations → fetched ${list.length} evaluations');
+    return list;
   }
 
   @override
   Future<EvaluationEntity?> getById(int id) async {
+    AppLogger.db('EvaluationRepositoryImpl.getById → id=$id');
     final db = await local.dbHelper.database;
-    return local.getById(db, id);
+    final evaluation = await local.getById(db, id);
+    if (evaluation == null) {
+      AppLogger.warning('EvaluationRepositoryImpl.getById → not found id=$id');
+    }
+    return evaluation;
   }
 }

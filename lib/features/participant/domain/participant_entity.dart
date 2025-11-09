@@ -39,8 +39,7 @@ class ParticipantEntity {
     ParticipantFields.surname: surname,
     ParticipantFields.birthDate: birthDate.toIso8601String(),
     ParticipantFields.sex: sex.numericValue,
-    ParticipantFields.educationLevel: educationLevel.numericValue,
-    ParticipantFields.laterality: laterality.numericValue, // 🔧 Add this
+    ParticipantFields.educationLevel: educationLevel.numericValue,// 🔧 Add this
   };
 
   ParticipantEntity copyWith({

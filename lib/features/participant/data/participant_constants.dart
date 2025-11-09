@@ -7,7 +7,7 @@ class ParticipantFields {
   static const educationLevel = "education_level";
   static const sex = "sex";
   static const birthDate = "birth_date";
-  static const laterality = "lateraity";
+  static const laterality = "laterality";
 
   static const all = [
     id,
@@ -27,7 +27,7 @@ CREATE TABLE ${Tables.participants} (
   ${ParticipantFields.surname} TEXT NOT NULL,
   ${ParticipantFields.educationLevel} INT CHECK(${ParticipantFields.educationLevel} BETWEEN 1 AND 7),
   ${ParticipantFields.sex} INT CHECK(${ParticipantFields.sex} IN (1, 2)),
-  ${ParticipantFields.birthDate} TIMESTAMP
-  ${ParticipantFields.laterality} TEXT NOT NULL,
+  ${ParticipantFields.birthDate} TIMESTAMP,
+  ${ParticipantFields.laterality} INT NOT NULL
 );
 ''';
