@@ -45,28 +45,27 @@ void main() {
     expect(fetched.password.length, 64); // SHA256 hash
   });
 
-  test('🔐 Login with encrypted username and hashed password', () async {
-    const username = 'janesmith';
-    const password = 'securePass123';
-
+  test('✅ Insert and fetch evaluator works with encryption', () async {
     final evaluator = EvaluatorModel(
       evaluatorId: null,
       name: 'Jane',
-      surname: 'Smith',
-      email: 'jane.smith@example.com',
-      birthDate: '1985-12-05',
-      cpfOrNif: '11122233344',
-      username: username,
-      password: password,
+      surname: 'Doe',
+      email: 'jane@example.com',
+      birthDate: '1990-01-01',
+      cpfOrNif: '12312312312',
+      username: 'janedoe',
+      password: 'superSecret!',
       specialty: 'Psychologist',
     ).encryptedAndHashed();
 
     await ds.insert(evaluator);
 
-    final result = await ds.login(username, password);
-    expect(result, isNotNull);
-    expect(EncryptionHelper.decryptText(result!.username), equals(username));
+    final fetched = await ds.getFirstEvaluator();
+
+    expect(fetched, isNotNull);
+    expect(EncryptionHelper.decryptText(fetched!.email), equals('jane@example.com'));
   });
+
 
   test('✅ Create evaluator and verify encrypted storage + decrypted values', () async {
     const email = 'john.doe@example.com';

@@ -4,6 +4,7 @@ import 'package:segundo_cogni/features/auth/data/auth_local_datasource.dart';
 import 'package:segundo_cogni/features/auth/data/auth_repository_impl.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_model.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_model_extensions.dart';
+import 'package:segundo_cogni/features/evaluator/application/evaluator_secure_service.dart';
 
 void main() {
   late TestDatabaseHelper dbHelper;
@@ -20,7 +21,12 @@ void main() {
     username: 'edufapro',
     password: 'password123',
     specialty: 'Neuro',
-  ).encryptedAndHashed();
+  );
+
+  Future<void> seedUser() async {
+    final encrypted = dummyUser.encryptedAndHashed();
+    await authDataSource.saveCurrentUser(encrypted);
+  }
 
   setUp(() async {
     await TestDatabaseHelper.delete();
@@ -35,42 +41,47 @@ void main() {
   });
 
   test('🚪 Logout clears current user from DB', () async {
-    await authDataSource.saveCurrentUser(dummyUser);
-    final cached = await authDataSource.getCachedUser();
-    expect(cached, isNotNull);
+    await seedUser();
+    expect(await authDataSource.getCachedUser(), isNotNull);
 
     await authRepository.signOut();
-
-    final afterLogout = await authDataSource.getCachedUser();
-    expect(afterLogout, isNull);
-  });
-
-  test('🚀 Auto-login loads cached user from DB', () async {
-    await authDataSource.saveCurrentUser(dummyUser);
-    final user = await authRepository.fetchCurrentUserOrNull();
-    expect(user, isNotNull);
-    expect(user!.email, equals('edu@gmail.com'));
+    expect(await authDataSource.getCachedUser(), isNull);
   });
 
   test('🧠 Evaluator is encrypted before storage', () {
-    expect(dummyUser.name, isNot(equals('Edu')));
-    expect(dummyUser.email, isNot(equals('edu@gmail.com')));
-    expect(dummyUser.password.length, 64); // SHA-256 hash
+    final encrypted = dummyUser.encryptedAndHashed();
+
+    expect(encrypted.name, isNot(dummyUser.name));
+    expect(encrypted.email, isNot(dummyUser.email));
+    expect(encrypted.password.length, 64); // SHA-256
   });
 
-  test('🛡️ Saved user is encrypted in DB', () async {
-    await authDataSource.saveCurrentUser(dummyUser);
+  test('🛡️ Raw DB data is encrypted', () async {
+    await seedUser();
 
-    final raw = await dbHelper.database.then(
-          (db) => db.query('current_user', limit: 1),
-    );
-
-    expect(raw.first['email'], isNot('edu@gmail.com'));
-    expect(raw.first['name'], isNot('Edu'));
+    final raw = await dbHelper.database.then((db) => db.query('current_user'));
+    expect(raw.first['email'], isNot(dummyUser.email));
+    expect(raw.first['name'], isNot(dummyUser.name));
   });
 
-  test('❌ fetchCurrentUserOrNull returns null if not saved', () async {
+  test('❌ fetchCurrentUserOrNull returns null when DB is empty', () async {
     final user = await authRepository.fetchCurrentUserOrNull();
     expect(user, isNull);
   });
+
+  test(' Auto-login returns correct decrypted user from DB', () async {
+    await seedUser();
+
+    final fetched = await authRepository.fetchCurrentUserOrNull();
+    expect(fetched, isNotNull);
+
+    // Decrypt expected user for comparison
+    final expected = EvaluatorSecureService.decrypt(dummyUser.encryptedAndHashed());
+
+    expect(fetched!.email, expected.email);
+    expect(fetched.name, expected.name);
+    expect(fetched.username, expected.username);
+  });
+
+
 }
