@@ -1,3 +1,4 @@
+import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
 import '../data/participant_constants.dart';
 
@@ -8,6 +9,7 @@ class ParticipantEntity {
   final DateTime birthDate;
   final Sex sex;
   final EducationLevel educationLevel;
+  final Laterality laterality;
 
   ParticipantEntity({
     this.participantID,
@@ -16,6 +18,7 @@ class ParticipantEntity {
     required this.birthDate,
     required this.sex,
     required this.educationLevel,
+    required this.laterality
   });
 
   static ParticipantEntity fromMap(Map<String, dynamic> map) {
@@ -26,6 +29,7 @@ class ParticipantEntity {
       birthDate: DateTime.parse(map[ParticipantFields.birthDate]),
       sex: Sex.fromValue(map[ParticipantFields.sex]),
       educationLevel: EducationLevel.fromValue(map[ParticipantFields.educationLevel]),
+      laterality: Laterality.fromValue(map[ParticipantFields.laterality]),
     );
   }
 
@@ -36,6 +40,7 @@ class ParticipantEntity {
     ParticipantFields.birthDate: birthDate.toIso8601String(),
     ParticipantFields.sex: sex.numericValue,
     ParticipantFields.educationLevel: educationLevel.numericValue,
+    ParticipantFields.laterality: laterality.numericValue, // 🔧 Add this
   };
 
   ParticipantEntity copyWith({
@@ -45,6 +50,7 @@ class ParticipantEntity {
     DateTime? birthDate,
     Sex? sex,
     EducationLevel? educationLevel,
+    Laterality? laterality, // 🔧 Add this
   }) {
     return ParticipantEntity(
       participantID: participantID ?? this.participantID,
@@ -53,8 +59,10 @@ class ParticipantEntity {
       birthDate: birthDate ?? this.birthDate,
       sex: sex ?? this.sex,
       educationLevel: educationLevel ?? this.educationLevel,
+      laterality: laterality ?? this.laterality,
     );
   }
+
 
   @override
   String toString() =>

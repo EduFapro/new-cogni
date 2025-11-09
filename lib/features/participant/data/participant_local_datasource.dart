@@ -37,4 +37,6 @@ class ParticipantLocalDataSource {
     );
     return result.isNotEmpty ? ParticipantEntity.fromMap(result.first) : null;
   }
+
+  Future<void> deleteParticipant(Database db, int id) async {}
 }

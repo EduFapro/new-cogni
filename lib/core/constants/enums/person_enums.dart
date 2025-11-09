@@ -5,7 +5,9 @@ enum EducationLevel {
   completeHighSchool(4, "Complete High School"),
   incompleteCollege(5, "Incomplete College"),
   completeCollege(6, "Complete College"),
-  postgraduate(7, "Postgraduate");
+  postgraduate(7, "Postgraduate"),
+  master(8, "Master's Degree"), // Optional
+  doctorate(9, "Doctorate");    // Optional
 
   final int numericValue;
   final String description;
@@ -17,6 +19,32 @@ enum EducationLevel {
           (level) => level.numericValue == value,
       orElse: () => EducationLevel.completeElementary,
     );
+  }
+
+  static EducationLevel fromLabel(String label) {
+    switch (label.toLowerCase()) {
+      case 'graduação':
+        return EducationLevel.completeCollege;
+      case 'mestrado':
+        return EducationLevel.master;
+      case 'doutorado':
+        return EducationLevel.doctorate;
+      default:
+        return EducationLevel.completeElementary;
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case EducationLevel.master:
+        return 'Mestrado';
+      case EducationLevel.doctorate:
+        return 'Doutorado';
+      case EducationLevel.completeCollege:
+        return 'Graduação';
+      default:
+        return description;
+    }
   }
 }
 
@@ -44,9 +72,33 @@ enum Sex {
       case 'female':
         return Sex.female;
       case 'other':
+        return Sex.other;
       default:
         return Sex.other;
     }
   }
-}
 
+  static Sex fromLabel(String label) {
+    switch (label.toLowerCase()) {
+      case 'masculino':
+        return Sex.male;
+      case 'feminino':
+        return Sex.female;
+      case 'outro':
+        return Sex.other;
+      default:
+        return Sex.other;
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case Sex.male:
+        return 'Masculino';
+      case Sex.female:
+        return 'Feminino';
+      case Sex.other:
+        return 'Outro';
+    }
+  }
+}

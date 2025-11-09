@@ -6,6 +6,7 @@ import '../domain/evaluation_entity.dart';
 
 class EvaluationLocalDataSource {
   final BaseDatabaseHelper dbHelper;
+
   EvaluationLocalDataSource({required this.dbHelper});
 
   Future<Database> get _db async => dbHelper.database;
@@ -26,5 +27,19 @@ class EvaluationLocalDataSource {
     final db = await _db;
     final maps = await db.query(Tables.evaluations);
     return maps.map(EvaluationEntity.fromMap).toList();
+  }
+
+  Future<EvaluationEntity?> getById(Database db, int id) async {
+    final maps = await db.query(
+      Tables.evaluations,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return EvaluationEntity.fromMap(maps.first);
+    } else {
+      return null;
+    }
   }
 }
