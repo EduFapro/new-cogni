@@ -2,8 +2,9 @@ import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/logger/app_logger.dart';
-import '../../../core/constants/enums/person_enums.dart';
+
 import '../../../providers/participant_providers.dart';
+
 import '../../evaluation/data/evaluation_local_datasource.dart';
 import '../../evaluation/domain/usecases/create_participant_evaluation_usecase.dart';
 import '../../module/data/module_local_datasource.dart';
@@ -25,7 +26,7 @@ class CreateParticipantEvaluationNotifier
     final db = await dbHelper.database;
 
     AppLogger.info(
-        '[PROVIDER] Initializing CreateParticipantEvaluationUseCase in CreateParticipantEvaluationNotifier');
+        '[PROVIDER] Initializing CreateParticipantEvaluationUseCase');
 
     _useCase = CreateParticipantEvaluationUseCase(
       participantDataSource: ParticipantLocalDataSource(dbHelper: dbHelper),
@@ -47,20 +48,24 @@ class CreateParticipantEvaluationNotifier
   Future<void> createParticipantWithEvaluation({
     required ParticipantEntity participant,
     required int evaluatorId,
+    required List<int> selectedModuleIds,
   }) async {
     state = const AsyncLoading();
     AppLogger.info(
-      '[PROVIDER] Creating participant with evaluation for evaluatorId=$evaluatorId',
+      '[PROVIDER] Creating participant with evaluation for evaluatorId=$evaluatorId '
+          'selectedModules=$selectedModuleIds',
     );
 
     try {
       final created = await _useCase.execute(
         participant: participant,
         evaluatorId: evaluatorId,
+        selectedModuleIds: selectedModuleIds,
       );
 
       AppLogger.info(
-        '[PROVIDER] ✅ Participant + Evaluation hierarchy created successfully (participantId=${created.participantID})',
+        '[PROVIDER] ✅ Participant + Evaluation created '
+            '(participantId=${created.participantID})',
       );
       state = AsyncData(created);
     } catch (e, s) {

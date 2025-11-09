@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:segundo_cogni/core/constants/database_constants.dart';
 import 'package:segundo_cogni/core/database/test_database_helper.dart';
 import 'package:segundo_cogni/core/database/database_schema.dart';
 
@@ -23,15 +24,15 @@ void main() {
     final names = result.map((e) => e['name'] as String).toSet();
 
     for (final table in [
-      'evaluators',
-      'participants',
-      'evaluations',
-      'modules',
-      'tasks',
-      'task_prompts',
-      'module_instances',
-      'task_instances',
-      'recordings',
+      Tables.evaluators,
+      Tables.participants,
+      Tables.evaluations,
+      Tables.modules,
+      Tables.tasks,
+      Tables.taskPrompts,
+      Tables.moduleInstances,
+      Tables.taskInstances,
+      Tables.recordings,
     ]) {
       expect(names.contains(table), true, reason: 'Missing table: $table');
     }

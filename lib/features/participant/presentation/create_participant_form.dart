@@ -6,8 +6,13 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
 import '../../../core/logger/app_logger.dart';
+
 import '../../../providers/evaluator_providers.dart';
 import '../../../providers/participant_providers.dart';
+
+import '../../module/data/module_local_datasource.dart';
+import '../../module/domain/module_entity.dart';
+
 import '../domain/participant_entity.dart';
 
 class ParticipantRegistrationForm extends HookConsumerWidget {
@@ -15,10 +20,13 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+
+    // --- Controllers / state ---
     final nameController = useTextEditingController();
     final surnameController = useTextEditingController();
     final birthDate = useState<DateTime?>(null);
-    final evaluationDate = useState<DateTime?>(null); // optional / future use
+    final evaluationDate = useState<DateTime?>(null);
 
     final selectedGender = useState<Sex?>(null);
     final selectedEducation = useState<EducationLevel?>(null);
@@ -26,12 +34,46 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
     final flyoutController = useMemoized(() => FlyoutController());
 
+    // --- Modules selection state ---
+    final modulesState = useState<List<ModuleEntity>>([]);
+    final selectedModuleIds = useState<Set<int>>({});
+    final selectAll = useState<bool>(true);
+
     final createState = ref.watch(createParticipantEvaluationProvider);
 
+    // Load modules once
+    useEffect(() {
+      () async {
+        try {
+          final dbHelper = ref.read(participantDbHelperProvider);
+          final moduleDs = ModuleLocalDataSource(dbHelper: dbHelper);
+          final modules = await moduleDs.getAllModules();
+
+          modulesState.value = modules;
+
+          // Default: all real modules selected (ignore testsModuleId == 9001)
+          final ids = modules
+              .where((m) => m.moduleID != null && m.moduleID != 9001)
+              .map((m) => m.moduleID!)
+              .toSet();
+
+          selectedModuleIds.value = ids;
+          selectAll.value = true;
+
+          AppLogger.info(
+            '[UI] Loaded ${modules.length} modules for selection '
+                '(default selected=${ids.length})',
+          );
+        } catch (e, s) {
+          AppLogger.error('[UI] Failed to load modules', e, s);
+        }
+      }();
+      return null;
+    }, const []);
+
     Future<void> _onSubmit() async {
-      // 1) Validate fields
-      if (nameController.text.trim().isEmpty ||
-          surnameController.text.trim().isEmpty ||
+      // Validate
+      if (!formKey.currentState!.validate() ||
           birthDate.value == null ||
           selectedGender.value == null ||
           selectedEducation.value == null ||
@@ -55,12 +97,30 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
         return;
       }
 
-      // 2) Get logged evaluator
+      // Need at least one module
+      if (selectedModuleIds.value.isEmpty) {
+        await showDialog(
+          context: context,
+          builder: (context) => ContentDialog(
+            title: const Text('Selecione os módulos'),
+            content: const Text(
+                'Escolha pelo menos um módulo para esta avaliação.'),
+            actions: [
+              FilledButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      // Logged evaluator
       final evaluator = ref.read(currentUserProvider);
       if (evaluator == null || evaluator.evaluatorId == null) {
         AppLogger.error(
-          '[UI] Tried to create participant without a logged evaluator',
-        );
+            '[UI] Tried to create participant without a logged evaluator');
         await showDialog(
           context: context,
           builder: (context) => ContentDialog(
@@ -78,7 +138,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
         return;
       }
 
-      // 3) Build ParticipantEntity
+      // Build entity
       final participant = ParticipantEntity(
         name: nameController.text.trim(),
         surname: surnameController.text.trim(),
@@ -88,6 +148,8 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
         laterality: selectedLaterality.value!,
       );
 
+      final moduleIds = selectedModuleIds.value.toList();
+
       AppLogger.info(
         '[UI] Submitting participant creation → '
             'name=${participant.name} ${participant.surname}, '
@@ -95,20 +157,21 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
             'sex=${participant.sex}, '
             'education=${participant.educationLevel}, '
             'laterality=${participant.laterality}, '
-            'evaluatorId=${evaluator.evaluatorId}',
+            'evaluatorId=${evaluator.evaluatorId}, '
+            'modules=$moduleIds',
       );
 
-      // 4) Call notifier
+      // Call notifier
       await ref
           .read(createParticipantEvaluationProvider.notifier)
           .createParticipantWithEvaluation(
         participant: participant,
         evaluatorId: evaluator.evaluatorId!,
+        selectedModuleIds: moduleIds,
       );
 
       final state = ref.read(createParticipantEvaluationProvider);
 
-      // 5) Handle result
       if (state.hasError) {
         AppLogger.error(
           '[UI] Participant creation failed',
@@ -132,10 +195,8 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
         return;
       }
 
-      AppLogger.info('[UI] ✅ Participant created successfully — showing flyout');
-
-      // Optionally use the evaluationDate in the future; currently EvaluationEntity
-      // sets its own date in the use case.
+      AppLogger.info(
+          '[UI] ✅ Participant created successfully — showing confirmation');
 
       await flyoutController.showFlyout(
         barrierDismissible: true,
@@ -150,7 +211,8 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
         },
       );
 
-      // Clear form
+      // Reset form
+      formKey.currentState!.reset();
       nameController.clear();
       surnameController.clear();
       birthDate.value = null;
@@ -158,9 +220,14 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       selectedGender.value = null;
       selectedEducation.value = null;
       selectedLaterality.value = null;
+
+      // Keep modules selected as-is, or reset if you prefer
     }
 
+    // --- UI ---
+
     return Form(
+      key: formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -170,27 +237,36 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
           ),
           const SizedBox(height: 16),
 
+          // Nome
           TextBox(
             controller: nameController,
             placeholder: 'Nome',
+            onChanged: (_) => formKey.currentState!.validate(),
           ),
           const SizedBox(height: 12),
 
+          // Sobrenome
           TextBox(
             controller: surnameController,
             placeholder: 'Sobrenome',
+            onChanged: (_) => formKey.currentState!.validate(),
           ),
           const SizedBox(height: 12),
 
+          // Data de nascimento
           InfoLabel(
             label: 'Data de Nascimento',
             child: DatePicker(
               selected: birthDate.value,
-              onChanged: (date) => birthDate.value = date,
+              onChanged: (date) {
+                birthDate.value = date;
+                formKey.currentState!.validate();
+              },
             ),
           ),
           const SizedBox(height: 12),
 
+          // Sexo
           InfoLabel(
             label: 'Sexo',
             child: ComboBox<Sex>(
@@ -199,12 +275,16 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
               items: Sex.values
                   .map((g) => ComboBoxItem(value: g, child: Text(g.label)))
                   .toList(),
-              onChanged: (v) => selectedGender.value = v,
+              onChanged: (v) {
+                selectedGender.value = v;
+                formKey.currentState!.validate();
+              },
               placeholder: const Text('Selecione o sexo'),
             ),
           ),
           const SizedBox(height: 12),
 
+          // Educação
           InfoLabel(
             label: 'Nível de Educação',
             child: ComboBox<EducationLevel>(
@@ -213,12 +293,16 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
               items: EducationLevel.values
                   .map((e) => ComboBoxItem(value: e, child: Text(e.label)))
                   .toList(),
-              onChanged: (v) => selectedEducation.value = v,
+              onChanged: (v) {
+                selectedEducation.value = v;
+                formKey.currentState!.validate();
+              },
               placeholder: const Text('Selecione o nível'),
             ),
           ),
           const SizedBox(height: 12),
 
+          // Lateralidade
           InfoLabel(
             label: 'Lateralidade',
             child: ComboBox<Laterality>(
@@ -227,12 +311,16 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
               items: Laterality.values
                   .map((h) => ComboBoxItem(value: h, child: Text(h.label)))
                   .toList(),
-              onChanged: (v) => selectedLaterality.value = v,
+              onChanged: (v) {
+                selectedLaterality.value = v;
+                formKey.currentState!.validate();
+              },
               placeholder: const Text('Selecione a lateralidade'),
             ),
           ),
           const SizedBox(height: 12),
 
+          // Data avaliação (opcional)
           InfoLabel(
             label: 'Data da Avaliação (opcional)',
             child: DatePicker(
@@ -247,13 +335,82 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
                   '${DateFormat('EEEE', 'pt_BR').format(evaluationDate.value!)}',
             ),
           ],
+
           const SizedBox(height: 24),
 
+          // --- Módulos ---
+          Text(
+            'Módulos da Avaliação',
+            style: FluentTheme.of(context).typography.subtitle,
+          ),
+          const SizedBox(height: 8),
+
+          Row(
+            children: [
+              Checkbox(
+                checked: selectAll.value,
+                onChanged: (value) {
+                  final v = value ?? false;
+                  selectAll.value = v;
+
+                  if (v) {
+                    selectedModuleIds.value = modulesState.value
+                        .where((m) =>
+                    m.moduleID != null && m.moduleID != 9001)
+                        .map((m) => m.moduleID!)
+                        .toSet();
+                  } else {
+                    selectedModuleIds.value = {};
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
+              const Text('Selecionar todos'),
+            ],
+          ),
+
+          const SizedBox(height: 8),
+
+          ...modulesState.value
+              .where((m) => m.moduleID != null && m.moduleID != 9001)
+              .map((module) {
+            final id = module.moduleID!;
+            final isChecked = selectedModuleIds.value.contains(id);
+
+            return Row(
+              children: [
+                Checkbox(
+                  checked: isChecked,
+                  onChanged: (value) {
+                    final set = {...selectedModuleIds.value};
+                    if (value == true) {
+                      set.add(id);
+                    } else {
+                      set.remove(id);
+                    }
+                    selectedModuleIds.value = set;
+
+                    // Keep selectAll in sync
+                    final totalVisible = modulesState.value
+                        .where((m) =>
+                    m.moduleID != null && m.moduleID != 9001)
+                        .length;
+                    selectAll.value = set.length == totalVisible;
+                  },
+                ),
+                const SizedBox(width: 8),
+                Text(module.title),
+              ],
+            );
+          }).toList(),
+
+          const SizedBox(height: 24),
+
+          // --- Submit ---
           FlyoutTarget(
             controller: flyoutController,
             child: FilledButton(
-              onPressed:
-              createState.isLoading ? null : () => _onSubmit(),
+              onPressed: createState.isLoading ? null : _onSubmit,
               child: createState.isLoading
                   ? const ProgressRing()
                   : const Text('Salvar'),

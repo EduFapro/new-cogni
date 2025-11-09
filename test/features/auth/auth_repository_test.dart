@@ -4,7 +4,6 @@ import 'package:segundo_cogni/features/auth/data/auth_local_datasource.dart';
 import 'package:segundo_cogni/features/auth/data/auth_repository_impl.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_model.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_model_extensions.dart';
-import 'package:segundo_cogni/features/evaluator/application/evaluator_secure_service.dart';
 
 void main() {
   late TestDatabaseHelper dbHelper;

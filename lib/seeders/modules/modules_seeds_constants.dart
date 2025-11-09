@@ -1,16 +1,17 @@
 part of module_seeds;
 
-String sociodemographicInfo = 'Dados Pessoais';
-int sociodemographicInfoId = 1;
+const int sociodemographicInfoId = 1;
+const String sociodemographicInfo = 'Dados Pessoais';
 
-String cognitiveFunctions = 'Funções Cognitivas';
-int cognitiveFunctionsId = 2;
+const int cognitiveFunctionsId = 2;
+const String cognitiveFunctions = 'Funções Cognitivas';
 
-String functionality = 'Funcionalidade';
-int functionalityId = 3;
+const int functionalityId = 3;
+const String functionality = 'Funcionalidade';
 
-String depressionSymptoms = 'Sintomas de Depressão';
-int depressionSymptomsId = 4;
+const int depressionSymptomsId = 4;
+const String depressionSymptoms = 'Sintomas de Depressão';
 
-String testsModuleTitle = 'Teste de Áudio e Gravação';
-int testsModuleId = 9001;
+// Módulo técnico para validação / testes internos
+const int testsModuleId = 9001;
+const String testsModuleTitle = 'Teste de Áudio e Gravação';

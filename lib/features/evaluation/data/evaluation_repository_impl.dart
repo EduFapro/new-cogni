@@ -20,7 +20,6 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
   @override
   Future<List<EvaluationEntity>> getAllEvaluations() async {
     AppLogger.db('EvaluationRepositoryImpl.getAllEvaluations → fetching');
-    final db = await local.dbHelper.database;
     final list = await local.getAllEvaluations();
     AppLogger.db('EvaluationRepositoryImpl.getAllEvaluations → fetched ${list.length} evaluations');
     return list;
