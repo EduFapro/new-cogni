@@ -13,7 +13,7 @@ class EvaluatorFields {
   static const firstLogin = "first_login";
   static const isAdmin = "is_admin";
 
-  static const all = [
+  static const values = [
     id,
     name,
     surname,
@@ -26,9 +26,6 @@ class EvaluatorFields {
     firstLogin,
     isAdmin,
   ];
-
-  // Alias so tests (and everyone else) can use .values consistently.
-  static const values = all;
 }
 
 const scriptCreateTableEvaluators = '''

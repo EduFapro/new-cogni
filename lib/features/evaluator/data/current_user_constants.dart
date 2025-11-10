@@ -1,15 +1,47 @@
+import '../../../core/constants/database_constants.dart';
+import 'evaluator_constants.dart';
+
+class CurrentUserFields {
+  // Reuse the same column names
+  static const id = EvaluatorFields.id;
+  static const name = EvaluatorFields.name;
+  static const surname = EvaluatorFields.surname;
+  static const email = EvaluatorFields.email;
+  static const birthDate = EvaluatorFields.birthDate;
+  static const specialty = EvaluatorFields.specialty;
+  static const cpf = EvaluatorFields.cpf;
+  static const username = EvaluatorFields.username;
+  static const password = EvaluatorFields.password;
+  static const isAdmin = EvaluatorFields.isAdmin;
+
+  static const values = [
+    id,
+    name,
+    surname,
+    email,
+    birthDate,
+    specialty,
+    cpf,
+    username,
+    password,
+    isAdmin,
+  ];
+}
+
 const scriptCreateTableCurrentUser = '''
 CREATE TABLE current_user (
-  evaluator_id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  surname TEXT NOT NULL,
-  email TEXT NOT NULL,
-  birth_date TEXT,
-  specialty TEXT,
-  cpf TEXT,
-  username TEXT,
-  password TEXT,
-  first_login INTEGER NOT NULL DEFAULT 1,
-  is_admin INTEGER NOT NULL DEFAULT 0
-)
+  ${CurrentUserFields.id} INTEGER PRIMARY KEY,
+  ${CurrentUserFields.name} TEXT NOT NULL,
+  ${CurrentUserFields.surname} TEXT NOT NULL,
+  ${CurrentUserFields.email} TEXT NOT NULL,
+  ${CurrentUserFields.birthDate} TIMESTAMP,
+  ${CurrentUserFields.specialty} TEXT,
+  ${CurrentUserFields.cpf} TEXT,
+  ${CurrentUserFields.username} TEXT NOT NULL UNIQUE,
+  ${CurrentUserFields.password} TEXT NOT NULL,
+  ${CurrentUserFields.isAdmin} INTEGER NOT NULL DEFAULT 0,
+  FOREIGN KEY (${CurrentUserFields.id})
+    REFERENCES ${Tables.evaluators}(${EvaluatorFields.id})
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
 ''';

@@ -9,7 +9,7 @@ class ParticipantFields {
   static const birthDate = "birth_date";
   static const laterality = "laterality";
 
-  static const all = [
+  static const values = [
     id,
     name,
     surname,

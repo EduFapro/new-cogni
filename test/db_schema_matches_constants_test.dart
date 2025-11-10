@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:segundo_cogni/features/evaluator/data/current_user_constants.dart';
 import 'package:segundo_cogni/features/module/data/module_constants.dart';
 import 'package:segundo_cogni/features/module_instance/data/module_instance_constants.dart';
 import 'package:segundo_cogni/features/task/data/task_constants.dart';

@@ -17,7 +17,7 @@ void main() {
   test('seedDummyEvaluator inserts at least one evaluator', () async {
     final db = await dbHelper.database;
 
-    await seedDummyEvaluator(db: db);
+    await seedDummyEvaluator( db);
 
     final evaluators = await db.query('evaluators');
     expect(evaluators.isNotEmpty, true, reason: 'No evaluator was seeded');
