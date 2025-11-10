@@ -1,72 +1,74 @@
 part of prompts_seeds;
 
-var helloHowAreYouTaskPromptID = 1;
-var whatsYourNameTaskPromptID = 2;
-var whatsYourDOBTaskPromptID = 3;
-var whatsYourEducationLevelTaskPromptID = 4;
-var whatWasYourProfessionTaskPromptID = 5;
+// 1–56: main protocol
+const int helloHowAreYouTaskPromptID = 1;
+const int whatsYourNameTaskPromptID = 2;
+const int whatsYourDOBTaskPromptID = 3;
+const int whatsYourEducationLevelTaskPromptID = 4;
+const int whatWasYourProfessionTaskPromptID = 5;
 
-var whoDoYouLiveWithTaskPromptID = 6;
-var doYouExerciseFrequentlyTaskPromptID = 7;
-var doYouReadFrequentlyTaskPromptID = 8;
-var doYouPlayPuzzlesOrVideoGamesFrequentlyTaskPromptID = 9;
-var doYouHaveAnyDiseaseTaskPromptID = 10;
+const int whoDoYouLiveWithTaskPromptID = 6;
+const int doYouExerciseFrequentlyTaskPromptID = 7;
+const int doYouReadFrequentlyTaskPromptID = 8;
+const int doYouPlayPuzzlesOrVideoGamesFrequentlyTaskPromptID = 9;
+const int doYouHaveAnyDiseaseTaskPromptID = 10;
 
-var payCloseAttentionTaskPromptID = 11;
-var subtracting3AndAgainTaskPromptID = 12;
-var whatYearAreWeInTaskPromptID = 13;
-var whatMonthAreWeInTaskPromptID = 14;
-var whatDayOfTheMonthIsItTaskPromptID = 15;
+const int payCloseAttentionTaskPromptID = 11;
+const int subtracting3AndAgainTaskPromptID = 12;
+const int whatYearAreWeInTaskPromptID = 13;
+const int whatMonthAreWeInTaskPromptID = 14;
+const int whatDayOfTheMonthIsItTaskPromptID = 15;
 
-var whatDayOfTheWeekIsItTaskPromptID = 16;
-var howOldAreYouTaskPromptID = 17;
-var whereAreWeNowTaskPromptID = 18;
-var currentPresidentOfBrazilTaskPromptID = 19;
-var formerPresidentOfBrazilTaskPromptID = 20;
+const int whatDayOfTheWeekIsItTaskPromptID = 16;
+const int howOldAreYouTaskPromptID = 17;
+const int whereAreWeNowTaskPromptID = 18;
+const int currentPresidentOfBrazilTaskPromptID = 19;
+const int formerPresidentOfBrazilTaskPromptID = 20;
 
-var repeatWordsAfterListeningFirstTimeTaskPromptID = 21;
-var recallWordsFromListFirstTimeTaskPromptID = 22;
-var repeatWordsAfterListeningSecondTimeTaskPromptID = 23;
-var recallWordsFromListSecondTimeTaskPromptID = 24;
-var repeatWordsAfterListeningThirdTimeTaskPromptID = 25;
+const int repeatWordsAfterListeningFirstTimeTaskPromptID = 21;
+const int recallWordsFromListFirstTimeTaskPromptID = 22;
+const int repeatWordsAfterListeningSecondTimeTaskPromptID = 23;
+const int recallWordsFromListSecondTimeTaskPromptID = 24;
+const int repeatWordsAfterListeningThirdTimeTaskPromptID = 25;
 
-var recallWordsFromListThirdTimeTaskPromptID = 26;
-var whatDidYouDoYesterdayTaskPromptID = 27;
-var favoriteChildhoodGameTaskPromptID = 28;
-var retellWordsHeardBeforeTaskPromptID = 29;
-var payCloseAttentionToTheStoryTaskPromptID = 30;
+const int recallWordsFromListThirdTimeTaskPromptID = 26;
+const int whatDidYouDoYesterdayTaskPromptID = 27;
+const int favoriteChildhoodGameTaskPromptID = 28;
+const int retellWordsHeardBeforeTaskPromptID = 29;
+const int payCloseAttentionToTheStoryTaskPromptID = 30;
 
-var anasCatStoryTaskPromptID = 31;
-var howManyAnimalsCanYouThinkOfTaskPromptID = 32;
-var wordsStartingWithFTaskPromptID = 33;
-var wordsStartingWithATaskPromptID = 34;
-var wordsStartingWithSTaskPromptID = 35;
+const int anasCatStoryTaskPromptID = 31;
+const int howManyAnimalsCanYouThinkOfTaskPromptID = 32;
+const int wordsStartingWithFTaskPromptID = 33;
+const int wordsStartingWithATaskPromptID = 34;
+const int wordsStartingWithSTaskPromptID = 35;
 
-var describeWhatYouSeeTaskPromptID = 36;
-var retellStoryTaskPromptID = 37;
-var yesOrNoQuestionsTaskPromptID = 38;
-var canYouBatheAloneTaskPromptID = 39;
-var canYouDressAloneTaskPromptID = 40;
+const int describeWhatYouSeeTaskPromptID = 36;
+const int retellStoryTaskPromptID = 37;
+const int yesOrNoQuestionsTaskPromptID = 38;
+const int canYouBatheAloneTaskPromptID = 39;
+const int canYouDressAloneTaskPromptID = 40;
 
-var canYouUseToiletAloneTaskPromptID = 41;
-var canYouUsePhoneAloneTaskPromptID = 42;
-var canYouShopAloneTaskPromptID = 43;
-var canYouHandleMoneyAloneTaskPromptID = 44;
-var canYouManageMedicationAloneTaskPromptID = 45;
+const int canYouUseToiletAloneTaskPromptID = 41;
+const int canYouUsePhoneAloneTaskPromptID = 42;
+const int canYouShopAloneTaskPromptID = 43;
+const int canYouHandleMoneyAloneTaskPromptID = 44;
+const int canYouManageMedicationAloneTaskPromptID = 45;
 
-var canYouUseTransportAloneTaskPromptID = 46;
-var feelingsInPastTwoWeeksTaskPromptID = 47;
-var feelingSadFrequentlyTaskPromptID = 48;
-var feelingTiredOrLackingEnergyTaskPromptID = 49;
-var troubleSleepingTaskPromptID = 50;
+const int canYouUseTransportAloneTaskPromptID = 46;
+const int feelingsInPastTwoWeeksTaskPromptID = 47;
+const int feelingSadFrequentlyTaskPromptID = 48;
+const int feelingTiredOrLackingEnergyTaskPromptID = 49;
+const int troubleSleepingTaskPromptID = 50;
 
-var preferringToStayHomeTaskPromptID = 51;
-var feelingUselessOrGuiltyTaskPromptID = 52;
-var lostInterestInActivitiesTaskPromptID = 53;
-var hopefulAboutFutureTaskPromptID = 54;
-var feelingLifeIsWorthLivingTaskPromptID = 55;
-var thankingForParticipationTaskPromptID = 56;
+const int preferringToStayHomeTaskPromptID = 51;
+const int feelingUselessOrGuiltyTaskPromptID = 52;
+const int lostInterestInActivitiesTaskPromptID = 53;
+const int hopefulAboutFutureTaskPromptID = 54;
+const int feelingLifeIsWorthLivingTaskPromptID = 55;
 
-// Validation
-final aPressaEhInimigaTaskPromptId = 9001;
-final conteAte5taskPromptID = 9004;
+const int thankingForParticipationTaskPromptID = 56;
+
+// 9001+ : technical / validation prompts
+const int aPressaEhInimigaTaskPromptId = 9001;
+const int conteAte5taskPromptID = 9004;

@@ -19,11 +19,11 @@ class TaskEntity {
     required this.title,
     required this.taskMode,
     required this.position,
+    this.transcript,
     this.imagePath = 'no_image',
     this.timeForCompletion = 60,
     this.mayRepeatPrompt = true,
     this.testOnly = false,
-    this.transcript,
   });
 
   Map<String, dynamic> toMap() => {

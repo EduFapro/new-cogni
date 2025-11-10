@@ -60,6 +60,11 @@ extension ModuleEntityMapper on ModuleEntity {
 
 /// --- seeder ---
 
+final List<Map<String, dynamic>> modulesSeedData = modulesList
+    .map((e) => e.toModel().toMap())
+    .toList();
+
+
 Future<void> seedModules(DatabaseExecutor db) async {
   AppLogger.seed('[MODULES] Seeding modules...');
 
