@@ -42,9 +42,8 @@ class SplashScreen extends HookConsumerWidget {
   Future<void> _initializeApp(BuildContext context, WidgetRef ref) async {
     try {
       AppLogger.seed('[SPLASH] Starting database seeding...');
-      await SeedRunner().run();
-
       final db = await DatabaseHelper.instance.database;
+      await SeedRunner().run(db: db);
 
       final evaluatorDataSource = EvaluatorLocalDataSource(db);
       final auth = AuthLocalDataSource(db);

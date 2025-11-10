@@ -25,7 +25,7 @@ extension TaskPromptEntityMapper on TaskPromptEntity {
   }
 }
 
-Future<void> seedPrompts(Database db) async {
+Future<void> seedPrompts(DatabaseExecutor  db) async {
   AppLogger.seed('[PROMPTS] Seeding prompts...');
 
   for (final prompt in tasksPromptsList) {

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:segundo_cogni/features/evaluator/data/current_user_constants.dart';
 import 'package:segundo_cogni/features/module/data/module_constants.dart';
 import 'package:segundo_cogni/features/module_instance/data/module_instance_constants.dart';
+import 'package:segundo_cogni/features/recording_file/data/recording_file_constants.dart';
 import 'package:segundo_cogni/features/task/data/task_constants.dart';
 import 'package:segundo_cogni/features/task_instance/data/task_instance_constants.dart';
 import 'package:segundo_cogni/features/task_prompt/data/task_prompt_constants.dart';
@@ -38,7 +39,7 @@ void main() {
       Tables.taskPrompts: TaskPromptFields.values,
       Tables.moduleInstances: ModuleInstanceFields.values,
       Tables.taskInstances: TaskInstanceFields.values,
-      Tables.recordings: RecordingFields.values,
+      Tables.recordings: RecordingFileFields.values,
       Tables.currentUser: CurrentUserFields.values,
     };
 

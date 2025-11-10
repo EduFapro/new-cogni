@@ -13,7 +13,7 @@ import '../modules/modules_seeds.dart';
 part 'task_seeds_constants.dart';
 part 'task_seeds_list.dart';
 
-Future<void> seedTasks(Database db) async {
+Future<void> seedTasks(DatabaseExecutor  db) async {
   AppLogger.seed('[TASKS] Seeding tasks...');
 
   for (final task in tasksList) {
