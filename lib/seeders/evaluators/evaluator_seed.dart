@@ -1,32 +1,33 @@
-// lib/seeders/dummy/dummy_evaluator_seed.dart
-
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../core/logger/app_logger.dart';
 import '../../core/constants/database_constants.dart';
-import '../../features/evaluator/data/evaluator_constants.dart';
+import '../../features/evaluator/application/evaluator_secure_service.dart';
+import '../../features/evaluator/data/evaluator_model.dart';
+import '../../features/evaluator/data/evaluator_model_extensions.dart';
 
 Future<void> seedDummyEvaluator(DatabaseExecutor db) async {
   AppLogger.seed('[DUMMY] Seeding dummy evaluator...');
 
-  const dummy = {
-    EvaluatorFields.id: 1,
-    EvaluatorFields.name: 'Demo',
-    EvaluatorFields.surname: 'User',
-    EvaluatorFields.email: 'demo@example.com',
-    EvaluatorFields.cpf: '03240120010',
-    EvaluatorFields.username: 'demo',
-    EvaluatorFields.password: '0000',
-    EvaluatorFields.specialty: 'Psicologia',
-    EvaluatorFields.birthDate: "1998-07-14",
-    EvaluatorFields.firstLogin: 1,
-    EvaluatorFields.isAdmin: 1,
-  };
+  final evaluator = EvaluatorModel(
+    evaluatorId: 1,
+    name: 'Demo',
+    surname: 'User',
+    email: 'demo@example.com',
+    birthDate: '1998-07-14',
+    specialty: 'Psicologia',
+    cpfOrNif: '03240120010',
+    username: 'demo',
+    password: '0000', // will be hashed
+    firstLogin: true,
+  );
+
+  final secured = EvaluatorSecureService.encrypt(evaluator);
 
   await db.insert(
     Tables.evaluators,
-    dummy,
-    conflictAlgorithm: ConflictAlgorithm.ignore,
+    secured.toMap(),
+    conflictAlgorithm: ConflictAlgorithm.replace,
   );
 
-  AppLogger.seed('[DUMMY] Dummy evaluator ensured.');
+  AppLogger.seed('[DUMMY] ✅ Dummy evaluator inserted (secured).');
 }

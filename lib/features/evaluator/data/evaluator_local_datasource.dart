@@ -3,12 +3,9 @@ import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
 import '../../../core/deterministic_encryption_helper.dart';
 import '../../../core/logger/app_logger.dart';
-import '../../../core/utils/encryption_helper.dart';
 import '../application/evaluator_secure_service.dart';
 import 'evaluator_constants.dart';
 import 'evaluator_model.dart';
-import 'evaluator_model_extensions.dart';
-
 
 class EvaluatorLocalDataSource {
   final DatabaseExecutor _db;
@@ -17,7 +14,7 @@ class EvaluatorLocalDataSource {
   /// Insert evaluator securely (encrypt PII, hash password)
   Future<void> insert(EvaluatorModel evaluator) async {
     AppLogger.db('[EVALUATOR] Inserting evaluator: ${evaluator.email}');
-    final secured = evaluator.encryptedAndHashed();
+    final secured = EvaluatorSecureService.encrypt(evaluator);
     await _db.insert(
       Tables.evaluators,
       secured.toMap(),
@@ -31,7 +28,7 @@ class EvaluatorLocalDataSource {
     final result = await _db.query(Tables.evaluators);
     return result
         .map(EvaluatorModel.fromMap)
-        .map((m) => m.decrypted())
+        .map(EvaluatorSecureService.decrypt)
         .toList();
   }
 
@@ -44,7 +41,7 @@ class EvaluatorLocalDataSource {
       limit: 1,
     );
     return result.isNotEmpty
-        ? EvaluatorModel.fromMap(result.first).decrypted()
+        ? EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(result.first))
         : null;
   }
 
@@ -56,7 +53,7 @@ class EvaluatorLocalDataSource {
       limit: 1,
     );
     return result.isNotEmpty
-        ? EvaluatorModel.fromMap(result.first).decrypted()
+        ? EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(result.first))
         : null;
   }
 
@@ -108,14 +105,13 @@ class EvaluatorLocalDataSource {
 
     final result = await _db.query(
       Tables.evaluators,
-      where:
-      '${EvaluatorFields.username} = ? AND ${EvaluatorFields.password} = ?',
+      where: '${EvaluatorFields.username} = ? AND ${EvaluatorFields.password} = ?',
       whereArgs: [encryptedUsername, hashedPassword],
       limit: 1,
     );
 
     return result.isNotEmpty
-        ? EvaluatorModel.fromMap(result.first).decrypted()
+        ? EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(result.first))
         : null;
   }
 }
