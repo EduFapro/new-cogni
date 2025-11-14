@@ -1,3 +1,5 @@
+// domain/module_repository.dart
+
 import 'module_entity.dart';
 
 abstract class ModuleRepository {

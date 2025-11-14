@@ -1,3 +1,5 @@
+// domain/module_entity.dart
+
 import '../../task/domain/task_entity.dart';
 
 class ModuleEntity {
@@ -11,18 +13,6 @@ class ModuleEntity {
     this.tasks = const [],
   });
 
-  Map<String, dynamic> toMap() => {
-    'module_id': moduleID,
-    'title': title,
-  };
-
-  factory ModuleEntity.fromMap(Map<String, dynamic> map) {
-    return ModuleEntity(
-      moduleID: map['module_id'] as int?,
-      title: map['title'] as String,
-    );
-  }
-
   ModuleEntity copyWith({
     int? moduleID,
     String? title,
@@ -35,6 +25,18 @@ class ModuleEntity {
     );
   }
 
+  Map<String, dynamic> toMap() => {
+    'module_id': moduleID,
+    'title': title,
+  };
+
+  factory ModuleEntity.fromMap(Map<String, dynamic> map) {
+    return ModuleEntity(
+      moduleID: map['module_id'] as int?,
+      title: map['title'] as String,
+    );
+  }
+
   @override
-  String toString() => 'ModuleEntity(id: $moduleID, title: $title, tasks: $tasks)';
+  String toString() => 'ModuleEntity(id: $moduleID, title: $title)';
 }

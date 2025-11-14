@@ -1,6 +1,5 @@
 import 'package:sqflite_common/sqlite_api.dart'; // <-- to access DatabaseExecutor
 import '../core/logger/app_logger.dart';
-import '../core/database_helper.dart';
 import 'modules/modules_seeds.dart';
 import 'tasks/task_seeds.dart';
 import 'prompts/prompts_seed.dart';

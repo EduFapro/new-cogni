@@ -8,6 +8,7 @@ import '../../../providers/participant_providers.dart';
 import '../../evaluation/data/evaluation_local_datasource.dart';
 import '../../evaluation/domain/usecases/create_participant_evaluation_usecase.dart';
 import '../../module/data/module_local_datasource.dart';
+import '../../module/data/module_repository_impl.dart';
 import '../../module_instance/data/module_instance_local_datasource.dart';
 import '../../module_instance/data/module_instance_repository_impl.dart';
 import '../../task/data/task_local_datasource.dart';
@@ -25,17 +26,23 @@ class CreateParticipantEvaluationNotifier
     final dbHelper = ref.read(participantDbHelperProvider);
     final db = await dbHelper.database;
 
-    AppLogger.info(
-        '[PROVIDER] Initializing CreateParticipantEvaluationUseCase');
+    AppLogger.info('[PROVIDER] Initializing CreateParticipantEvaluationUseCase');
+
+    final moduleLocalDataSource = ModuleLocalDataSource(dbHelper: dbHelper);
+    final taskLocalDataSource = TaskLocalDataSource(dbHelper: dbHelper);
 
     _useCase = CreateParticipantEvaluationUseCase(
       participantDataSource: ParticipantLocalDataSource(dbHelper: dbHelper),
       evaluationDataSource: EvaluationLocalDataSource(dbHelper: dbHelper),
-      moduleDataSource: ModuleLocalDataSource(dbHelper: dbHelper),
+      moduleDataSource: moduleLocalDataSource,
+      moduleRepository: ModuleRepositoryImpl( // ✅ Pass module repository
+        local: moduleLocalDataSource,
+        taskLocal: taskLocalDataSource,
+      ),
       moduleInstanceRepository: ModuleInstanceRepositoryImpl(
         localDataSource: ModuleInstanceLocalDataSource(dbHelper: dbHelper),
       ),
-      taskDataSource: TaskLocalDataSource(dbHelper: dbHelper),
+      taskDataSource: taskLocalDataSource,
       taskInstanceRepository: TaskInstanceRepositoryImpl(
         localDataSource: TaskInstanceLocalDataSource(dbHelper: dbHelper),
       ),
@@ -44,6 +51,7 @@ class CreateParticipantEvaluationNotifier
 
     return null;
   }
+
 
   Future<void> createParticipantWithEvaluation({
     required ParticipantEntity participant,

@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../core/database_helper.dart';
+import '../../../core/database/prod_database_helper.dart';
 import '../../../core/environment.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../providers/providers.dart';
@@ -16,7 +16,7 @@ class EvaluatorRepositoryNotifier extends AsyncNotifier<EvaluatorRepository> {
       AppLogger.info('EvaluatorRepositoryNotifier started (env=$env)');
 
       if (env == AppEnv.local) {
-        final db = await DatabaseHelper.instance.database;
+        final db = await ProdDatabaseHelper.instance.database;
         AppLogger.db('Initializing local EvaluatorRepository...');
         return EvaluatorRepositoryImpl.local(EvaluatorLocalDataSource(db));
       } else {

@@ -3,7 +3,7 @@ import 'package:riverpod/riverpod.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../domain/evaluation_entity.dart';
 import '../../domain/evaluation_repository.dart';
-import '../../presentation/provider.dart';
+import '../../presentation/evaluation_provider.dart';
 
 class EvaluationNotifier extends AsyncNotifier<List<EvaluationEntity>> {
   late final EvaluationRepository _repository;
@@ -41,14 +41,20 @@ class EvaluationNotifier extends AsyncNotifier<List<EvaluationEntity>> {
     );
     state = const AsyncLoading();
     try {
+      print('🚀 Adding evaluation for participantId=${evaluation.participantID}');
       await _repository.insertEvaluation(evaluation);
+
       final updated = await _repository.getAllEvaluations();
-      AppLogger.info('EvaluationNotifier.addEvaluation → now ${updated.length} evaluations');
+      AppLogger.db('EvaluationNotifier.addEvaluation → now ${updated.length} evaluations');
+      print('✅ Evaluation added. Total now: ${updated.length}');
       state = AsyncData(updated);
     } catch (e, s) {
       AppLogger.error('EvaluationNotifier.addEvaluation → error', e, s);
+      print('❌ addEvaluation failed: $e');
       state = AsyncError(e, s);
+      rethrow; // Let the UI optionally handle it
     }
+
   }
 
   Future<EvaluationEntity?> getEvaluationById(int id) async {

@@ -8,13 +8,12 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
 
   EvaluationRepositoryImpl({required this.local});
 
+  // ⚠️ This should no longer be used directly outside a transaction
   @override
-  Future<void> insertEvaluation(EvaluationEntity evaluation) async {
-    AppLogger.db(
-      'EvaluationRepositoryImpl.insertEvaluation → participantId=${evaluation.participantID}, evaluatorId=${evaluation.evaluatorID}',
+  Future<void> insertEvaluation(EvaluationEntity evaluation) {
+    throw UnimplementedError(
+      'Use EvaluationLocalDataSource.insertEvaluation within a transaction instead.',
     );
-    final db = await local.dbHelper.database;
-    await local.insertEvaluation(db, evaluation.toMap());
   }
 
   @override

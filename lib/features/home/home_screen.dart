@@ -3,11 +3,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../core/database_helper.dart';
 import '../../providers/providers.dart';
 import '../auth/data/auth_local_datasource.dart';
 import '../auth/data/auth_repository_impl.dart';
 import '../participant/presentation/create_participant_screen.dart';
+import '../../core/database/prod_database_helper.dart';
 
 class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});
@@ -15,8 +15,6 @@ class HomeScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
-
-    // 👇 keep track of the selected menu item
     final selectedIndex = useState(0);
 
     return NavigationView(
@@ -25,9 +23,7 @@ class HomeScreen extends HookConsumerWidget {
       ),
       pane: NavigationPane(
         selected: selectedIndex.value,
-        onChanged: (index) {
-          selectedIndex.value = index;
-        },
+        onChanged: (index) => selectedIndex.value = index,
         displayMode: PaneDisplayMode.auto,
         items: [
           PaneItem(
@@ -52,9 +48,8 @@ class HomeScreen extends HookConsumerWidget {
             icon: const Icon(FluentIcons.sign_out),
             title: const Text('Sair'),
             onTap: () async {
-              final repository = AuthRepositoryImpl(
-                AuthLocalDataSource(await DatabaseHelper.instance.database),
-              );
+              final db = await ProdDatabaseHelper.instance.database;
+              final repository = AuthRepositoryImpl(AuthLocalDataSource(db));
               await repository.signOut();
               ref.read(currentUserProvider.notifier).setUser(null);
               if (context.mounted) context.go('/login');
@@ -66,7 +61,6 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 }
-
 
 class DashboardContent extends StatelessWidget {
   const DashboardContent({super.key});
@@ -83,17 +77,6 @@ class DashboardContent extends StatelessWidget {
       children: const [
         Text('Aqui é o conteúdo principal do dashboard.'),
       ],
-    );
-  }
-}
-
-class ParticipantsPage extends StatelessWidget {
-  const ParticipantsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const ScaffoldPage(
-      content: Text('Lista de participantes (em breve)'),
     );
   }
 }

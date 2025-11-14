@@ -20,41 +20,52 @@ class DatabaseSchema {
     scriptCreateTableParticipants,
     scriptCreateTableModules,
     scriptCreateTableTasks,
-    scriptCreateTableTaskPrompts,
     scriptCreateTableEvaluations,
+    scriptCreateTableTaskPrompts,
+    scriptCreateTableCurrentUser,
     scriptCreateTableModuleInstances,
     scriptCreateTableTaskInstances,
     scriptCreateTableRecordings,
-    scriptCreateTableCurrentUser
   ];
 
+
   static final List<String> _tableNames = [
-    Tables.evaluators,
-    Tables.participants,
-    Tables.modules,
-    Tables.tasks,
-    Tables.taskPrompts,
-    Tables.evaluations,
-    Tables.moduleInstances,
-    Tables.taskInstances,
-    Tables.recordings,
-    Tables.currentUser
+    Tables.evaluators,         // 0
+    Tables.participants,       // 1
+    Tables.modules,            // 2
+    Tables.tasks,              // 3
+    Tables.evaluations,        // 4
+    Tables.taskPrompts,        // 5
+    Tables.currentUser,        // 6
+    Tables.moduleInstances,    // 7
+    Tables.taskInstances,      // 8
+    Tables.recordings          // 9
+
+
   ];
+
 
   /// Creates all tables and verifies that they were created successfully.
   static Future<void> createAll(Database db) async {
     for (int i = 0; i < _createScripts.length; i++) {
       final tableName = _tableNames[i];
       final script = _createScripts[i];
+
+      AppLogger.db('📄 Creating table: $tableName...');
+      AppLogger.db('📝 Script:\n$script');
+
       try {
         await db.execute(script);
         AppLogger.db('✅ Created table: $tableName');
-      } catch (e) {
-        AppLogger.db('⚠️ Skipping table "$tableName" — possibly already exists: $e');
+      } catch (e, stack) {
+        AppLogger.error('⚠️ Failed to create table "$tableName"', e, stack);
       }
     }
+
+    AppLogger.db('🔍 Verifying schema...');
     await _verifySchema(db);
   }
+
 
   /// Drops all tables (for upgrades or tests).
   static Future<void> dropAll(Database db) async {

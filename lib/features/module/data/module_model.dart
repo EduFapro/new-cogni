@@ -1,12 +1,13 @@
-import '../../../features/module/domain/module_entity.dart';
-import '../../../features/module/data/module_constants.dart';
+// data/module_model.dart
+
+import '../domain/module_entity.dart';
+import 'module_constants.dart';
 
 class ModuleModel extends ModuleEntity {
   const ModuleModel({
-    super.moduleID,
-    required super.title,
-    super.tasks = const [],
-  });
+    int? moduleID,
+    required String title,
+  }) : super(moduleID: moduleID, title: title);
 
   factory ModuleModel.fromMap(Map<String, dynamic> map) {
     return ModuleModel(
@@ -24,13 +25,11 @@ class ModuleModel extends ModuleEntity {
     return ModuleModel(
       moduleID: entity.moduleID,
       title: entity.title,
-      tasks: entity.tasks,
     );
   }
 
   ModuleEntity toEntity() => ModuleEntity(
     moduleID: moduleID,
     title: title,
-    tasks: tasks,
   );
 }

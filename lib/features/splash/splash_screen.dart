@@ -2,8 +2,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../core/database/prod_database_helper.dart';
 import '../../core/logger/app_logger.dart';
-import '../../core/database_helper.dart';
 import '../../features/evaluator/data/evaluator_local_datasource.dart';
 import '../../seeders/seed_runner.dart';
 import '../auth/data/auth_local_datasource.dart';
@@ -42,7 +42,7 @@ class SplashScreen extends HookConsumerWidget {
   Future<void> _initializeApp(BuildContext context, WidgetRef ref) async {
     try {
       AppLogger.seed('[SPLASH] Starting database seeding...');
-      final db = await DatabaseHelper.instance.database;
+      final db = await ProdDatabaseHelper.instance.database;
       await SeedRunner().run(db: db);
 
       final evaluatorDataSource = EvaluatorLocalDataSource(db);

@@ -1,10 +1,12 @@
+// data/module_constants.dart
+
 import '../../../core/constants/database_constants.dart';
 
 class ModuleFields {
-  static const id = 'module_id';
-  static const title = 'title';
+  static const String id = 'module_id';
+  static const String title = 'title';
 
-  static const values = [id, title];
+  static const List<String> values = [id, title];
 }
 
 const scriptCreateTableModules = '''

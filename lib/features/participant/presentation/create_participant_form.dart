@@ -157,9 +157,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       );
 
       try {
-        // ✅ LEITURA CORRETA DO NOTIFIER
         final notifier = ref.read(createParticipantEvaluationProvider.notifier);
-
         await notifier.createParticipantWithEvaluation(
           participant: participant,
           evaluatorId: evaluator.evaluatorId!,
@@ -168,12 +166,19 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
         final state = ref.read(createParticipantEvaluationProvider);
         if (state.hasError) {
-          AppLogger.error('[UI] ❌ Falha na criação do paciente', state.error, state.stackTrace);
+          AppLogger.error(
+            '[UI] ❌ Falha na criação do paciente (state error)',
+            state.error,
+            state.stackTrace,
+          );
+          print('❌ UI: Falha ao criar participante → ${state.error}'); // debug
+
           await showDialog(
             context: context,
             builder: (context) => ContentDialog(
               title: const Text('Erro ao salvar'),
-              content: const Text('Não foi possível registrar o paciente. Tente novamente.'),
+              content: Text(
+                  'Não foi possível registrar o paciente. ${state.error?.toString() ?? "Erro desconhecido."}'),
               actions: [FilledButton(child: const Text('OK'), onPressed: () => Navigator.pop(context))],
             ),
           );
@@ -182,17 +187,22 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
         await _showSuccessAndResetForm();
       } catch (e, s) {
-        AppLogger.error('[UI] ❌ Erro inesperado na criação', e, s);
+        AppLogger.error('[UI] ❌ Erro inesperado na criação (try/catch)', e, s);
+        print('❌ UI (try/catch): Erro inesperado → $e'); // debug
+
         await showDialog(
           context: context,
           builder: (context) => ContentDialog(
             title: const Text('Erro inesperado'),
-            content: const Text('Ocorreu um erro inesperado. Verifique os logs.'),
+            content: Text(
+              'Ocorreu um erro inesperado ao criar o participante. Detalhes: $e',
+            ),
             actions: [FilledButton(child: const Text('OK'), onPressed: () => Navigator.pop(context))],
           ),
         );
       }
     }
+
 
     return Form(
       key: formKey,

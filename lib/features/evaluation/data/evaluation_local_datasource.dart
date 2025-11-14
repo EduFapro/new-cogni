@@ -12,15 +12,14 @@ class EvaluationLocalDataSource {
 
   Future<Database> get _db async => dbHelper.database;
 
-  Future<int?> insertEvaluation(DatabaseExecutor txn, Map<String, dynamic> data) async {
-    AppLogger.db('Inserting evaluation for participantId=${data[EvaluationFields.participantId]}');
+  Future<int?> insertEvaluation(Transaction txn, Map<String, dynamic> data) async {
     try {
-      final id = await txn.insert(Tables.evaluations, data);
+      final id = await txn.insert(Tables.evaluations, data); // ✅ use txn
       AppLogger.db('Inserted evaluation with ID=$id');
       return id;
     } catch (e, s) {
-      AppLogger.error('Error inserting evaluation', e, s);
-      return null;
+      AppLogger.error('EvaluationLocalDataSource.insertEvaluation → DB error', e, s);
+      rethrow;
     }
   }
 
