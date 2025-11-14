@@ -1,4 +1,6 @@
+import '../../../core/deterministic_encryption_helper.dart';
 import '../../auth/domain/auth_repository.dart';
+import '../../evaluator/application/evaluator_secure_service.dart';
 import '../../evaluator/data/evaluator_model.dart';
 import 'auth_local_datasource.dart';
 
@@ -8,8 +10,27 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._local);
 
   @override
-  Future<EvaluatorModel?> login(String email, String password) {
-    return _local.getEvaluatorByEmail(email);
+  Future<EvaluatorModel?> login(String email, String password) async {
+    print('[AuthRepositoryImpl] 🔐 Login request for: $email');
+    final evaluator = await _local.getEvaluatorByEmail(email);
+
+    if (evaluator == null) {
+      print('[AuthRepositoryImpl] ❌ No evaluator found');
+      return null;
+    }
+
+    // Hash password instead of encrypting it
+    final hashedInputPassword = EvaluatorSecureService.hash(password);
+    print('[AuthRepositoryImpl] 🔐 Hashed input password: $hashedInputPassword');
+    print('[AuthRepositoryImpl] 🗃️ Stored password: ${evaluator.password}');
+
+    if (evaluator.password != hashedInputPassword) {
+      print('[AuthRepositoryImpl] ❌ Password mismatch');
+      return null;
+    }
+
+    print('[AuthRepositoryImpl] ✅ Login successful');
+    return evaluator;
   }
 
   @override

@@ -1,49 +1,37 @@
-import '../../../core/utils/encryption_helper.dart';
+import '../../../core/deterministic_encryption_helper.dart';
 import '../application/evaluator_secure_service.dart';
 import 'evaluator_model.dart';
 
-/// Security helpers for EvaluatorModel kept in a single place to avoid duplicates.
+/// Encrypt PII and hash password
 extension EvaluatorModelSecurity on EvaluatorModel {
-  /// Encrypt PII and hash the password (canonical version used across the app).
   EvaluatorModel encryptedAndHashed() {
     return EvaluatorModel(
       evaluatorId: evaluatorId,
-
-      // All fields are non-nullable in EvaluatorEntity/EvaluatorModel.
-      name: EncryptionHelper.encryptText(name),
-      surname: EncryptionHelper.encryptText(surname),
-      email: EncryptionHelper.encryptText(email),
-      birthDate: EncryptionHelper.encryptText(birthDate),
-      specialty: EncryptionHelper.encryptText(specialty),
-      cpfOrNif: EncryptionHelper.encryptText(cpfOrNif),
-      username: EncryptionHelper.encryptText(username),
-
-      // Hash password (leave as hex string).
+      name: DeterministicEncryptionHelper.encryptText(name),
+      surname: DeterministicEncryptionHelper.encryptText(surname),
+      email: DeterministicEncryptionHelper.encryptText(email),
+      birthDate: DeterministicEncryptionHelper.encryptText(birthDate),
+      specialty: DeterministicEncryptionHelper.encryptText(specialty),
+      cpfOrNif: DeterministicEncryptionHelper.encryptText(cpfOrNif),
+      username: DeterministicEncryptionHelper.encryptText(username),
       password: EvaluatorSecureService.hash(password),
-
-      // Pass-through flags.
       firstLogin: firstLogin,
     );
   }
 }
 
 extension EvaluatorModelDecryption on EvaluatorModel {
-  /// Decrypt PII (password remains hashed).
   EvaluatorModel decrypted() {
     return EvaluatorModel(
       evaluatorId: evaluatorId,
-
-      name: EncryptionHelper.decryptText(name),
-      surname: EncryptionHelper.decryptText(surname),
-      email: EncryptionHelper.decryptText(email),
-      birthDate: EncryptionHelper.decryptText(birthDate),
-      specialty: EncryptionHelper.decryptText(specialty),
-      cpfOrNif: EncryptionHelper.decryptText(cpfOrNif),
-      username: EncryptionHelper.decryptText(username),
-
-      // Keep hashed password untouched
+      name: DeterministicEncryptionHelper.decryptText(name),
+      surname: DeterministicEncryptionHelper.decryptText(surname),
+      email: DeterministicEncryptionHelper.decryptText(email),
+      birthDate: DeterministicEncryptionHelper.decryptText(birthDate),
+      specialty: DeterministicEncryptionHelper.decryptText(specialty),
+      cpfOrNif: DeterministicEncryptionHelper.decryptText(cpfOrNif),
+      username: DeterministicEncryptionHelper.decryptText(username),
       password: password,
-
       firstLogin: firstLogin,
     );
   }

@@ -1,6 +1,7 @@
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../../core/constants/database_constants.dart';
+import '../../../core/deterministic_encryption_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/utils/encryption_helper.dart';
 import '../application/evaluator_secure_service.dart';
@@ -84,7 +85,7 @@ class EvaluatorLocalDataSource {
   Future<bool> existsByEmail(String email) async {
     AppLogger.db('[EVALUATOR] Checking if evaluator exists for email: $email');
     try {
-      final encEmail = EncryptionHelper.encryptText(email);
+      final encEmail = DeterministicEncryptionHelper.encryptText(email);
       final result = await _db.query(
         Tables.evaluators,
         where: '${EvaluatorFields.email} = ?',
@@ -102,7 +103,7 @@ class EvaluatorLocalDataSource {
 
   /// Login using encrypted username + hashed password
   Future<EvaluatorModel?> login(String username, String password) async {
-    final encryptedUsername = EncryptionHelper.encryptText(username);
+    final encryptedUsername = DeterministicEncryptionHelper.encryptText(username);
     final hashedPassword = EvaluatorSecureService.hash(password);
 
     final result = await _db.query(

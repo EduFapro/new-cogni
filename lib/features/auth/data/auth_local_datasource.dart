@@ -1,5 +1,6 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
+import '../../../core/deterministic_encryption_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../evaluator/application/evaluator_secure_service.dart';
 import '../../evaluator/data/evaluator_model.dart';
@@ -8,22 +9,26 @@ import '../../evaluator/data/evaluator_constants.dart';
 class AuthLocalDataSource {
   final Database _db;
   AuthLocalDataSource(this._db);
-
   Future<EvaluatorModel?> getEvaluatorByEmail(String email) async {
-    AppLogger.db('Query evaluator by email: $email');
+    final encryptedEmail = DeterministicEncryptionHelper.encryptText(email);
+    AppLogger.debug('Looking up evaluator: $email (encrypted: $encryptedEmail)');
+
     final result = await _db.query(
       Tables.evaluators,
       where: '${EvaluatorFields.email} = ?',
-      whereArgs: [email],
+      whereArgs: [encryptedEmail],
       limit: 1,
     );
+
     if (result.isEmpty) {
       AppLogger.db('No evaluator found for $email');
       return null;
     }
+
     AppLogger.db('Evaluator found for $email');
     return EvaluatorModel.fromMap(result.first);
   }
+
 
   Future<void> clearCurrentUser() async {
     AppLogger.db('Clearing current user from DB');
