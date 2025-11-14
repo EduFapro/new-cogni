@@ -1,5 +1,4 @@
 import 'package:segundo_cogni/features/evaluator/domain/evaluator_registration_data.dart';
-import '../../../core/utils/encryption_helper.dart';
 import '../domain/evaluator_entity.dart';
 import 'evaluator_constants.dart';
 
@@ -14,64 +13,61 @@ class EvaluatorModel extends EvaluatorEntity {
     required super.cpfOrNif,
     required super.username,
     required super.password,
-    super.firstLogin = true,
+    // Align with DB default (0 → false)
+    super.firstLogin = false,
   });
 
-  factory EvaluatorModel.fromMap(Map<String, dynamic> map) =>
-      EvaluatorModel(
-        evaluatorId: map[EvaluatorFields.id] as int?,
-        name: map[EvaluatorFields.name],
-        surname: map[EvaluatorFields.surname],
-        email: map[EvaluatorFields.email],
-        birthDate: map[EvaluatorFields.birthDate],
-        specialty: map[EvaluatorFields.specialty],
-        cpfOrNif: map[EvaluatorFields.cpf],
-        username: map[EvaluatorFields.username],
-        password: map[EvaluatorFields.password],
-        firstLogin: (map[EvaluatorFields.firstLogin] as int) == 1,
-      );
+  factory EvaluatorModel.fromMap(Map<String, dynamic> map) => EvaluatorModel(
+    evaluatorId: map[EvaluatorFields.id] as int?,
+    name: map[EvaluatorFields.name] as String,
+    surname: map[EvaluatorFields.surname] as String,
+    email: map[EvaluatorFields.email] as String,
+    birthDate: map[EvaluatorFields.birthDate] as String,
+    specialty: map[EvaluatorFields.specialty] as String,
+    cpfOrNif: map[EvaluatorFields.cpf] as String,
+    username: map[EvaluatorFields.username] as String,
+    password: map[EvaluatorFields.password] as String,
+    firstLogin: (map[EvaluatorFields.firstLogin] as int) == 1,
+  );
 
-  Map<String, dynamic> toMap() =>
-      {
-        EvaluatorFields.id: evaluatorId,
-        EvaluatorFields.name: name,
-        EvaluatorFields.surname: surname,
-        EvaluatorFields.email: email,
-        EvaluatorFields.birthDate: birthDate,
-        EvaluatorFields.specialty: specialty,
-        EvaluatorFields.cpf: cpfOrNif,
-        EvaluatorFields.username: username,
-        EvaluatorFields.password: password,
-        EvaluatorFields.firstLogin: firstLogin ? 1 : 0,
-      };
+  Map<String, dynamic> toMap() => {
+    EvaluatorFields.id: evaluatorId,
+    EvaluatorFields.name: name,
+    EvaluatorFields.surname: surname,
+    EvaluatorFields.email: email,
+    EvaluatorFields.birthDate: birthDate,
+    EvaluatorFields.specialty: specialty,
+    EvaluatorFields.cpf: cpfOrNif,
+    EvaluatorFields.username: username,
+    EvaluatorFields.password: password,
+    EvaluatorFields.firstLogin: firstLogin ? 1 : 0,
+  };
 
-  Map<String, dynamic> toJson() =>
-      {
-        'evaluator_id': evaluatorId,
-        'name': name,
-        'surname': surname,
-        'email': email,
-        'birthDate': birthDate,
-        'specialty': specialty,
-        'cpfOrNif': cpfOrNif,
-        'username': username,
-        'password': password,
-        'firstLogin': firstLogin,
-      };
+  Map<String, dynamic> toJson() => {
+    'evaluator_id': evaluatorId,
+    'name': name,
+    'surname': surname,
+    'email': email,
+    'birthDate': birthDate,
+    'specialty': specialty,
+    'cpfOrNif': cpfOrNif,
+    'username': username,
+    'password': password,
+    'firstLogin': firstLogin,
+  };
 
-  factory EvaluatorModel.fromEntity(EvaluatorEntity entity) =>
-      EvaluatorModel(
-        evaluatorId: entity.evaluatorId,
-        name: entity.name,
-        surname: entity.surname,
-        email: entity.email,
-        birthDate: entity.birthDate,
-        specialty: entity.specialty,
-        cpfOrNif: entity.cpfOrNif,
-        username: entity.username,
-        password: entity.password,
-        firstLogin: entity.firstLogin,
-      );
+  factory EvaluatorModel.fromEntity(EvaluatorEntity entity) => EvaluatorModel(
+    evaluatorId: entity.evaluatorId,
+    name: entity.name,
+    surname: entity.surname,
+    email: entity.email,
+    birthDate: entity.birthDate,
+    specialty: entity.specialty,
+    cpfOrNif: entity.cpfOrNif,
+    username: entity.username,
+    password: entity.password,
+    firstLogin: entity.firstLogin,
+  );
 
   factory EvaluatorModel.fromDTO(EvaluatorRegistrationData dto) {
     return EvaluatorModel(
@@ -86,36 +82,6 @@ class EvaluatorModel extends EvaluatorEntity {
       firstLogin: dto.firstLogin,
     );
   }
-
-  EvaluatorModel encrypted() {
-    return EvaluatorModel(
-      evaluatorId: evaluatorId,
-      name: EncryptionHelper.encryptText(name),
-      surname: EncryptionHelper.encryptText(surname),
-      email: EncryptionHelper.encryptText(email),
-      birthDate: EncryptionHelper.encryptText(birthDate),
-      specialty: EncryptionHelper.encryptText(specialty),
-      cpfOrNif: EncryptionHelper.encryptText(cpfOrNif),
-      username: EncryptionHelper.encryptText(username),
-      password: password,
-      // already hashed
-      firstLogin: firstLogin,
-    );
-  }
-
-  static EvaluatorModel decrypt(EvaluatorModel model) {
-    return model.copyWith(
-      name: EncryptionHelper.decryptText(model.name),
-      surname: EncryptionHelper.decryptText(model.surname),
-      email: EncryptionHelper.decryptText(model.email),
-      birthDate: EncryptionHelper.decryptText(model.birthDate),
-      specialty: EncryptionHelper.decryptText(model.specialty),
-      cpfOrNif: EncryptionHelper.decryptText(model.cpfOrNif),
-      username: EncryptionHelper.decryptText(model.username),
-      password: model.password,
-    );
-  }
-
 
   EvaluatorModel copyWith({
     int? evaluatorId,
@@ -142,5 +108,4 @@ class EvaluatorModel extends EvaluatorEntity {
       firstLogin: firstLogin ?? this.firstLogin,
     );
   }
-
 }

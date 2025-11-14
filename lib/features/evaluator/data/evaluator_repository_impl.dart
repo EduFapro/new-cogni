@@ -61,7 +61,7 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
   @override
   Future<void> insertEvaluator(EvaluatorRegistrationData data) async {
     final model = EvaluatorModel.fromDTO(data);
-    await _local!.insert(model);
+    await _local!.insert(model); // Local insert secures data internally.
   }
 
   @override

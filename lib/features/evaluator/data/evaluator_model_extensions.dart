@@ -1,12 +1,15 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import 'package:segundo_cogni/core/utils/encryption_helper.dart';
+import '../../../core/utils/encryption_helper.dart';
+import '../application/evaluator_secure_service.dart';
 import 'evaluator_model.dart';
 
+/// Security helpers for EvaluatorModel kept in a single place to avoid duplicates.
 extension EvaluatorModelSecurity on EvaluatorModel {
+  /// Encrypt PII and hash the password (canonical version used across the app).
   EvaluatorModel encryptedAndHashed() {
     return EvaluatorModel(
       evaluatorId: evaluatorId,
+
+      // All fields are non-nullable in EvaluatorEntity/EvaluatorModel.
       name: EncryptionHelper.encryptText(name),
       surname: EncryptionHelper.encryptText(surname),
       email: EncryptionHelper.encryptText(email),
@@ -14,19 +17,22 @@ extension EvaluatorModelSecurity on EvaluatorModel {
       specialty: EncryptionHelper.encryptText(specialty),
       cpfOrNif: EncryptionHelper.encryptText(cpfOrNif),
       username: EncryptionHelper.encryptText(username),
-      password: _hash(password),
+
+      // Hash password (leave as hex string).
+      password: EvaluatorSecureService.hash(password),
+
+      // Pass-through flags.
       firstLogin: firstLogin,
     );
   }
-
-  static String _hash(String input) =>
-      sha256.convert(utf8.encode(input)).toString();
 }
 
 extension EvaluatorModelDecryption on EvaluatorModel {
+  /// Decrypt PII (password remains hashed).
   EvaluatorModel decrypted() {
     return EvaluatorModel(
       evaluatorId: evaluatorId,
+
       name: EncryptionHelper.decryptText(name),
       surname: EncryptionHelper.decryptText(surname),
       email: EncryptionHelper.decryptText(email),
@@ -34,7 +40,10 @@ extension EvaluatorModelDecryption on EvaluatorModel {
       specialty: EncryptionHelper.decryptText(specialty),
       cpfOrNif: EncryptionHelper.decryptText(cpfOrNif),
       username: EncryptionHelper.decryptText(username),
-      password: password, // leave hashed
+
+      // Keep hashed password untouched
+      password: password,
+
       firstLogin: firstLogin,
     );
   }

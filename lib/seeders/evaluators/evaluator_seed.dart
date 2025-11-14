@@ -13,9 +13,12 @@ Future<void> seedDummyEvaluator(DatabaseExecutor db) async {
     EvaluatorFields.name: 'Demo',
     EvaluatorFields.surname: 'User',
     EvaluatorFields.email: 'demo@example.com',
+    EvaluatorFields.cpf: '03240120010',
     EvaluatorFields.username: 'demo',
     EvaluatorFields.password: '0000',
-    EvaluatorFields.firstLogin: 0,
+    EvaluatorFields.specialty: 'Psicologia',
+    EvaluatorFields.birthDate: "1998-07-14",
+    EvaluatorFields.firstLogin: 1,
     EvaluatorFields.isAdmin: 1,
   };
 

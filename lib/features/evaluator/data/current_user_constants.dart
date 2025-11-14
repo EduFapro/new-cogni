@@ -2,7 +2,6 @@ import '../../../core/constants/database_constants.dart';
 import 'evaluator_constants.dart';
 
 class CurrentUserFields {
-  // Reuse the same column names
   static const id = EvaluatorFields.id;
   static const name = EvaluatorFields.name;
   static const surname = EvaluatorFields.surname;
@@ -12,6 +11,7 @@ class CurrentUserFields {
   static const cpf = EvaluatorFields.cpf;
   static const username = EvaluatorFields.username;
   static const password = EvaluatorFields.password;
+  static const firstLogin = EvaluatorFields.firstLogin;
   static const isAdmin = EvaluatorFields.isAdmin;
 
   static const values = [
@@ -24,12 +24,14 @@ class CurrentUserFields {
     cpf,
     username,
     password,
+    firstLogin,
     isAdmin,
   ];
 }
 
+
 const scriptCreateTableCurrentUser = '''
-CREATE TABLE current_user (
+CREATE TABLE ${Tables.currentUser} (
   ${CurrentUserFields.id} INTEGER PRIMARY KEY,
   ${CurrentUserFields.name} TEXT NOT NULL,
   ${CurrentUserFields.surname} TEXT NOT NULL,
@@ -40,6 +42,7 @@ CREATE TABLE current_user (
   ${CurrentUserFields.username} TEXT NOT NULL UNIQUE,
   ${CurrentUserFields.password} TEXT NOT NULL,
   ${CurrentUserFields.isAdmin} INTEGER NOT NULL DEFAULT 0,
+  ${CurrentUserFields.firstLogin} INTEGER NOT NULL DEFAULT 0,
   FOREIGN KEY (${CurrentUserFields.id})
     REFERENCES ${Tables.evaluators}(${EvaluatorFields.id})
     ON DELETE CASCADE ON UPDATE CASCADE
