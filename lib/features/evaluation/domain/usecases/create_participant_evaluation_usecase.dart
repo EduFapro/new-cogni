@@ -3,6 +3,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/constants/enums/progress_status.dart';
 
+import '../../../participant/data/participant_security_helper.dart';
 import '../../../participant/domain/participant_entity.dart';
 import '../../../participant/data/participant_local_datasource.dart';
 
@@ -58,8 +59,13 @@ class CreateParticipantEvaluationUseCase {
 
     await db.transaction((txn) async {
       // 1) Participant
+      final hashedParticipant = participant.copyWith(
+        name: ParticipantSecurityHelper.hashSha256(participant.name),
+        surname: ParticipantSecurityHelper.hashSha256(participant.surname),
+      );
+
       final participantId =
-      await participantDataSource.insertParticipant(txn, participant.toMap());
+      await participantDataSource.insertParticipant(txn, hashedParticipant.toMap());
       AppLogger.db('[USECASE] Participant inserted: id=$participantId');
 
       // 2) Evaluation
