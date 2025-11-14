@@ -12,7 +12,6 @@ import '../../../providers/participant_providers.dart';
 
 import '../../module/data/module_local_datasource.dart';
 import '../../module/domain/module_entity.dart';
-
 import '../domain/participant_entity.dart';
 
 class ParticipantRegistrationForm extends HookConsumerWidget {
@@ -39,7 +38,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
     final createState = ref.watch(createParticipantEvaluationProvider);
 
-    // Carrega os módulos na primeira renderização
+    // 🔄 Carrega módulos uma vez ao montar
     useEffect(() {
       () async {
         try {
@@ -58,7 +57,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
           selectedModuleIds.value = ids;
           selectAll.value = true;
 
-          AppLogger.info('[UI] Módulos carregados: ${modules.length}, selecionados: ${ids.length}');
+          AppLogger.info('[UI] Módulos carregados: ${modules.length}, pré-selecionados: ${ids.length}');
         } catch (e, s) {
           AppLogger.error('[UI] Erro ao carregar módulos', e, s);
         }
@@ -96,7 +95,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
           selectedGender.value == null ||
           selectedEducation.value == null ||
           selectedLaterality.value == null) {
-        AppLogger.warning('[UI] Validação do formulário falhou');
+        AppLogger.warning('[UI] ⚠️ Formulário inválido');
 
         await showDialog(
           context: context,
@@ -110,7 +109,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       }
 
       if (selectedModuleIds.value.isEmpty) {
-        AppLogger.warning('[UI] Nenhum módulo selecionado');
+        AppLogger.warning('[UI] ⚠️ Nenhum módulo selecionado');
 
         await showDialog(
           context: context,
@@ -125,7 +124,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
       final evaluator = ref.read(currentUserProvider);
       if (evaluator == null || evaluator.evaluatorId == null) {
-        AppLogger.error('[UI] Nenhum avaliador logado');
+        AppLogger.error('[UI] ❌ Nenhum avaliador logado');
 
         await showDialog(
           context: context,
@@ -150,17 +149,15 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       final moduleIds = selectedModuleIds.value.toList();
 
       AppLogger.info(
-        '[UI] Criando paciente → '
+        '[UI] Enviando novo participante: '
             'nome=${participant.name} ${participant.surname}, '
-            'nascimento=${participant.birthDate}, '
-            'sexo=${participant.sex}, '
-            'educação=${participant.educationLevel}, '
-            'lateralidade=${participant.laterality}, '
-            'avaliadorId=${evaluator.evaluatorId}, '
-            'módulos=$moduleIds',
+            'nasc=${participant.birthDate}, sexo=${participant.sex}, '
+            'educação=${participant.educationLevel}, lateralidade=${participant.laterality}, '
+            'avaliador=${evaluator.evaluatorId}, módulos=$moduleIds',
       );
 
       try {
+        // ✅ LEITURA CORRETA DO NOTIFIER
         final notifier = ref.read(createParticipantEvaluationProvider.notifier);
 
         await notifier.createParticipantWithEvaluation(
@@ -171,7 +168,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
         final state = ref.read(createParticipantEvaluationProvider);
         if (state.hasError) {
-          AppLogger.error('[UI] Falha ao criar paciente', state.error, state.stackTrace);
+          AppLogger.error('[UI] ❌ Falha na criação do paciente', state.error, state.stackTrace);
           await showDialog(
             context: context,
             builder: (context) => ContentDialog(
@@ -185,7 +182,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
         await _showSuccessAndResetForm();
       } catch (e, s) {
-        AppLogger.error('[UI] Erro inesperado', e, s);
+        AppLogger.error('[UI] ❌ Erro inesperado na criação', e, s);
         await showDialog(
           context: context,
           builder: (context) => ContentDialog(

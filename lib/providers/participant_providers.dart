@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../core/database/base_database_helper.dart';
 import '../core/database/prod_database_helper.dart';
 import '../core/logger/app_logger.dart';
+import '../features/participant/domain/participant_entity.dart';
 import '../features/participant/presentation/create_participant_evaluation_notifier.dart';
 
 /// DB Provider for participants (used in production)
@@ -13,7 +14,8 @@ final participantDbHelperProvider = Provider<BaseDatabaseHelper>((ref) {
 
 /// Notifier to create participant + evaluation hierarchy
 final createParticipantEvaluationProvider =
-AsyncNotifierProvider<CreateParticipantEvaluationNotifier, dynamic>(
+AsyncNotifierProvider<CreateParticipantEvaluationNotifier, ParticipantEntity?>
+(
       () {
     AppLogger.info(
       'Initializing CreateParticipantEvaluationNotifier via createParticipantEvaluationProvider',
