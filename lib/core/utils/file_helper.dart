@@ -35,3 +35,31 @@ Future<void> exportParticipantsToExcel(List<ParticipantWithEvaluation> list) asy
 
   debugPrint('📁 Exported to $filePath');
 }
+
+Future<void> exportSingleParticipantToExcel(ParticipantWithEvaluation participant) async {
+  final excel = Excel.createExcel();
+  final sheet = excel['Participante'];
+
+  sheet.appendRow([
+    TextCellValue('Nome'),
+    TextCellValue('Status'),
+    TextCellValue('Data da Avaliação'),
+  ]);
+
+  sheet.appendRow([
+    TextCellValue(participant.fullName),
+    TextCellValue(participant.statusLabel),
+    TextCellValue(participant.evaluationDateFormatted),
+  ]);
+
+  final directory = await getApplicationDocumentsDirectory();
+  final filePath = '${directory.path}/participante_${participant.fullName}.xlsx';
+
+  final fileBytes = excel.encode();
+  if (fileBytes == null) return;
+
+  final file = File(filePath)..createSync(recursive: true);
+  await file.writeAsBytes(fileBytes);
+
+  debugPrint('📁 Exported single participant to $filePath');
+}

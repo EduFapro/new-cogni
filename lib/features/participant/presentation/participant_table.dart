@@ -1,5 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/file_helper.dart';
+import '../../evaluation/presentation/module_evaluation_screen.dart';
 import '../domain/participant_with_evaluation.dart';
 
 class ParticipantTable extends StatelessWidget {
@@ -70,9 +72,17 @@ class ParticipantTable extends StatelessWidget {
                         style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
                       ),
                       onPressed: () {
-                        // TODO: Proceed logic
+                        Navigator.push(
+                          context,
+                          FluentPageRoute(
+                            builder: (_) => ModuleEvaluationScreen(
+                              evaluationId: item.evaluation!.evaluationID!,
+                            ),
+                          ),
+                        );
                       },
                     ),
+
                     Button(
                       child: Text(
                         'Editar Informações',
@@ -82,6 +92,28 @@ class ParticipantTable extends StatelessWidget {
                         // TODO: Edit logic
                       },
                     ),
+                    Button(
+                      child: Text(
+                        'Exportar Excel',
+                        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () async {
+                        await exportSingleParticipantToExcel(item);
+                        if (context.mounted) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => ContentDialog(
+                              title: const Text('Exportado!'),
+                              content: const Text('Participante exportado com sucesso.'),
+                              actions: [
+                                Button(child: const Text('OK'), onPressed: () => Navigator.pop(context)),
+                              ],
+                            ),
+                          );
+                        }
+                      },
+                    ),
+
                   ],
                 ),
               ),
