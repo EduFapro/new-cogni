@@ -84,7 +84,11 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       );
 
       // Wait briefly so user sees the message
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Close flyout
+      }
 
       // 🧹 Reset form
       formKey.currentState!.reset();
