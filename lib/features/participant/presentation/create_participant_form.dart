@@ -13,6 +13,7 @@ import '../../../providers/participant_providers.dart';
 import '../../module/data/module_local_datasource.dart';
 import '../../module/domain/module_entity.dart';
 import '../domain/participant_entity.dart';
+import '../../home/home_providers.dart'; // ✅ Added import
 
 class ParticipantRegistrationForm extends HookConsumerWidget {
   const ParticipantRegistrationForm({super.key});
@@ -57,7 +58,9 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
           selectedModuleIds.value = ids;
           selectAll.value = true;
 
-          AppLogger.info('[UI] Módulos carregados: ${modules.length}, pré-selecionados: ${ids.length}');
+          AppLogger.info(
+            '[UI] Módulos carregados: ${modules.length}, pré-selecionados: ${ids.length}',
+          );
         } catch (e, s) {
           AppLogger.error('[UI] Erro ao carregar módulos', e, s);
         }
@@ -68,16 +71,20 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
     Future<void> _showSuccessAndResetForm() async {
       AppLogger.info('[UI] ✅ Paciente criado com sucesso!');
 
-      await flyoutController.showFlyout(
+      // Show flyout (do not await closure)
+      flyoutController.showFlyout(
         barrierDismissible: true,
         placementMode: FlyoutPlacementMode.bottomCenter,
         builder: (context) => const FlyoutContent(
           child: Padding(
             padding: EdgeInsets.all(8.0),
-            child: Text('✅ Paciente registrado com sucesso!'),
+            child: Text('✅ Paciente registrado com sucesso! Redirecionando...'),
           ),
         ),
       );
+
+      // Wait briefly so user sees the message
+      await Future.delayed(const Duration(seconds: 2));
 
       // 🧹 Reset form
       formKey.currentState!.reset();
@@ -89,16 +96,11 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       selectedEducation.value = null;
       selectedLaterality.value = null;
 
-      // ⬅️ Navigate back
-      if (context.mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/dashboard', // or your home route name
-              (route) => false, // removes all previous routes
-        );
-
-      }
+      // ⬅️ Navigate back to dashboard
+      ref
+          .read(homeNavigationProvider.notifier)
+          .setIndex(0); // ✅ Switch tab to Dashboard
     }
-
 
     Future<void> _onSubmit() async {
       if (!formKey.currentState!.validate() ||
@@ -112,8 +114,15 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
           context: context,
           builder: (context) => ContentDialog(
             title: const Text('Dados incompletos'),
-            content: const Text('Por favor, preencha todos os campos obrigatórios do paciente.'),
-            actions: [FilledButton(child: const Text('OK'), onPressed: () => Navigator.pop(context))],
+            content: const Text(
+              'Por favor, preencha todos os campos obrigatórios do paciente.',
+            ),
+            actions: [
+              FilledButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
         );
         return;
@@ -126,8 +135,15 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
           context: context,
           builder: (context) => ContentDialog(
             title: const Text('Selecione os módulos'),
-            content: const Text('Escolha pelo menos um módulo para esta avaliação.'),
-            actions: [FilledButton(child: const Text('OK'), onPressed: () => Navigator.pop(context))],
+            content: const Text(
+              'Escolha pelo menos um módulo para esta avaliação.',
+            ),
+            actions: [
+              FilledButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
         );
         return;
@@ -141,8 +157,15 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
           context: context,
           builder: (context) => ContentDialog(
             title: const Text('Erro'),
-            content: const Text('Nenhum avaliador logado foi encontrado. Faça login novamente.'),
-            actions: [FilledButton(child: const Text('OK'), onPressed: () => Navigator.pop(context))],
+            content: const Text(
+              'Nenhum avaliador logado foi encontrado. Faça login novamente.',
+            ),
+            actions: [
+              FilledButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
         );
         return;
@@ -161,10 +184,10 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
       AppLogger.info(
         '[UI] Enviando novo participante: '
-            'nome=${participant.name} ${participant.surname}, '
-            'nasc=${participant.birthDate}, sexo=${participant.sex}, '
-            'educação=${participant.educationLevel}, lateralidade=${participant.laterality}, '
-            'avaliador=${evaluator.evaluatorId}, módulos=$moduleIds',
+        'nome=${participant.name} ${participant.surname}, '
+        'nasc=${participant.birthDate}, sexo=${participant.sex}, '
+        'educação=${participant.educationLevel}, lateralidade=${participant.laterality}, '
+        'avaliador=${evaluator.evaluatorId}, módulos=$moduleIds',
       );
 
       try {
@@ -189,8 +212,14 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
             builder: (context) => ContentDialog(
               title: const Text('Erro ao salvar'),
               content: Text(
-                  'Não foi possível registrar o paciente. ${state.error?.toString() ?? "Erro desconhecido."}'),
-              actions: [FilledButton(child: const Text('OK'), onPressed: () => Navigator.pop(context))],
+                'Não foi possível registrar o paciente. ${state.error?.toString() ?? "Erro desconhecido."}',
+              ),
+              actions: [
+                FilledButton(
+                  child: const Text('OK'),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
             ),
           );
           return;
@@ -208,19 +237,26 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
             content: Text(
               'Ocorreu um erro inesperado ao criar o participante. Detalhes: $e',
             ),
-            actions: [FilledButton(child: const Text('OK'), onPressed: () => Navigator.pop(context))],
+            actions: [
+              FilledButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
         );
       }
     }
-
 
     return Form(
       key: formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('📋 Registro do Paciente', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text(
+            '📋 Registro do Paciente',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
 
           TextBox(controller: nameController, placeholder: 'Nome'),
@@ -243,7 +279,9 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
             child: ComboBox<Sex>(
               isExpanded: true,
               value: selectedGender.value,
-              items: Sex.values.map((g) => ComboBoxItem(value: g, child: Text(g.label))).toList(),
+              items: Sex.values
+                  .map((g) => ComboBoxItem(value: g, child: Text(g.label)))
+                  .toList(),
               onChanged: (v) => selectedGender.value = v,
               placeholder: const Text('Selecione o sexo'),
             ),
@@ -255,7 +293,9 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
             child: ComboBox<EducationLevel>(
               isExpanded: true,
               value: selectedEducation.value,
-              items: EducationLevel.values.map((e) => ComboBoxItem(value: e, child: Text(e.label))).toList(),
+              items: EducationLevel.values
+                  .map((e) => ComboBoxItem(value: e, child: Text(e.label)))
+                  .toList(),
               onChanged: (v) => selectedEducation.value = v,
               placeholder: const Text('Selecione o nível'),
             ),
@@ -267,7 +307,9 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
             child: ComboBox<Laterality>(
               isExpanded: true,
               value: selectedLaterality.value,
-              items: Laterality.values.map((h) => ComboBoxItem(value: h, child: Text(h.label))).toList(),
+              items: Laterality.values
+                  .map((h) => ComboBoxItem(value: h, child: Text(h.label)))
+                  .toList(),
               onChanged: (v) => selectedLaterality.value = v,
               placeholder: const Text('Selecione a lateralidade'),
             ),
@@ -291,7 +333,10 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
           const SizedBox(height: 24),
 
-          Text('Módulos da Avaliação', style: FluentTheme.of(context).typography.subtitle),
+          Text(
+            'Módulos da Avaliação',
+            style: FluentTheme.of(context).typography.subtitle,
+          ),
           const SizedBox(height: 8),
 
           Row(
@@ -322,29 +367,32 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
           ...modulesState.value
               .where((m) => m.moduleID != null && m.moduleID != 9001)
               .map((module) {
-            final id = module.moduleID!;
-            final isChecked = selectedModuleIds.value.contains(id);
+                final id = module.moduleID!;
+                final isChecked = selectedModuleIds.value.contains(id);
 
-            return Row(
-              children: [
-                Checkbox(
-                  checked: isChecked,
-                  onChanged: (value) {
-                    final set = {...selectedModuleIds.value};
-                    value == true ? set.add(id) : set.remove(id);
-                    selectedModuleIds.value = set;
+                return Row(
+                  children: [
+                    Checkbox(
+                      checked: isChecked,
+                      onChanged: (value) {
+                        final set = {...selectedModuleIds.value};
+                        value == true ? set.add(id) : set.remove(id);
+                        selectedModuleIds.value = set;
 
-                    final totalVisible = modulesState.value
-                        .where((m) => m.moduleID != null && m.moduleID != 9001)
-                        .length;
-                    selectAll.value = set.length == totalVisible;
-                  },
-                ),
-                const SizedBox(width: 8),
-                Text(module.title),
-              ],
-            );
-          }).toList(),
+                        final totalVisible = modulesState.value
+                            .where(
+                              (m) => m.moduleID != null && m.moduleID != 9001,
+                            )
+                            .length;
+                        selectAll.value = set.length == totalVisible;
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(module.title),
+                  ],
+                );
+              })
+              .toList(),
 
           const SizedBox(height: 24),
 

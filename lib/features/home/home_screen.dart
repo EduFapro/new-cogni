@@ -1,5 +1,4 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -9,21 +8,22 @@ import '../auth/data/auth_repository_impl.dart';
 import '../participant/presentation/create_participant_screen.dart';
 import '../../core/database/prod_database_helper.dart';
 
+import 'home_providers.dart';
+
 class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
-    final selectedIndex = useState(0);
+    final selectedIndex = ref.watch(homeNavigationProvider);
 
     return NavigationView(
-      appBar: const NavigationAppBar(
-        title: Text('CogniVoice Home'),
-      ),
+      appBar: const NavigationAppBar(title: Text('CogniVoice Home')),
       pane: NavigationPane(
-        selected: selectedIndex.value,
-        onChanged: (index) => selectedIndex.value = index,
+        selected: selectedIndex,
+        onChanged: (index) => ref
+            .read(homeNavigationProvider.notifier)
+            .setIndex(index), // ✅ Update provider
         displayMode: PaneDisplayMode.auto,
         items: [
           PaneItem(
@@ -74,9 +74,7 @@ class DashboardContent extends StatelessWidget {
           style: FluentTheme.of(context).typography.title,
         ),
       ),
-      children: const [
-        Text('Aqui é o conteúdo principal do dashboard.'),
-      ],
+      children: const [Text('Aqui é o conteúdo principal do dashboard.')],
     );
   }
 }
