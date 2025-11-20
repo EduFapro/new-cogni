@@ -44,7 +44,7 @@ class ParticipantTable extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(item.completed ? '✅ Feita' : '⏳ Pendente'),
+                child: Text(item.isCompleted ? '✅ Feita' : '⏳ Pendente'),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),

@@ -37,10 +37,16 @@ class ParticipantListScreen extends HookConsumerWidget {
           Expanded(
             child: participantsAsync.when(
               data: (participants) {
-                final filtered = participants
-                    .where((p) =>
-                    p.fullName.toLowerCase().contains(searchQuery.value))
-                    .toList()
+                final filtered = participants.where((p) {
+                  final query = searchQuery.value;
+                  final name = p.fullName.toLowerCase();
+                  final status = p.statusLabel.toLowerCase();
+                  final evalDate = p.evaluationDateFormatted.toLowerCase();
+
+                  return name.contains(query) ||
+                      status.contains(query) ||
+                      evalDate.contains(query);
+                }).toList()
                   ..sort((a, b) => a.fullName.compareTo(b.fullName));
 
                 if (filtered.isEmpty) {
