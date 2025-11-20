@@ -6,6 +6,7 @@ import '../../providers/providers.dart';
 import '../auth/data/auth_local_datasource.dart';
 import '../auth/data/auth_repository_impl.dart';
 import '../participant/presentation/create_participant_screen.dart';
+import '../participant/presentation/participant_list_screen.dart';
 import '../../core/database/prod_database_helper.dart';
 
 import 'home_providers.dart';
@@ -34,7 +35,7 @@ class HomeScreen extends HookConsumerWidget {
           PaneItem(
             icon: const Icon(FluentIcons.contact),
             title: const Text('Participantes'),
-            body: const Placeholder(),
+            body: const ParticipantListScreen(),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.add_friend),

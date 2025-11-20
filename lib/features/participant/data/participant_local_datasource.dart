@@ -15,9 +15,9 @@ class ParticipantLocalDataSource {
   Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insertParticipant(
-      DatabaseExecutor txn,
-      Map<String, dynamic> data,
-      ) async {
+    DatabaseExecutor txn,
+    Map<String, dynamic> data,
+  ) async {
     // Make a mutable copy so we don't mutate caller's map.
     final payload = Map<String, dynamic>.from(data);
 
@@ -122,5 +122,31 @@ class ParticipantLocalDataSource {
         s,
       );
     }
+  }
+
+  Future<List<ParticipantEntity>> getParticipantsByEvaluatorId(
+    int evaluatorId,
+  ) async {
+    AppLogger.db(
+      'ParticipantLocalDataSource.getParticipantsByEvaluatorId → evaluatorId=$evaluatorId',
+    );
+    final db = await _db;
+
+    // Join participants and evaluations to filter by evaluator_id
+    final query =
+        '''
+      SELECT p.* 
+      FROM ${Tables.participants} p
+      INNER JOIN ${Tables.evaluations} e ON p.${ParticipantFields.id} = e.participant_id
+      WHERE e.evaluator_id = ?
+    ''';
+
+    final maps = await db.rawQuery(query, [evaluatorId]);
+    final participants = maps.map(ParticipantEntity.fromMap).toList();
+
+    AppLogger.db(
+      'ParticipantLocalDataSource.getParticipantsByEvaluatorId → found ${participants.length} participants',
+    );
+    return participants;
   }
 }

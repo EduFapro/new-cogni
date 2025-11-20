@@ -33,9 +33,7 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
     AppLogger.db('ParticipantRepositoryImpl.getById → id=$id');
     final participant = await local.getById(id);
     if (participant == null) {
-      AppLogger.warning(
-        'ParticipantRepositoryImpl.getById → not found id=$id',
-      );
+      AppLogger.warning('ParticipantRepositoryImpl.getById → not found id=$id');
     }
     return participant;
   }
@@ -44,5 +42,15 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
   Future<void> deleteParticipant(int id) async {
     AppLogger.db('ParticipantRepositoryImpl.deleteParticipant → id=$id');
     await local.deleteParticipant(id);
+  }
+
+  @override
+  Future<List<ParticipantEntity>> getParticipantsByEvaluatorId(
+    int evaluatorId,
+  ) async {
+    AppLogger.db(
+      'ParticipantRepositoryImpl.getParticipantsByEvaluatorId → evaluatorId=$evaluatorId',
+    );
+    return local.getParticipantsByEvaluatorId(evaluatorId);
   }
 }

@@ -5,4 +5,5 @@ abstract class ParticipantRepository {
   Future<List<ParticipantEntity>> getAllParticipants();
   Future<ParticipantEntity?> getById(int id);
   Future<void> deleteParticipant(int id);
+  Future<List<ParticipantEntity>> getParticipantsByEvaluatorId(int evaluatorId);
 }
