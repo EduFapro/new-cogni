@@ -5,13 +5,12 @@ import '../domain/participant_entity.dart';
 import 'participant_provider.dart';
 
 final participantListProvider =
-    AsyncNotifierProvider.autoDispose<
-      ParticipantListNotifier,
-      List<ParticipantEntity>
-    >(ParticipantListNotifier.new);
+AsyncNotifierProvider.autoDispose<
+    ParticipantListNotifier,
+    List<ParticipantEntity>
+>(ParticipantListNotifier.new);
 
-class ParticipantListNotifier
-    extends AutoDisposeAsyncNotifier<List<ParticipantEntity>> {
+class ParticipantListNotifier extends AsyncNotifier<List<ParticipantEntity>> {
   @override
   Future<List<ParticipantEntity>> build() async {
     final currentUser = ref.watch(currentUserProvider);
