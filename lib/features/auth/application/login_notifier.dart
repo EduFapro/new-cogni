@@ -1,7 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/utils/error_parser.dart';
-import '../../../providers/auth_providers.dart';
+import '../../../providers/auth_providers.dart'; // ✅ Restored import
+import '../../../providers/evaluator_providers.dart'; // ✅ Required import
 import '../../evaluator/presentation/providers/evaluator_provider.dart'; // ✅ Required import
 
 class LoginNotifier extends AsyncNotifier<bool> {
@@ -27,10 +28,12 @@ class LoginNotifier extends AsyncNotifier<bool> {
         state = AsyncError('Credenciais inválidas', StackTrace.current);
       } else {
         await repo.saveCurrentUserToDB(user);
+        ref
+            .read(currentUserProvider.notifier)
+            .setUser(user); // ✅ Update in-memory state
         ref.invalidate(currentEvaluatorProvider); // ✅ Now this works
         state = const AsyncData(true);
       }
-
     } catch (e, st) {
       AppLogger.error('Login exception', e, st);
       final userFriendly = parseLoginError(e);
