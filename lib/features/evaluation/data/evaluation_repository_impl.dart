@@ -1,6 +1,8 @@
+import '../../../core/constants/database_constants.dart';
 import '../../../core/logger/app_logger.dart';
 import '../domain/evaluation_entity.dart';
 import '../domain/evaluation_repository.dart';
+import 'evaluation_constants.dart';
 import 'evaluation_local_datasource.dart';
 
 class EvaluationRepositoryImpl implements EvaluationRepository {
@@ -34,4 +36,17 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
     }
     return evaluation;
   }
+
+  @override
+  Future<List<EvaluationEntity>> getEvaluationsByEvaluator(int evaluatorId) async {
+    final db = await local.dbHelper.database;
+    final maps = await db.query(
+      Tables.evaluations,
+      where: '${EvaluationFields.evaluatorId} = ?',
+      whereArgs: [evaluatorId],
+    );
+
+    return maps.map((map) => EvaluationEntity.fromMap(map)).toList();
+  }
+
 }

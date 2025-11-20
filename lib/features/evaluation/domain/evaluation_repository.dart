@@ -4,4 +4,6 @@ abstract class EvaluationRepository {
   Future<void> insertEvaluation(EvaluationEntity evaluation);
   Future<List<EvaluationEntity>> getAllEvaluations();
   Future<EvaluationEntity?> getById(int id);
+
+  Future getEvaluationsByEvaluator(int i) async {}
 }

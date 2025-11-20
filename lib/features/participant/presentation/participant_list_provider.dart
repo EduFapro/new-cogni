@@ -1,35 +1,37 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:segundo_cogni/features/participant/presentation/participant_provider.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../providers/evaluator_providers.dart';
+import '../../evaluation/presentation/evaluation_provider.dart';
 import '../domain/participant_entity.dart';
-import 'participant_provider.dart';
+import '../domain/participant_with_evaluation.dart';
 
-final participantListProvider =
-AsyncNotifierProvider.autoDispose<
+final participantListProvider = AsyncNotifierProvider.autoDispose<
     ParticipantListNotifier,
-    List<ParticipantEntity>
+    List<ParticipantWithEvaluation>
 >(ParticipantListNotifier.new);
 
-class ParticipantListNotifier extends AsyncNotifier<List<ParticipantEntity>> {
+class ParticipantListNotifier extends AsyncNotifier<List<ParticipantWithEvaluation>> {
   @override
-  Future<List<ParticipantEntity>> build() async {
+  Future<List<ParticipantWithEvaluation>> build() async {
     final currentUser = ref.watch(currentUserProvider);
     if (currentUser == null || currentUser.evaluatorId == null) {
-      AppLogger.info(
-        'ParticipantListNotifier: No current user, returning empty list',
-      );
+      AppLogger.info('No current user, returning empty list');
       return [];
     }
 
-    AppLogger.info(
-      'ParticipantListNotifier: Fetching participants for evaluator ${currentUser.evaluatorId}',
-    );
-    final repository = ref.watch(participantRepositoryProvider);
-    return repository.getParticipantsByEvaluatorId(currentUser.evaluatorId!);
-  }
+    final participantRepo = ref.watch(participantRepositoryProvider);
+    final evaluationRepo = ref.watch(evaluationRepositoryProvider);
 
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => build());
+    final participants = await participantRepo.getParticipantsByEvaluatorId(currentUser.evaluatorId!);
+    final evaluations = await evaluationRepo.getEvaluationsByEvaluator(currentUser.evaluatorId!);
+
+    return participants.map((participant) {
+      final eval = evaluations.firstWhere(
+            (e) => e.participantID == participant.participantID,
+        orElse: () => null,
+      );
+      return ParticipantWithEvaluation(participant, eval);
+    }).toList();
   }
 }
