@@ -21,6 +21,7 @@ dependencies:
   flutter_dotenv:
   encrypt:
   crypto:
+  excel:
 
 dependency_overrides:
   math_expressions: 3.1.0

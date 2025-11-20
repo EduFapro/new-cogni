@@ -1,6 +1,7 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
 import '../../../core/database/base_database_helper.dart';
+import '../../../core/deterministic_encryption_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
@@ -73,7 +74,14 @@ class ParticipantLocalDataSource {
     AppLogger.db('ParticipantLocalDataSource.getAllParticipants → querying DB');
     final db = await _db;
     final maps = await db.query(Tables.participants);
-    final participants = maps.map(ParticipantEntity.fromMap).toList();
+    final participants = maps.map((map) {
+      final entity = ParticipantEntity.fromMap(map);
+      return entity.copyWith(
+        name: DeterministicEncryptionHelper.decryptText(entity.name),
+        surname: DeterministicEncryptionHelper.decryptText(entity.surname),
+      );
+    }).toList();
+
     AppLogger.db(
       'ParticipantLocalDataSource.getAllParticipants → mapped ${participants.length} participants',
     );
@@ -142,7 +150,14 @@ class ParticipantLocalDataSource {
     ''';
 
     final maps = await db.rawQuery(query, [evaluatorId]);
-    final participants = maps.map(ParticipantEntity.fromMap).toList();
+    final participants = maps.map((map) {
+      final entity = ParticipantEntity.fromMap(map);
+      return entity.copyWith(
+        name: DeterministicEncryptionHelper.decryptText(entity.name),
+        surname: DeterministicEncryptionHelper.decryptText(entity.surname),
+      );
+    }).toList();
+
 
     AppLogger.db(
       'ParticipantLocalDataSource.getParticipantsByEvaluatorId → found ${participants.length} participants',

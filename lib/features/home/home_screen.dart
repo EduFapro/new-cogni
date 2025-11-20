@@ -35,7 +35,7 @@ class HomeScreen extends HookConsumerWidget {
           PaneItem(
             icon: const Icon(FluentIcons.contact),
             title: const Text('Participantes'),
-            body: const ParticipantListScreen(),
+            body: ParticipantListScreen(),
           ),
           PaneItem(
             icon: const Icon(FluentIcons.add_friend),

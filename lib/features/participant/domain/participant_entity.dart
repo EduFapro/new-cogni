@@ -1,6 +1,7 @@
 import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
 import '../data/participant_constants.dart';
+import '../../../core/deterministic_encryption_helper.dart';
 
 class ParticipantEntity {
   final int? participantID;
@@ -18,14 +19,14 @@ class ParticipantEntity {
     required this.birthDate,
     required this.sex,
     required this.educationLevel,
-    required this.laterality
+    required this.laterality,
   });
 
   static ParticipantEntity fromMap(Map<String, dynamic> map) {
     return ParticipantEntity(
       participantID: map[ParticipantFields.id],
-      name: map[ParticipantFields.name],
-      surname: map[ParticipantFields.surname],
+      name: DeterministicEncryptionHelper.decryptText(map[ParticipantFields.name]),
+      surname: DeterministicEncryptionHelper.decryptText(map[ParticipantFields.surname]),
       birthDate: DateTime.parse(map[ParticipantFields.birthDate]),
       sex: Sex.fromValue(map[ParticipantFields.sex]),
       educationLevel: EducationLevel.fromValue(map[ParticipantFields.educationLevel]),
@@ -35,11 +36,12 @@ class ParticipantEntity {
 
   Map<String, dynamic> toMap() => {
     ParticipantFields.id: participantID,
-    ParticipantFields.name: name,
-    ParticipantFields.surname: surname,
+    ParticipantFields.name: DeterministicEncryptionHelper.encryptText(name),
+    ParticipantFields.surname: DeterministicEncryptionHelper.encryptText(surname),
     ParticipantFields.birthDate: birthDate.toIso8601String(),
     ParticipantFields.sex: sex.numericValue,
-    ParticipantFields.educationLevel: educationLevel.numericValue,// 🔧 Add this
+    ParticipantFields.educationLevel: educationLevel.numericValue,
+    ParticipantFields.laterality: laterality.numericValue,
   };
 
   ParticipantEntity copyWith({
@@ -49,7 +51,7 @@ class ParticipantEntity {
     DateTime? birthDate,
     Sex? sex,
     EducationLevel? educationLevel,
-    Laterality? laterality, // 🔧 Add this
+    Laterality? laterality,
   }) {
     return ParticipantEntity(
       participantID: participantID ?? this.participantID,
@@ -61,7 +63,6 @@ class ParticipantEntity {
       laterality: laterality ?? this.laterality,
     );
   }
-
 
   @override
   String toString() =>
