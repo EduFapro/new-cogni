@@ -10,22 +10,18 @@ import '../../../participant/data/participant_local_datasource.dart';
 import '../../../evaluation/data/evaluation_local_datasource.dart';
 import '../../../evaluation/domain/evaluation_entity.dart';
 
-import '../../../module/data/module_local_datasource.dart';
-import '../../../module/domain/module_repository.dart'; // ✅ Required
-
+import '../../../module/domain/module_repository.dart';
 import '../../../module_instance/domain/module_instance_entity.dart';
 import '../../../module_instance/domain/module_instance_repository.dart';
 
 import '../../../task/data/task_local_datasource.dart';
-
 import '../../../task_instance/domain/task_instance_entity.dart';
 import '../../../task_instance/domain/task_instance_repository.dart';
 
 class CreateParticipantEvaluationUseCase {
   final ParticipantLocalDataSource participantDataSource;
   final EvaluationLocalDataSource evaluationDataSource;
-  final ModuleLocalDataSource moduleDataSource;
-  final ModuleRepository moduleRepository; // ✅ Added
+  final ModuleRepository moduleRepository;
   final ModuleInstanceRepository moduleInstanceRepository;
   final TaskLocalDataSource taskDataSource;
   final TaskInstanceRepository taskInstanceRepository;
@@ -34,8 +30,7 @@ class CreateParticipantEvaluationUseCase {
   CreateParticipantEvaluationUseCase({
     required this.participantDataSource,
     required this.evaluationDataSource,
-    required this.moduleDataSource,
-    required this.moduleRepository, // ✅ Added
+    required this.moduleRepository,
     required this.moduleInstanceRepository,
     required this.taskDataSource,
     required this.taskInstanceRepository,
@@ -48,94 +43,102 @@ class CreateParticipantEvaluationUseCase {
     required List<int> selectedModuleIds,
     int language = 1,
   }) async {
-    AppLogger.info('[USECASE] Starting participant creation: ${participant.name} '
-        '(selectedModules=$selectedModuleIds)');
+    AppLogger.info('[USECASE] Starting participant creation: ${participant.name} (selectedModules=$selectedModuleIds)');
 
-    late final ParticipantEntity createdParticipant;
+    late final int participantId;
+    late final int evaluationId;
 
     try {
+      // 🔁 FIRST TRANSACTION: Insert participant and evaluation
       await db.transaction((txn) async {
-        // 1) Insert participant
         final hashedParticipant = participant.copyWith(
           name: ParticipantSecurityHelper.hashSha256(participant.name),
           surname: ParticipantSecurityHelper.hashSha256(participant.surname),
         );
 
-        final participantId = await participantDataSource.insertParticipant(txn, hashedParticipant.toMap());
-        AppLogger.db('[USECASE] Participant inserted: id=$participantId');
+        final insertedParticipantId = await participantDataSource.insertParticipant(txn, hashedParticipant.toMap());
 
-        // 2) Insert evaluation
+        if (insertedParticipantId == null) {
+          AppLogger.error('[USECASE] ❌ Failed to insert participant (null returned)');
+          throw Exception('Participant insertion failed');
+        }
+        participantId = insertedParticipantId;
+        AppLogger.db('[USECASE] ✅ Participant inserted: id=$participantId');
+
+
         final evaluation = EvaluationEntity(
           evaluatorID: evaluatorId,
-          participantID: participantId!,
+          participantID: participantId,
           status: EvaluationStatus.pending,
           language: language,
         );
 
-        final evaluationId = await evaluationDataSource.insertEvaluation(txn, evaluation.toMap());
-        AppLogger.db('[USECASE] Evaluation created: id=$evaluationId');
+        final insertedEvaluationId = await evaluationDataSource.insertEvaluation(txn, evaluation.toMap());
 
-        // 3) Fetch and filter modules
-        AppLogger.info('[USECASE] Fetching all modules...');
-        final allModules = await moduleRepository
-            .getAllModules()
-            .timeout(const Duration(seconds: 5), onTimeout: () {
+        if (insertedEvaluationId == null) {
+          AppLogger.error('[USECASE] ❌ Failed to insert evaluation (null returned)');
+          throw Exception('Evaluation insertion failed');
+        }
+        evaluationId = insertedEvaluationId;
+        AppLogger.db('[USECASE] ✅ Evaluation inserted: id=$evaluationId');
+
+      });
+
+      // 🔁 SECOND TRANSACTION: Fetch modules and create module/task instances
+      final allModules = await moduleRepository.getAllModules().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
           AppLogger.error('[USECASE] ❌ Timeout while fetching modules');
           throw Exception('Timeout fetching modules');
-        });
+        },
+      );
+      AppLogger.info('[USECASE] 🧩 Fetched ${allModules.length} modules');
 
-        AppLogger.info('[USECASE] Retrieved ${allModules.length} modules');
+      final modulesToUse = selectedModuleIds.isEmpty
+          ? allModules
+          : allModules.where((m) => m.moduleID != null && selectedModuleIds.contains(m.moduleID)).toList();
 
-        final modulesToUse = selectedModuleIds.isEmpty
-            ? allModules
-            : allModules
-            .where((m) => m.moduleID != null && selectedModuleIds.contains(m.moduleID))
-            .toList();
+      AppLogger.info('[USECASE] 📦 Using ${modulesToUse.length} modules');
 
-        AppLogger.info('[USECASE] Using ${modulesToUse.length} module(s) for evaluation');
+      for (final module in modulesToUse) {
+        if (module.moduleID == null) continue;
 
-        // 4) Create module instances and task instances
-        for (final module in modulesToUse) {
-          if (module.moduleID == null) continue;
+        final moduleInstance = ModuleInstanceEntity(
+          moduleId: module.moduleID!,
+          status: ModuleStatus.pending, evaluationId: evaluationId,
+        );
 
-          final moduleInstance = ModuleInstanceEntity(
-            moduleId: module.moduleID!,
-            status: ModuleStatus.pending,
-          );
+        final moduleInstanceCreated = await moduleInstanceRepository.createModuleInstance(moduleInstance);
+        final moduleInstanceId = moduleInstanceCreated?.id;
 
-          final moduleInstanceCreated = await moduleInstanceRepository.createModuleInstance(moduleInstance);
-
-          final moduleInstanceId = moduleInstanceCreated?.id;
-          if (moduleInstanceId == null) {
-            AppLogger.error('[USECASE] Failed to create ModuleInstance for moduleId=${module.moduleID}');
-            continue;
-          }
-
-          AppLogger.db('[USECASE] ModuleInstance created: id=$moduleInstanceId');
-
-
-          final tasks = await taskDataSource.getTasksByModuleId(module.moduleID!);
-          for (final task in tasks) {
-            if (task.taskID == null) continue;
-
-            final taskInstance = TaskInstanceEntity(
-              taskId: task.taskID!,
-              moduleInstanceId: moduleInstanceId,
-              status: TaskStatus.pending,
-            );
-
-            final taskInstanceId = await taskInstanceRepository.insert(taskInstance);
-            AppLogger.db('[USECASE] TaskInstance created: id=$taskInstanceId (taskId=${task.taskID})');
-          }
+        if (moduleInstanceId == null) {
+          AppLogger.error('[USECASE] ❌ Failed to create ModuleInstance for moduleId=${module.moduleID}');
+          continue;
         }
 
-        createdParticipant = participant.copyWith(participantID: participantId);
-        AppLogger.info('[USECASE] ✅ Participant + Evaluation hierarchy created');
-      });
+        final tasks = await taskDataSource.getTasksByModuleId(module.moduleID!);
+        AppLogger.info('[USECASE] 🔧 Found ${tasks.length} tasks for moduleId=${module.moduleID}');
+
+        for (final task in tasks) {
+          if (task.taskID == null) continue;
+
+          final taskInstance = TaskInstanceEntity(
+            taskId: task.taskID!,
+            moduleInstanceId: moduleInstanceId,
+            status: TaskStatus.pending,
+          );
+
+          final taskInstanceId = await taskInstanceRepository.insert(taskInstance);
+          AppLogger.db('[USECASE] ✅ TaskInstance inserted: id=$taskInstanceId (taskId=${task.taskID})');
+        }
+      }
+
+      final createdParticipant = participant.copyWith(participantID: participantId);
+      AppLogger.info('[USECASE] ✅ Participant + Evaluation + Modules + Tasks created successfully');
 
       return createdParticipant;
     } catch (e, s) {
-      AppLogger.error('[USECASE] ❌ Transaction failed during participant evaluation creation', e, s);
+      AppLogger.error('[USECASE] ❌ Creation failed. DB may be partially written.', e, s);
       rethrow;
     }
   }

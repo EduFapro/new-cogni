@@ -17,6 +17,7 @@ CREATE TABLE ${Tables.moduleInstances} (
   ${ModuleInstanceFields.moduleId} INTEGER NOT NULL,
   ${ModuleInstanceFields.evaluationId} INTEGER NOT NULL,
   ${ModuleInstanceFields.status} INT NOT NULL CHECK(${ModuleInstanceFields.status} >= 1 AND ${ModuleInstanceFields.status} <= 3),
-  FOREIGN KEY (${ModuleInstanceFields.moduleId}) REFERENCES ${Tables.modules}(${ModuleFields.id})
+    FOREIGN KEY (${ModuleInstanceFields.moduleId}) REFERENCES ${Tables.modules}(${ModuleFields.id}),
+  FOREIGN KEY (${ModuleInstanceFields.evaluationId}) REFERENCES ${Tables.evaluations}(${EvaluationFields.id})
 )
 ''';

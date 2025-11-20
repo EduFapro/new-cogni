@@ -6,6 +6,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
   const ModuleInstanceModel({
     super.id,
     required super.moduleId,
+    required super.evaluationId,
     required super.status,
     super.module,
   });
@@ -14,6 +15,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
     return ModuleInstanceModel(
       id: map[ModuleInstanceFields.id] as int?,
       moduleId: map[ModuleInstanceFields.moduleId] as int,
+      evaluationId: map[ModuleInstanceFields.evaluationId] as int,
       status: ModuleStatus.fromValue(map[ModuleInstanceFields.status] as int),
     );
   }
@@ -21,6 +23,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
   Map<String, dynamic> toMap() => {
     ModuleInstanceFields.id: id,
     ModuleInstanceFields.moduleId: moduleId,
+    ModuleInstanceFields.evaluationId: evaluationId,
     ModuleInstanceFields.status: status.numericValue,
   };
 
@@ -28,6 +31,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
     return ModuleInstanceModel(
       id: entity.id,
       moduleId: entity.moduleId,
+      evaluationId: entity.evaluationId,
       status: entity.status,
       module: entity.module,
     );
@@ -37,6 +41,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
     return ModuleInstanceEntity(
       id: id,
       moduleId: moduleId,
+      evaluationId: evaluationId,
       status: status,
       module: module,
     );

@@ -14,7 +14,7 @@ class ModuleInstanceLocalDataSource {
   Future<Database> get _db async => dbHelper.database;
 
   Future<int?> insertModuleInstance(ModuleInstanceModel instance) async {
-    AppLogger.db('Inserting module instance for evaluationId=${1}');
+    AppLogger.db('Inserting module instance for evaluationId=${instance.evaluationId}');
     try {
       final db = await _db;
       final id = await db.insert(

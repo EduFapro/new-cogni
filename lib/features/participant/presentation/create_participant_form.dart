@@ -79,6 +79,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
         ),
       );
 
+      // 🧹 Reset form
       formKey.currentState!.reset();
       nameController.clear();
       surnameController.clear();
@@ -87,7 +88,17 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       selectedGender.value = null;
       selectedEducation.value = null;
       selectedLaterality.value = null;
+
+      // ⬅️ Navigate back
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/dashboard', // or your home route name
+              (route) => false, // removes all previous routes
+        );
+
+      }
     }
+
 
     Future<void> _onSubmit() async {
       if (!formKey.currentState!.validate() ||

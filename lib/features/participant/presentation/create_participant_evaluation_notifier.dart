@@ -2,23 +2,25 @@ import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/logger/app_logger.dart';
-
 import '../../../providers/participant_providers.dart';
 
 import '../../evaluation/data/evaluation_local_datasource.dart';
 import '../../evaluation/domain/usecases/create_participant_evaluation_usecase.dart';
+
 import '../../module/data/module_local_datasource.dart';
-import '../../module/data/module_repository_impl.dart';
+import '../../module/data/module_repository_impl.dart'; // ✅ Added
+import '../../task/data/task_local_datasource.dart';
+
 import '../../module_instance/data/module_instance_local_datasource.dart';
 import '../../module_instance/data/module_instance_repository_impl.dart';
-import '../../task/data/task_local_datasource.dart';
+
 import '../../task_instance/data/task_instance_local_datasource.dart';
 import '../../task_instance/data/task_instance_repository_impl.dart';
+
 import '../data/participant_local_datasource.dart';
 import '../domain/participant_entity.dart';
 
-class CreateParticipantEvaluationNotifier
-    extends AsyncNotifier<ParticipantEntity?> {
+class CreateParticipantEvaluationNotifier extends AsyncNotifier<ParticipantEntity?> {
   late final CreateParticipantEvaluationUseCase _useCase;
 
   @override
@@ -28,30 +30,26 @@ class CreateParticipantEvaluationNotifier
 
     AppLogger.info('[PROVIDER] Initializing CreateParticipantEvaluationUseCase');
 
-    final moduleLocalDataSource = ModuleLocalDataSource(dbHelper: dbHelper);
-    final taskLocalDataSource = TaskLocalDataSource(dbHelper: dbHelper);
-
     _useCase = CreateParticipantEvaluationUseCase(
       participantDataSource: ParticipantLocalDataSource(dbHelper: dbHelper),
       evaluationDataSource: EvaluationLocalDataSource(dbHelper: dbHelper),
-      moduleDataSource: moduleLocalDataSource,
-      moduleRepository: ModuleRepositoryImpl( // ✅ Pass module repository
-        local: moduleLocalDataSource,
-        taskLocal: taskLocalDataSource,
-      ),
+      moduleRepository: ModuleRepositoryImpl(
+        local: ModuleLocalDataSource(dbHelper: dbHelper),
+        taskLocal: TaskLocalDataSource(dbHelper: dbHelper),
+      ), // ✅ ADD THIS
       moduleInstanceRepository: ModuleInstanceRepositoryImpl(
         localDataSource: ModuleInstanceLocalDataSource(dbHelper: dbHelper),
       ),
-      taskDataSource: taskLocalDataSource,
+      taskDataSource: TaskLocalDataSource(dbHelper: dbHelper),
       taskInstanceRepository: TaskInstanceRepositoryImpl(
         localDataSource: TaskInstanceLocalDataSource(dbHelper: dbHelper),
       ),
       db: db,
     );
 
+
     return null;
   }
-
 
   Future<void> createParticipantWithEvaluation({
     required ParticipantEntity participant,
@@ -72,8 +70,7 @@ class CreateParticipantEvaluationNotifier
       );
 
       AppLogger.info(
-        '[PROVIDER] ✅ Participant + Evaluation created '
-            '(participantId=${created.participantID})',
+        '[PROVIDER] ✅ Participant + Evaluation created (participantId=${created.participantID})',
       );
       state = AsyncData(created);
     } catch (e, s) {
