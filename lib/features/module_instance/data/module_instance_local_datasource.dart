@@ -3,6 +3,7 @@ import '../../../core/constants/database_constants.dart';
 import '../../../core/constants/enums/progress_status.dart';
 import '../../../core/database/base_database_helper.dart';
 import '../../../core/logger/app_logger.dart';
+import '../../module/domain/module_entity.dart';
 import 'module_instance_constants.dart';
 import 'module_instance_model.dart';
 
@@ -61,21 +62,33 @@ class ModuleInstanceLocalDataSource {
 
   Future<List<ModuleInstanceModel>> getModuleInstancesByEvaluationId(
       int evaluationId) async {
-    AppLogger.db('Fetching module instances by evaluationId=$evaluationId');
+    AppLogger.db('Fetching module instances by evaluationId=$evaluationId (with JOIN to modules)');
     try {
       final db = await _db;
-      final maps = await db.query(
-        Tables.moduleInstances,
-        where: '${ModuleInstanceFields.evaluationId} = ?',
-        whereArgs: [evaluationId],
-      );
-      AppLogger.db('Fetched ${maps.length} instances for evaluationId=$evaluationId');
-      return maps.map(ModuleInstanceModel.fromMap).toList();
+      final result = await db.rawQuery('''
+      SELECT mi.*, m.title as module_title
+      FROM ${Tables.moduleInstances} mi
+      INNER JOIN ${Tables.modules} m
+      ON mi.${ModuleInstanceFields.moduleId} = m.module_id
+      WHERE mi.${ModuleInstanceFields.evaluationId} = ?
+    ''', [evaluationId]);
+
+      AppLogger.db('Fetched ${result.length} instances with module data');
+      return result.map((row) {
+        final model = ModuleInstanceModel.fromMap(row);
+        return model.copyWith(
+          module: ModuleEntity(
+            moduleID: model.moduleId,
+            title: row['module_title'] as String? ?? 'Sem título',
+          ),
+        );
+      }).toList();
     } catch (e, s) {
-      AppLogger.error('Error fetching instances by evaluationId=$evaluationId', e, s);
+      AppLogger.error('Error fetching instances with modules by evaluationId=$evaluationId', e, s);
       return [];
     }
   }
+
 
   Future<int> updateModuleInstance(ModuleInstanceModel instance) async {
     AppLogger.db('Updating module instance ID=${instance.id}');

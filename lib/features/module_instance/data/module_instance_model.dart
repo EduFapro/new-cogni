@@ -1,4 +1,5 @@
 import '../../../core/constants/enums/progress_status.dart';
+import '../../module/domain/module_entity.dart';
 import '../../module_instance/domain/module_instance_entity.dart';
 import 'module_instance_constants.dart';
 
@@ -46,4 +47,22 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
       module: module,
     );
   }
+
+  ModuleInstanceModel copyWith({
+    int? id,
+    int? moduleId,
+    int? evaluationId,
+    ModuleStatus? status,
+    ModuleEntity? module,
+  }) {
+    return ModuleInstanceModel(
+      id: id ?? this.id,
+      moduleId: moduleId ?? this.moduleId,
+      evaluationId: evaluationId ?? this.evaluationId,
+      status: status ?? this.status,
+      module: module ?? this.module,
+    );
+  }
+
+
 }

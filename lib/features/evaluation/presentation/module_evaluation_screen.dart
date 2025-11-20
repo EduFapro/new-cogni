@@ -26,7 +26,15 @@ class ModuleEvaluationScreen extends HookConsumerWidget {
     final modules = snapshot.data!;
 
     return ScaffoldPage(
-      header: const PageHeader(title: Text('Avaliação por Módulo')),
+      header: PageHeader(
+        title: const Text('Avaliação por Módulo'),
+        leading: IconButton(
+          icon: const Icon(FluentIcons.back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       content: Column(
         children: [
           const SizedBox(height: 12),
@@ -34,5 +42,6 @@ class ModuleEvaluationScreen extends HookConsumerWidget {
         ],
       ),
     );
+
   }
 }
