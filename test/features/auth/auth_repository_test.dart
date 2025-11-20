@@ -3,7 +3,6 @@ import 'package:segundo_cogni/core/database/test_database_helper.dart';
 import 'package:segundo_cogni/features/auth/data/auth_local_datasource.dart';
 import 'package:segundo_cogni/features/auth/data/auth_repository_impl.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_model.dart';
-import 'package:segundo_cogni/features/evaluator/data/evaluator_model_extensions.dart';
 
 void main() {
   late TestDatabaseHelper dbHelper;
@@ -77,6 +76,27 @@ void main() {
     expect(user.username, dummyUser.username);
   });
 
+  test('🔐 Login returns user on correct credentials', () async {
+    await seedUser();
+    final user = await authRepository.login(
+      dummyUser.email,
+      dummyUser.password,
+    );
+    expect(user, isNotNull);
+    expect(user!.email, dummyUser.email);
+  });
 
+  test('❌ Login returns null on wrong password', () async {
+    await seedUser();
+    final user = await authRepository.login(dummyUser.email, 'wrongpassword');
+    expect(user, isNull);
+  });
 
+  test('❌ Login returns null on non-existent user', () async {
+    final user = await authRepository.login(
+      'nonexistent@example.com',
+      'password',
+    );
+    expect(user, isNull);
+  });
 }

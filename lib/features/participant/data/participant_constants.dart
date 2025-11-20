@@ -16,17 +16,18 @@ class ParticipantFields {
     educationLevel,
     sex,
     birthDate,
-    laterality
+    laterality,
   ];
 }
 
-const scriptCreateTableParticipants = '''
+const scriptCreateTableParticipants =
+    '''
 CREATE TABLE ${Tables.participants} (
   ${ParticipantFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${ParticipantFields.name} TEXT NOT NULL,
   ${ParticipantFields.surname} TEXT NOT NULL,
   ${ParticipantFields.educationLevel} INT CHECK(${ParticipantFields.educationLevel} BETWEEN 1 AND 7),
-  ${ParticipantFields.sex} INT CHECK(${ParticipantFields.sex} IN (1, 2)),
+  ${ParticipantFields.sex} INT CHECK(${ParticipantFields.sex} IN (1, 2, 3)),
   ${ParticipantFields.birthDate} TIMESTAMP,
   ${ParticipantFields.laterality} INT NOT NULL
 );
