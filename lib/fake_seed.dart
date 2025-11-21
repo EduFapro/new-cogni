@@ -1,17 +1,9 @@
-// bin/generate_fake_prod_seed.dart  (for example)
-//
-// dart run bin/generate_fake_prod_seed.dart
-//
-// This will create fake_prod_seed.sql in the current working directory,
-// with INSERTs for evaluators, participants, evaluations, module_instances,
-// task_instances and recordings.
-
-// Adjust these imports to your project structure.
-// They are written assuming something similar to your existing seeds.
-
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:crypto/crypto.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:segundo_cogni/core/constants/database_constants.dart';
 import 'package:segundo_cogni/core/constants/enums/task_mode.dart';
 import 'package:segundo_cogni/features/evaluation/data/evaluation_constants.dart';
@@ -24,13 +16,37 @@ import 'package:segundo_cogni/features/task_instance/data/task_instance_constant
 import 'package:segundo_cogni/seeders/modules/modules_seeds.dart';
 import 'package:segundo_cogni/seeders/tasks/task_seeds.dart';
 
+// --- Encryption Helper (Duplicated to avoid Flutter dependencies) ---
+class EncryptionHelper {
+  static final _key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1');
+  static final _fixedIV = encrypt.IV.fromUtf8('myfixediv1234567');
+
+  static String encryptText(String plainText) {
+    if (plainText.isEmpty) return '';
+    final encrypter = encrypt.Encrypter(encrypt.AES(_key));
+    final encrypted = encrypter.encrypt(plainText, iv: _fixedIV);
+    return base64Encode(encrypted.bytes);
+  }
+
+  static String hashPassword(String input) {
+    return sha256.convert(utf8.encode(input)).toString();
+  }
+}
+
 void main() {
-  // Change this filename if you want it somewhere else.
-  final file = File('fake_prod_seed.sql');
+  // Output files
+  final sqlFile = File('lib/fake_prod_seed_encrypted.sql');
+  final credentialsFile = File('lib/evaluator_credentials.txt');
+
   final buffer = StringBuffer();
+  final credentialsBuffer = StringBuffer();
 
   final random = Random(42); // deterministic
   final now = DateTime.now();
+
+  credentialsBuffer.writeln('--- Evaluator Credentials (Generated) ---');
+  credentialsBuffer.writeln('Generated at: ${now.toIso8601String()}');
+  credentialsBuffer.writeln('-----------------------------------');
 
   // Group tasks by moduleID, using your seeds.
   final Map<int, List<TaskEntity>> tasksByModule = {};
@@ -38,8 +54,9 @@ void main() {
     tasksByModule.putIfAbsent(t.moduleID, () => []).add(t);
   }
 
-  // ID counters (we explicitly set IDs so everything is deterministic).
-  var nextEvaluatorId = 1;
+  // ID counters
+  // Start Evaluator ID from 2 as requested (ID 1 is reserved/already inserted)
+  var nextEvaluatorId = 2;
   var nextParticipantId = 1;
   var nextEvaluationId = 1;
   var nextModuleInstanceId = 1;
@@ -80,12 +97,10 @@ void main() {
   ];
 
   // Small helper for random picks.
-  String pick(List<String> list, Random r) =>
-      list[r.nextInt(list.length)];
+  String pick(List<String> list, Random r) => list[r.nextInt(list.length)];
 
   // Start of SQL file.
-  buffer.writeln('-- Auto-generated fake production-like seed data');
-  buffer.writeln('-- Generated at ${now.toIso8601String()}');
+  // NOTE: Removed comments to ensure compatibility with sqflite execution if needed.
   buffer.writeln('BEGIN TRANSACTION;');
   buffer.writeln();
 
@@ -99,8 +114,8 @@ void main() {
     final surname = pick(lastNames, random);
     final email =
         '${name.toLowerCase()}.${surname.toLowerCase()}$id@example.com';
-    final username =
-        '${name[0].toLowerCase()}${surname.toLowerCase()}$id';
+    final username = '${name[0].toLowerCase()}${surname.toLowerCase()}$id';
+    final passwordPlain = '0000';
 
     final birthDate = _formatDate(
       DateTime(
@@ -120,35 +135,55 @@ void main() {
     final specialty = pick(specialtyOptions, random);
     final cpf = '000000000$id';
 
-    final isAdmin = (id == 1) ? 1 : 0;
+    // ID 1 is usually admin, but we are starting from 2.
+    // Let's make the first generated one (ID 2) NOT admin, or random.
+    // The prompt implied ID 1 exists. We'll set these to 0 (not admin) for safety,
+    // or maybe make one of them admin? Let's stick to 0 for generated ones.
+    final isAdmin = 0;
 
-    buffer.writeln('INSERT INTO ${Tables.evaluators} ('
-        '${EvaluatorFields.id}, '
-        '${EvaluatorFields.name}, '
-        '${EvaluatorFields.surname}, '
-        '${EvaluatorFields.email}, '
-        '${EvaluatorFields.birthDate}, '
-        '${EvaluatorFields.specialty}, '
-        '${EvaluatorFields.cpf}, '
-        '${EvaluatorFields.username}, '
-        '${EvaluatorFields.password}, '
-        '${EvaluatorFields.firstLogin}, '
-        '${EvaluatorFields.isAdmin}'
-        ') VALUES ('
-        '$id, '
-        '${_q(name)}, '
-        '${_q(surname)}, '
-        '${_q(email)}, '
-        '${_q(birthDate)}, '
-        '${_q(specialty)}, '
-        '${_q(cpf)}, '
-        '${_q(username)}, '
-    // plaintext; in your app you usually store an encrypted hash,
-    // but for dev data "0000" is fine.
-        '${_q('0000')}, '
-        '0, ' // first_login = false
-        '$isAdmin'
-        ');');
+    // --- Credentials Log ---
+    credentialsBuffer.writeln('ID: $id | Name: $name $surname');
+    credentialsBuffer.writeln('Email: $email');
+    credentialsBuffer.writeln('Password: $passwordPlain');
+    credentialsBuffer.writeln('-----------------------------------');
+
+    // --- Encryption ---
+    final encName = EncryptionHelper.encryptText(name);
+    final encSurname = EncryptionHelper.encryptText(surname);
+    final encEmail = EncryptionHelper.encryptText(email);
+    final encBirthDate = EncryptionHelper.encryptText(birthDate);
+    final encSpecialty = EncryptionHelper.encryptText(specialty);
+    final encCpf = EncryptionHelper.encryptText(cpf);
+    final encUsername = EncryptionHelper.encryptText(username);
+    final hashedPassword = EncryptionHelper.hashPassword(passwordPlain);
+
+    buffer.writeln(
+      'INSERT INTO ${Tables.evaluators} ('
+      '${EvaluatorFields.id}, '
+      '${EvaluatorFields.name}, '
+      '${EvaluatorFields.surname}, '
+      '${EvaluatorFields.email}, '
+      '${EvaluatorFields.birthDate}, '
+      '${EvaluatorFields.specialty}, '
+      '${EvaluatorFields.cpf}, '
+      '${EvaluatorFields.username}, '
+      '${EvaluatorFields.password}, '
+      '${EvaluatorFields.firstLogin}, '
+      '${EvaluatorFields.isAdmin}'
+      ') VALUES ('
+      '$id, '
+      '${_q(encName)}, '
+      '${_q(encSurname)}, '
+      '${_q(encEmail)}, '
+      '${_q(encBirthDate)}, '
+      '${_q(encSpecialty)}, '
+      '${_q(encCpf)}, '
+      '${_q(encUsername)}, '
+      '${_q(hashedPassword)}, '
+      '0, ' // first_login = false
+      '$isAdmin'
+      ');',
+    );
   }
 
   buffer.writeln();
@@ -156,13 +191,11 @@ void main() {
   // PARTICIPANTS + EVALUATIONS + MODULE_INSTANCES + TASK_INSTANCES + RECORDINGS
   // ------------------------------------------------------------
 
-  // Note on your schema: EvaluationFields.participantId is UNIQUE,
-  // so we create 1 evaluation per participant.
-
-  nextEvaluatorId = 1; // iterate again to assign participants per evaluator
+  // Reset evaluator ID to 2 to assign participants
+  var currentEvaluatorId = 2;
 
   for (var e = 0; e < 10; e++) {
-    final evaluatorId = nextEvaluatorId++;
+    final evaluatorId = currentEvaluatorId++;
 
     // 8–12 participants per evaluator
     final participantCount = 8 + random.nextInt(5);
@@ -186,24 +219,31 @@ void main() {
       final sex = 1 + random.nextInt(2); // 1..2
       final laterality = 1 + random.nextInt(2); // 1..2
 
+      // --- Encryption for Participant ---
+      final encPName = EncryptionHelper.encryptText(pName);
+      final encPSurname = EncryptionHelper.encryptText(pSurname);
+      // birthDate is NOT encrypted for participants in the original schema/logic
+
       // Insert participant
-      buffer.writeln('INSERT INTO ${Tables.participants} ('
-          '${ParticipantFields.id}, '
-          '${ParticipantFields.name}, '
-          '${ParticipantFields.surname}, '
-          '${ParticipantFields.educationLevel}, '
-          '${ParticipantFields.sex}, '
-          '${ParticipantFields.birthDate}, '
-          '${ParticipantFields.laterality}'
-          ') VALUES ('
-          '$participantId, '
-          '${_q(pName)}, '
-          '${_q(pSurname)}, '
-          '$educationLevel, '
-          '$sex, '
-          '${_q(birthDate)}, '
-          '$laterality'
-          ');');
+      buffer.writeln(
+        'INSERT INTO ${Tables.participants} ('
+        '${ParticipantFields.id}, '
+        '${ParticipantFields.name}, '
+        '${ParticipantFields.surname}, '
+        '${ParticipantFields.educationLevel}, '
+        '${ParticipantFields.sex}, '
+        '${ParticipantFields.birthDate}, '
+        '${ParticipantFields.laterality}'
+        ') VALUES ('
+        '$participantId, '
+        '${_q(encPName)}, '
+        '${_q(encPSurname)}, '
+        '$educationLevel, '
+        '$sex, '
+        '${_q(birthDate)}, '
+        '$laterality'
+        ');',
+      );
 
       // Evaluation date in the last ~120 days
       final daysBack = random.nextInt(120);
@@ -224,21 +264,23 @@ void main() {
       final language = 1 + random.nextInt(2);
 
       // Insert evaluation
-      buffer.writeln('INSERT INTO ${Tables.evaluations} ('
-          '${EvaluationFields.id}, '
-          '${EvaluationFields.date}, '
-          '${EvaluationFields.evaluatorId}, '
-          '${EvaluationFields.participantId}, '
-          '${EvaluationFields.status}, '
-          '${EvaluationFields.language}'
-          ') VALUES ('
-          '$evalId, '
-          '${_q(evalDateStr)}, '
-          '$evaluatorId, '
-          '$participantId, '
-          '$evalStatus, '
-          '$language'
-          ');');
+      buffer.writeln(
+        'INSERT INTO ${Tables.evaluations} ('
+        '${EvaluationFields.id}, '
+        '${EvaluationFields.date}, '
+        '${EvaluationFields.evaluatorId}, '
+        '${EvaluationFields.participantId}, '
+        '${EvaluationFields.status}, '
+        '${EvaluationFields.language}'
+        ') VALUES ('
+        '$evalId, '
+        '${_q(evalDateStr)}, '
+        '$evaluatorId, '
+        '$participantId, '
+        '$evalStatus, '
+        '$language'
+        ');',
+      );
 
       // For this evaluation, create module_instances for all modules in modulesList.
       for (final module in modulesList) {
@@ -246,17 +288,19 @@ void main() {
 
         final moduleStatus = _randomStatus123(random);
 
-        buffer.writeln('INSERT INTO ${Tables.moduleInstances} ('
-            '${ModuleInstanceFields.id}, '
-            '${ModuleInstanceFields.moduleId}, '
-            '${ModuleInstanceFields.evaluationId}, '
-            '${ModuleInstanceFields.status}'
-            ') VALUES ('
-            '$moduleInstId, '
-            '${module.moduleID}, '
-            '$evalId, '
-            '$moduleStatus'
-            ');');
+        buffer.writeln(
+          'INSERT INTO ${Tables.moduleInstances} ('
+          '${ModuleInstanceFields.id}, '
+          '${ModuleInstanceFields.moduleId}, '
+          '${ModuleInstanceFields.evaluationId}, '
+          '${ModuleInstanceFields.status}'
+          ') VALUES ('
+          '$moduleInstId, '
+          '${module.moduleID}, '
+          '$evalId, '
+          '$moduleStatus'
+          ');',
+        );
 
         // Tasks for this module
         final moduleTasks = tasksByModule[module.moduleID] ?? const [];
@@ -265,52 +309,57 @@ void main() {
           final taskInstId = nextTaskInstanceId++;
 
           final taskStatus = _randomTaskStatus(random); // 0 or 1
-          final completingSeconds =
-          _randomCompletingTime(random, task.taskMode);
+          final completingSeconds = _randomCompletingTime(
+            random,
+            task.taskMode,
+          );
           final completingStr = completingSeconds.toString();
 
-          buffer.writeln('INSERT INTO ${Tables.taskInstances} ('
-              '${TaskInstanceFields.id}, '
-              '${TaskInstanceFields.taskId}, '
-              '${TaskInstanceFields.moduleInstanceId}, '
-              '${TaskInstanceFields.status}, '
-              '${TaskInstanceFields.completingTime}'
-              ') VALUES ('
-              '$taskInstId, '
-              '${task.taskID}, '
-              '$moduleInstId, '
-              '$taskStatus, '
-              '${_q(completingStr)}'
-              ');');
+          buffer.writeln(
+            'INSERT INTO ${Tables.taskInstances} ('
+            '${TaskInstanceFields.id}, '
+            '${TaskInstanceFields.taskId}, '
+            '${TaskInstanceFields.moduleInstanceId}, '
+            '${TaskInstanceFields.status}, '
+            '${TaskInstanceFields.completingTime}'
+            ') VALUES ('
+            '$taskInstId, '
+            '${task.taskID}, '
+            '$moduleInstId, '
+            '$taskStatus, '
+            '${_q(completingStr)}'
+            ');',
+          );
 
           // Dummy recording for this task_instance
           final recordingId = nextRecordingId++;
           final path =
               'recordings/eval_${evalId}_mod_${module.moduleID}_task_$taskInstId.wav';
 
-          buffer.writeln('INSERT INTO ${Tables.recordings} ('
-              '${RecordingFileFields.id}, '
-              '${RecordingFileFields.taskInstanceId}, '
-              '${RecordingFileFields.filePath}'
-              ') VALUES ('
-              '$recordingId, '
-              '$taskInstId, '
-              '${_q(path)}'
-              ');');
+          buffer.writeln(
+            'INSERT INTO ${Tables.recordings} ('
+            '${RecordingFileFields.id}, '
+            '${RecordingFileFields.taskInstanceId}, '
+            '${RecordingFileFields.filePath}'
+            ') VALUES ('
+            '$recordingId, '
+            '$taskInstId, '
+            '${_q(path)}'
+            ');',
+          );
         }
-
-        buffer.writeln();
       }
-
-      buffer.writeln();
     }
   }
 
   buffer.writeln('COMMIT;');
 
-  file.writeAsStringSync(buffer.toString());
+  sqlFile.writeAsStringSync(buffer.toString());
+  credentialsFile.writeAsStringSync(credentialsBuffer.toString());
+
   // ignore: avoid_print
-  print('✅ fake_prod_seed.sql generated with fake production-like data.');
+  print('✅ Generated ${sqlFile.path} with encrypted data.');
+  print('🔑 Generated ${credentialsFile.path} with credentials.');
 }
 
 // ----------------------------------------------------------------------
@@ -325,14 +374,14 @@ String _q(String s) {
 
 String _formatDate(DateTime dt) =>
     '${dt.year.toString().padLeft(4, '0')}-'
-        '${dt.month.toString().padLeft(2, '0')}-'
-        '${dt.day.toString().padLeft(2, '0')}';
+    '${dt.month.toString().padLeft(2, '0')}-'
+    '${dt.day.toString().padLeft(2, '0')}';
 
 String _formatDateTime(DateTime dt) =>
     '${_formatDate(dt)} '
-        '${dt.hour.toString().padLeft(2, '0')}:'
-        '${dt.minute.toString().padLeft(2, '0')}:'
-        '${dt.second.toString().padLeft(2, '0')}';
+    '${dt.hour.toString().padLeft(2, '0')}:'
+    '${dt.minute.toString().padLeft(2, '0')}:'
+    '${dt.second.toString().padLeft(2, '0')}';
 
 int _randomStatus123(Random r) {
   final roll = r.nextInt(100);
