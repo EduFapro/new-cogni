@@ -19,6 +19,11 @@ Future<void> initDatabaseFactory() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.info('Flutter bindings initialized');
+  // 🔗 Connect helper to Flutter logger (debug-only inside AppLogger)
+  DeterministicEncryptionHelper.configureLogger(
+    info: AppLogger.info,
+    error: AppLogger.error,
+  );
 
   // 🔥 Register Flutter logger for encryption helper
   DeterministicEncryptionHelper.configureLogger(
