@@ -42,27 +42,33 @@ class DeterministicEncryptionHelper {
 
   static String encryptText(String plainText) {
     if (plainText.isEmpty) return '';
-    final encrypter =
-    encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.cbc));
+    final encrypter = encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.cbc));
     final encrypted = encrypter.encrypt(plainText, iv: _fixedIV);
-    return base64Encode(encrypted.bytes);
+    final base64Text = base64Encode(encrypted.bytes);
+
+    _logInfo?.call('[Encrypt] 🔓 "$plainText" → 🔐 $base64Text');
+
+    return base64Text;
   }
 
   static String decryptText(String encryptedText) {
     if (encryptedText.isEmpty) return '';
     try {
       final bytes = base64Decode(encryptedText);
-      final encrypter =
-      encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.cbc));
+      final encrypter = encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.cbc));
       final decrypted = encrypter.decrypt(
         encrypt.Encrypted(Uint8List.fromList(bytes)),
         iv: _fixedIV,
       );
+
+      _logInfo?.call('[Decrypt] 🔐 $encryptedText → 🔓 "$decrypted"');
       return decrypted;
-    } catch (_) {
+    } catch (e, s) {
+      _logError?.call('[Decrypt] 💥 Failed to decrypt: $encryptedText', e, s);
       return '[DECRYPTION_FAILED]';
     }
   }
+
 
   static String hashPassword(String input) {
     return sha256.convert(utf8.encode(input)).toString();
