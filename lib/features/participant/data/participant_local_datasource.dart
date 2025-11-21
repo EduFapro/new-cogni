@@ -1,10 +1,10 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
 import '../../../core/database/base_database_helper.dart';
-import '../../../core/deterministic_encryption_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
+import '../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../data/participant_constants.dart';
 import '../domain/participant_entity.dart';
 

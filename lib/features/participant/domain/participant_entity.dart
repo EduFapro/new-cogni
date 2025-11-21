@@ -1,7 +1,7 @@
 import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
+import '../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../data/participant_constants.dart';
-import '../../../core/deterministic_encryption_helper.dart';
 
 class ParticipantEntity {
   final int? participantID;

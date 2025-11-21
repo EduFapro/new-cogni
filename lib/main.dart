@@ -7,6 +7,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'core/router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/logger/app_logger.dart';
+import 'shared/encryption/deterministic_encryption_helper.dart';
 
 Future<void> initDatabaseFactory() async {
   AppLogger.info('Initializing database factory...');
@@ -18,6 +19,12 @@ Future<void> initDatabaseFactory() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.info('Flutter bindings initialized');
+
+  // 🔥 Register Flutter logger for encryption helper
+  DeterministicEncryptionHelper.configureLogger(
+    info: AppLogger.info,
+    error: AppLogger.error,
+  );
 
   await initDatabaseFactory();
 

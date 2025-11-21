@@ -1,9 +1,9 @@
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import '../../../../core/deterministic_encryption_helper.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/constants/enums/progress_status.dart';
 
+import '../../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../../../participant/domain/participant_entity.dart';
 import '../../../participant/data/participant_local_datasource.dart';
 

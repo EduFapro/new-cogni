@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:crypto/crypto.dart';
-import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:segundo_cogni/core/constants/database_constants.dart';
 import 'package:segundo_cogni/core/constants/enums/task_mode.dart';
 import 'package:segundo_cogni/features/evaluation/data/evaluation_constants.dart';
@@ -15,23 +12,7 @@ import 'package:segundo_cogni/features/task/domain/task_entity.dart';
 import 'package:segundo_cogni/features/task_instance/data/task_instance_constants.dart';
 import 'package:segundo_cogni/seeders/modules/modules_seeds.dart';
 import 'package:segundo_cogni/seeders/tasks/task_seeds.dart';
-
-// --- Encryption Helper (Duplicated to avoid Flutter dependencies) ---
-class EncryptionHelper {
-  static final _key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1');
-  static final _fixedIV = encrypt.IV.fromUtf8('myfixediv1234567');
-
-  static String encryptText(String plainText) {
-    if (plainText.isEmpty) return '';
-    final encrypter = encrypt.Encrypter(encrypt.AES(_key));
-    final encrypted = encrypter.encrypt(plainText, iv: _fixedIV);
-    return base64Encode(encrypted.bytes);
-  }
-
-  static String hashPassword(String input) {
-    return sha256.convert(utf8.encode(input)).toString();
-  }
-}
+import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
 
 void main() {
   // Output files
@@ -148,14 +129,14 @@ void main() {
     credentialsBuffer.writeln('-----------------------------------');
 
     // --- Encryption ---
-    final encName = EncryptionHelper.encryptText(name);
-    final encSurname = EncryptionHelper.encryptText(surname);
-    final encEmail = EncryptionHelper.encryptText(email);
-    final encBirthDate = EncryptionHelper.encryptText(birthDate);
-    final encSpecialty = EncryptionHelper.encryptText(specialty);
-    final encCpf = EncryptionHelper.encryptText(cpf);
-    final encUsername = EncryptionHelper.encryptText(username);
-    final hashedPassword = EncryptionHelper.hashPassword(passwordPlain);
+    final encName = DeterministicEncryptionHelper.encryptText(name);
+    final encSurname = DeterministicEncryptionHelper.encryptText(surname);
+    final encEmail = DeterministicEncryptionHelper.encryptText(email);
+    final encBirthDate = DeterministicEncryptionHelper.encryptText(birthDate);
+    final encSpecialty = DeterministicEncryptionHelper.encryptText(specialty);
+    final encCpf = DeterministicEncryptionHelper.encryptText(cpf);
+    final encUsername = DeterministicEncryptionHelper.encryptText(username);
+    final hashedPassword = DeterministicEncryptionHelper.hashPassword(passwordPlain);
 
     buffer.writeln(
       'INSERT INTO ${Tables.evaluators} ('
@@ -220,8 +201,8 @@ void main() {
       final laterality = 1 + random.nextInt(2); // 1..2
 
       // --- Encryption for Participant ---
-      final encPName = EncryptionHelper.encryptText(pName);
-      final encPSurname = EncryptionHelper.encryptText(pSurname);
+      final encPName = DeterministicEncryptionHelper.encryptText(pName);
+      final encPSurname = DeterministicEncryptionHelper.encryptText(pSurname);
       // birthDate is NOT encrypted for participants in the original schema/logic
 
       // Insert participant

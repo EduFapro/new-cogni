@@ -1,8 +1,8 @@
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../../core/constants/database_constants.dart';
-import '../../../core/deterministic_encryption_helper.dart';
 import '../../../core/logger/app_logger.dart';
+import '../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../application/evaluator_secure_service.dart';
 import 'evaluator_constants.dart';
 import 'evaluator_model.dart';

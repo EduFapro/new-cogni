@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import '../../../core/deterministic_encryption_helper.dart';
+import '../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../data/evaluator_model.dart';
 
 class EvaluatorSecureService {
