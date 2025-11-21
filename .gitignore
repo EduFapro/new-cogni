@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment secrets
+.env
+
+# Generated SQL and credentials
+lib/fake_prod_seed_encrypted.sql
+lib/evaluator_credentials.txt
+project_dart_files.txt

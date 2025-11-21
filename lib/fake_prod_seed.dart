@@ -1,4 +1,3 @@
-// lib/fake_prod_seed.dart
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -17,7 +16,6 @@ import 'package:segundo_cogni/seeders/modules/modules_seeds.dart';
 import 'package:segundo_cogni/seeders/tasks/task_seeds.dart';
 
 Future<void> main() async {
-  // ✅ Initialize shared encryption (loads .env keys)
   await DeterministicEncryptionHelper.init();
 
   final sqlFile = File('lib/fake_prod_seed_encrypted.sql');
@@ -25,15 +23,14 @@ Future<void> main() async {
 
   final buffer = StringBuffer();
   final credentialsBuffer = StringBuffer();
-
   final random = Random(42);
   final now = DateTime.now();
 
-  credentialsBuffer.writeln('--- Evaluator Credentials (Generated) ---');
-  credentialsBuffer.writeln('Generated at: ${now.toIso8601String()}');
-  credentialsBuffer.writeln('-----------------------------------');
+  credentialsBuffer
+    ..writeln('--- Evaluator Credentials (Generated) ---')
+    ..writeln('Generated at: ${now.toIso8601String()}')
+    ..writeln('-----------------------------------');
 
-  // Group tasks by moduleID
   final Map<int, List<TaskEntity>> tasksByModule = {};
   for (final t in tasksList) {
     tasksByModule.putIfAbsent(t.moduleID, () => []).add(t);
@@ -115,8 +112,6 @@ Future<void> main() async {
     );
   }
 
-  buffer.writeln();
-
   // --- PARTICIPANTS ---
   var currentEvaluatorId = 2;
   for (var e = 0; e < 10; e++) {
@@ -126,7 +121,6 @@ Future<void> main() async {
     for (var p = 0; p < participantCount; p++) {
       final participantId = nextParticipantId++;
       final evalId = nextEvaluationId++;
-
       final pName = pick(firstNames, random);
       final pSurname = pick(lastNames, random);
       final birthDate = _formatDate(
@@ -155,12 +149,11 @@ Future<void> main() async {
   sqlFile.writeAsStringSync(buffer.toString());
   credentialsFile.writeAsStringSync(credentialsBuffer.toString());
 
-  print('✅ Generated ${sqlFile.path} with encrypted data.');
-  print('🔑 Generated ${credentialsFile.path} with credentials.');
+  print('✅ Generated ${sqlFile.path}');
+  print('🔑 Generated ${credentialsFile.path}');
 }
 
 String _q(String s) => "'${s.replaceAll("'", "''")}'";
-
 String _formatDate(DateTime dt) =>
     '${dt.year.toString().padLeft(4, '0')}-'
         '${dt.month.toString().padLeft(2, '0')}-'

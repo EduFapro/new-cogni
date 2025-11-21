@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -19,13 +18,9 @@ Future<void> initDatabaseFactory() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.info('Flutter bindings initialized');
-  // 🔗 Connect helper to Flutter logger (debug-only inside AppLogger)
-  DeterministicEncryptionHelper.configureLogger(
-    info: AppLogger.info,
-    error: AppLogger.error,
-  );
 
-  // 🔥 Register Flutter logger for encryption helper
+  // 🔐 Initialize encryption helper and connect logger
+  await DeterministicEncryptionHelper.init();
   DeterministicEncryptionHelper.configureLogger(
     info: AppLogger.info,
     error: AppLogger.error,
