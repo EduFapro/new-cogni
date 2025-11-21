@@ -51,3 +51,6 @@ app.*.map.json
 lib/fake_prod_seed_encrypted.sql
 lib/evaluator_credentials.txt
 project_dart_files.txt
+# Seed generator outputs
+lib/fake_prod_seed.sql
+

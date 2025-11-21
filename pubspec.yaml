@@ -26,6 +26,8 @@ dependencies:
 dependency_overrides:
   math_expressions: 3.1.0
 
+scripts:
+  seed: dart run tool/run_fake_seed.dart
 
 flutter:
   uses-material-design: true

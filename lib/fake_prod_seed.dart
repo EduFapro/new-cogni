@@ -57,8 +57,8 @@ Future<void> main() async {
 
   String pick(List<String> list, Random r) => list[r.nextInt(list.length)];
 
-  buffer.writeln('BEGIN TRANSACTION;');
-  buffer.writeln();
+  // buffer.writeln('BEGIN TRANSACTION;');
+  // buffer.writeln();
 
   // --- EVALUATORS ---
   for (var e = 0; e < 10; e++) {
