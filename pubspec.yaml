@@ -22,6 +22,8 @@ dependencies:
   encrypt:
   crypto:
   excel:
+  record:
+  video_player:
 
 dependency_overrides:
   math_expressions: 3.1.0
