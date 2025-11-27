@@ -1,4 +1,5 @@
 import '../../../core/constants/database_constants.dart';
+import '../../../core/constants/enums/progress_status.dart';
 import '../../../core/logger/app_logger.dart';
 import '../domain/evaluation_entity.dart';
 import '../domain/evaluation_repository.dart';
@@ -22,7 +23,9 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
   Future<List<EvaluationEntity>> getAllEvaluations() async {
     AppLogger.db('EvaluationRepositoryImpl.getAllEvaluations → fetching');
     final list = await local.getAllEvaluations();
-    AppLogger.db('EvaluationRepositoryImpl.getAllEvaluations → fetched ${list.length} evaluations');
+    AppLogger.db(
+      'EvaluationRepositoryImpl.getAllEvaluations → fetched ${list.length} evaluations',
+    );
     return list;
   }
 
@@ -38,7 +41,9 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
   }
 
   @override
-  Future<List<EvaluationEntity>> getEvaluationsByEvaluator(int evaluatorId) async {
+  Future<List<EvaluationEntity>> getEvaluationsByEvaluator(
+    int evaluatorId,
+  ) async {
     final db = await local.dbHelper.database;
     final maps = await db.query(
       Tables.evaluations,
@@ -49,4 +54,20 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
     return maps.map((map) => EvaluationEntity.fromMap(map)).toList();
   }
 
+  @override
+  Future<int> setEvaluationStatus(
+    int evaluationId,
+    EvaluationStatus status,
+  ) async {
+    AppLogger.db(
+      'EvaluationRepositoryImpl.setEvaluationStatus → id=$evaluationId, status=$status',
+    );
+    final db = await local.dbHelper.database;
+    return await db.update(
+      Tables.evaluations,
+      {EvaluationFields.status: status.numericValue},
+      where: '${EvaluationFields.id} = ?',
+      whereArgs: [evaluationId],
+    );
+  }
 }

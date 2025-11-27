@@ -1,29 +1,20 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../module_instance/presentation/module_instance_provider.dart';
+import '../../participant/presentation/participant_list_provider.dart';
 import 'module_table.dart';
 
-class ModuleEvaluationScreen extends HookConsumerWidget {
+class ModuleEvaluationScreen extends ConsumerWidget {
   final int evaluationId;
 
   const ModuleEvaluationScreen({super.key, required this.evaluationId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final repo = ref.watch(moduleInstanceRepositoryProvider);
-
-    final future = useMemoized(
-          () => repo.getModuleInstancesByEvaluationId(evaluationId),
-      [evaluationId],
+    // Use the provider which will automatically refresh when invalidated
+    final modulesAsync = ref.watch(
+      moduleInstancesByEvaluationProvider(evaluationId),
     );
-    final snapshot = useFuture(future);
-
-    if (!snapshot.hasData) {
-      return const Center(child: ProgressRing());
-    }
-
-    final modules = snapshot.data!;
 
     return ScaffoldPage(
       header: PageHeader(
@@ -31,17 +22,25 @@ class ModuleEvaluationScreen extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(FluentIcons.back),
           onPressed: () {
+            // Invalidate the provider when navigating back to force a refresh
+            ref.invalidate(moduleInstancesByEvaluationProvider(evaluationId));
+            // Also invalidate participant list to show updated evaluation status
+            ref.invalidate(participantListProvider);
             Navigator.pop(context);
           },
         ),
       ),
-      content: Column(
-        children: [
-          const SizedBox(height: 12),
-          Expanded(child: ModuleTable(modules: modules)),
-        ],
+      content: modulesAsync.when(
+        data: (modules) => Column(
+          children: [
+            const SizedBox(height: 12),
+            Expanded(child: ModuleTable(modules: modules)),
+          ],
+        ),
+        loading: () => const Center(child: ProgressRing()),
+        error: (error, stack) =>
+            Center(child: Text('Erro ao carregar módulos: $error')),
       ),
     );
-
   }
 }

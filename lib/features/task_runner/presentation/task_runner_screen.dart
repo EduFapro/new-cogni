@@ -4,7 +4,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../core/constants/enums/progress_status.dart';
 import '../../../../core/constants/enums/task_mode.dart';
 import '../../../../core/logger/app_logger.dart';
+import '../../evaluation/presentation/evaluation_provider.dart';
 import '../../module_instance/presentation/module_instance_provider.dart';
+import '../../participant/presentation/participant_list_provider.dart';
 import '../../recording_file/data/recording_file_providers.dart';
 import '../../recording_file/domain/recording_file_entity.dart';
 import '../../task/domain/task_entity.dart';
@@ -229,6 +231,12 @@ class TaskRunnerScreen extends ConsumerWidget {
 
       AppLogger.info('📊 All tasks completed: $allCompleted');
 
+      // Get the module instance to retrieve the evaluationId (needed for provider invalidation later)
+      final moduleInstance = await moduleInstanceRepo.getModuleInstanceById(
+        currentInstance.moduleInstanceId,
+      );
+      final evaluationId = moduleInstance?.evaluationId;
+
       if (allCompleted) {
         AppLogger.info(
           '🎉 Marking module ${currentInstance.moduleInstanceId} as completed',
@@ -237,11 +245,48 @@ class TaskRunnerScreen extends ConsumerWidget {
           currentInstance.moduleInstanceId,
           ModuleStatus.completed,
         );
+
+        // Check if all modules in the evaluation are completed
+        if (evaluationId != null) {
+          AppLogger.info(
+            '📊 Checking if all modules in evaluation $evaluationId are completed',
+          );
+
+          final evaluationRepo = ref.read(evaluationRepositoryProvider);
+          final allModulesInEvaluation = await moduleInstanceRepo
+              .getModuleInstancesByEvaluationId(evaluationId);
+
+          final allModulesCompleted = allModulesInEvaluation.every(
+            (m) => m.status == ModuleStatus.completed,
+          );
+
+          if (allModulesCompleted) {
+            AppLogger.info(
+              '🎊 All modules completed! Marking evaluation $evaluationId as completed',
+            );
+            await evaluationRepo.setEvaluationStatus(
+              evaluationId,
+              EvaluationStatus.completed,
+            );
+          } else {
+            AppLogger.info(
+              '⏳ Some modules still pending in evaluation $evaluationId',
+            );
+          }
+        }
       }
 
       // Não tem próxima → volta pra tela anterior (lista de módulos)
       if (context.mounted) {
         AppLogger.info('⬅️ Navigating back to module list');
+
+        // Invalidate the provider to refresh the module list with updated status
+        if (evaluationId != null) {
+          ref.invalidate(moduleInstancesByEvaluationProvider(evaluationId));
+          // Also invalidate participant list to show updated evaluation status
+          ref.invalidate(participantListProvider);
+        }
+
         Navigator.pop(context);
       }
     } else {

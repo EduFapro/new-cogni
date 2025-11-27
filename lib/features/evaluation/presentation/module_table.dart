@@ -56,20 +56,26 @@ class ModuleTable extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Button(
-                  child: const Text('Iniciar'),
-                  onPressed: () {
-                    final moduleInstId = instance.id;
-                    if (moduleInstId == null) return;
+                  onPressed: instance.status == ModuleStatus.completed
+                      ? null
+                      : () {
+                          final moduleInstId = instance.id;
+                          if (moduleInstId == null) return;
 
-                    Navigator.push(
-                      context,
-                      FluentPageRoute(
-                        builder: (_) => ModuleTaskEntryScreen(
-                          moduleInstanceId: moduleInstId,
-                        ),
-                      ),
-                    );
-                  },
+                          Navigator.push(
+                            context,
+                            FluentPageRoute(
+                              builder: (_) => ModuleTaskEntryScreen(
+                                moduleInstanceId: moduleInstId,
+                              ),
+                            ),
+                          );
+                        },
+                  child: Text(
+                    instance.status == ModuleStatus.completed
+                        ? 'Concluído'
+                        : 'Iniciar',
+                  ),
                 ),
               ),
             ],

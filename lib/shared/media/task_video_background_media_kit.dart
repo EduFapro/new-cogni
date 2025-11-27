@@ -37,7 +37,9 @@ class _TaskVideoBackgroundMediaKitState
   late final Player _player;
   late final VideoController _controller;
   StreamSubscription<bool>? _completedSub;
+  StreamSubscription<bool>? _playingSub;
   bool _completedNotified = false;
+  double _opacity = 0.0;
 
   @override
   void initState() {
@@ -53,6 +55,9 @@ class _TaskVideoBackgroundMediaKitState
       _completedSub = _player.stream.completed.listen(_handleCompleted);
     }
 
+    // Listen to playing state to trigger fade-in when video starts
+    _playingSub = _player.stream.playing.listen(_handlePlayingStateChanged);
+
     _openAsset();
   }
 
@@ -62,10 +67,7 @@ class _TaskVideoBackgroundMediaKitState
     // debugPrint('🎬 Opening video asset: $uri');
 
     try {
-      await _player.open(
-        Media(uri),
-        play: widget.autoPlay,
-      );
+      await _player.open(Media(uri), play: widget.autoPlay);
     } catch (e) {
       // Avoid crashing the whole app on load failure.
       debugPrint('❌ Failed to open video asset: $uri\n$e');
@@ -82,19 +84,30 @@ class _TaskVideoBackgroundMediaKitState
     }
   }
 
+  void _handlePlayingStateChanged(bool isPlaying) {
+    if (isPlaying && _opacity == 0.0 && mounted) {
+      // Start fade-in when video starts playing
+      setState(() {
+        _opacity = 1.0;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _completedSub?.cancel();
+    _playingSub?.cancel();
     _player.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Video(
-      controller: _controller,
-      controls: null,
-      fit: BoxFit.cover,
+    return AnimatedOpacity(
+      opacity: _opacity,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeIn,
+      child: Video(controller: _controller, controls: null, fit: BoxFit.cover),
     );
   }
 }
