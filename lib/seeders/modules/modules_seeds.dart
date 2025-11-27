@@ -5,7 +5,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../core/constants/database_constants.dart';
 import '../../core/logger/app_logger.dart';
 
-import '../../features/module/data/module_constants.dart';
 import '../../features/module/data/module_model.dart';
 import '../../features/module/domain/module_entity.dart';
 

@@ -8,7 +8,8 @@ class TaskEntity {
   final String? transcript;
   final TaskMode taskMode;
   final int position;
-  final String imagePath;
+  final String imageAssetPath;
+  final String? videoAssetPath;
   final int timeForCompletion;
   final bool mayRepeatPrompt;
   final bool testOnly;
@@ -20,7 +21,8 @@ class TaskEntity {
     required this.taskMode,
     required this.position,
     this.transcript,
-    this.imagePath = 'no_image',
+    this.imageAssetPath = 'no_image',
+    this.videoAssetPath,
     this.timeForCompletion = 60,
     this.mayRepeatPrompt = true,
     this.testOnly = false,
@@ -33,7 +35,8 @@ class TaskEntity {
     TaskFields.transcript: transcript,
     TaskFields.mode: taskMode.index,
     TaskFields.position: position,
-    TaskFields.imagePath: imagePath,
+    TaskFields.imagePath: imageAssetPath,
+    TaskFields.videoPath: videoAssetPath,
     TaskFields.timeForCompletion: timeForCompletion,
     TaskFields.mayRepeatPrompt: mayRepeatPrompt ? 1 : 0,
     TaskFields.testOnly: testOnly ? 1 : 0,
@@ -46,7 +49,8 @@ class TaskEntity {
     transcript: map[TaskFields.transcript] as String?,
     taskMode: TaskMode.values[map[TaskFields.mode] as int],
     position: map[TaskFields.position] as int,
-    imagePath: map[TaskFields.imagePath] as String,
+    imageAssetPath: map[TaskFields.imagePath] as String,
+    videoAssetPath: map[TaskFields.videoPath] as String?,
     timeForCompletion: map[TaskFields.timeForCompletion] as int,
     mayRepeatPrompt: (map[TaskFields.mayRepeatPrompt] as int) == 1,
     testOnly: (map[TaskFields.testOnly] as int) == 1,
@@ -59,7 +63,8 @@ class TaskEntity {
     String? transcript,
     TaskMode? taskMode,
     int? position,
-    String? imagePath,
+    String? imageAssetPath,
+    String? videoAssetPath,
     int? timeForCompletion,
     bool? mayRepeatPrompt,
     bool? testOnly,
@@ -71,7 +76,8 @@ class TaskEntity {
       transcript: transcript ?? this.transcript,
       taskMode: taskMode ?? this.taskMode,
       position: position ?? this.position,
-      imagePath: imagePath ?? this.imagePath,
+      imageAssetPath: imageAssetPath ?? this.imageAssetPath,
+      videoAssetPath: videoAssetPath ?? this.videoAssetPath,
       timeForCompletion: timeForCompletion ?? this.timeForCompletion,
       mayRepeatPrompt: mayRepeatPrompt ?? this.mayRepeatPrompt,
       testOnly: testOnly ?? this.testOnly,

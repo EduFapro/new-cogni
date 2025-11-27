@@ -8,6 +8,7 @@ class TaskFields {
   static const mode = 'mode';
   static const position = 'position';
   static const imagePath = 'image_path';
+  static const videoPath = 'video_path';
   static const timeForCompletion = 'time_for_completion';
   static const mayRepeatPrompt = 'may_repeat_prompt';
   static const testOnly = 'test_only';
@@ -20,13 +21,15 @@ class TaskFields {
     mode,
     position,
     imagePath,
+    videoPath,
     timeForCompletion,
     mayRepeatPrompt,
     testOnly,
   ];
 }
 
-const scriptCreateTableTasks = '''
+const scriptCreateTableTasks =
+    '''
 CREATE TABLE ${Tables.tasks} (
   ${TaskFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${TaskFields.moduleId} INTEGER NOT NULL,
@@ -35,6 +38,7 @@ CREATE TABLE ${Tables.tasks} (
   ${TaskFields.mode} INTEGER NOT NULL,
   ${TaskFields.position} INTEGER NOT NULL,
   ${TaskFields.imagePath} TEXT NOT NULL,
+  ${TaskFields.videoPath} TEXT,
   ${TaskFields.mayRepeatPrompt} INTEGER NOT NULL,
   ${TaskFields.testOnly} INTEGER NOT NULL,
   ${TaskFields.timeForCompletion} INTEGER NOT NULL,

@@ -3,6 +3,7 @@ import 'package:segundo_cogni/core/database/test_database_helper.dart';
 import 'package:segundo_cogni/features/auth/data/auth_local_datasource.dart';
 import 'package:segundo_cogni/features/auth/data/auth_repository_impl.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_model.dart';
+import 'package:segundo_cogni/features/evaluator/application/evaluator_secure_service.dart';
 
 void main() {
   late TestDatabaseHelper dbHelper;
@@ -46,7 +47,7 @@ void main() {
   });
 
   test('🧠 Evaluator is encrypted before storage', () {
-    final encrypted = dummyUser.encryptedAndHashed();
+    final encrypted = EvaluatorSecureService.encrypt(dummyUser);
 
     expect(encrypted.name, isNot(dummyUser.name));
     expect(encrypted.email, isNot(dummyUser.email));

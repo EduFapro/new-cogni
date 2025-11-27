@@ -1,5 +1,6 @@
 library task_seeds;
 
+import 'package:segundo_cogni/core/constants/video_file_paths.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../core/constants/database_constants.dart';
@@ -13,7 +14,7 @@ import '../modules/modules_seeds.dart';
 part 'task_seeds_constants.dart';
 part 'task_seeds_list.dart';
 
-Future<void> seedTasks(DatabaseExecutor  db) async {
+Future<void> seedTasks(DatabaseExecutor db) async {
   AppLogger.seed('[TASKS] Seeding tasks...');
 
   for (final task in tasksList) {
@@ -45,7 +46,8 @@ extension TaskEntityMapper on TaskEntity {
       transcript: transcript,
       taskMode: taskMode,
       position: position,
-      imagePath: imagePath,
+      imageAssetPath: imageAssetPath,
+      videoAssetPath: videoAssetPath,
       timeForCompletion: timeForCompletion,
       mayRepeatPrompt: mayRepeatPrompt,
       testOnly: testOnly,

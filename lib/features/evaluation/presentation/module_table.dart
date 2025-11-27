@@ -1,15 +1,17 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/constants/enums/progress_status.dart';
 import '../../module_instance/domain/module_instance_entity.dart';
+import '../../task_runner/presentation/module_task_entry_screen.dart';
 
-class ModuleTable extends StatelessWidget {
+class ModuleTable extends ConsumerWidget {
   final List<ModuleInstanceEntity> modules;
 
   const ModuleTable({super.key, required this.modules});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Table(
       columnWidths: const {
         0: FlexColumnWidth(3),
@@ -22,16 +24,13 @@ class ModuleTable extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text('Módulo', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                'Módulo',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Status'),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Ações'),
-            ),
+            Padding(padding: EdgeInsets.all(8.0), child: Text('Status')),
+            Padding(padding: EdgeInsets.all(8.0), child: Text('Ações')),
           ],
         ),
         ...modules.map((instance) {
@@ -43,20 +42,33 @@ class ModuleTable extends StatelessWidget {
               border: Border(bottom: BorderSide(color: Color(0xFFD0D0D0))),
             ),
             children: [
+              Padding(padding: const EdgeInsets.all(8.0), child: Text(title)),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(title),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(children: [icon, const SizedBox(width: 6), Text(instance.status.description)]),
+                child: Row(
+                  children: [
+                    icon,
+                    const SizedBox(width: 6),
+                    Text(instance.status.description),
+                  ],
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Button(
                   child: const Text('Iniciar'),
                   onPressed: () {
-                    // TODO: implementar lógica de iniciar módulo
+                    final moduleInstId = instance.id;
+                    if (moduleInstId == null) return;
+
+                    Navigator.push(
+                      context,
+                      FluentPageRoute(
+                        builder: (_) => ModuleTaskEntryScreen(
+                          moduleInstanceId: moduleInstId,
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -70,11 +82,12 @@ class ModuleTable extends StatelessWidget {
   Widget _statusIcon(ModuleStatus status) {
     switch (status) {
       case ModuleStatus.completed:
-        return Icon(FluentIcons.check_mark, color: Colors.green);
+        return const Icon(FluentIcons.check_mark, color: Color(0xFF107C10));
       case ModuleStatus.inProgress:
-        return Icon(FluentIcons.clock, color: Colors.orange);
+        return const Icon(FluentIcons.play, color: Color(0xFF0078D4));
       case ModuleStatus.pending:
-      return const Icon(FluentIcons.circle_ring, color: Colors.grey);
+      default:
+        return const Icon(FluentIcons.circle_stop, color: Color(0xFF605E5C));
     }
   }
 }

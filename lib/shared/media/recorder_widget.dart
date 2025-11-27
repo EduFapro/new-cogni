@@ -6,7 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 class RecorderWidget extends StatefulWidget {
-  final void Function(File recordingFile)? onRecordingFinished;
+  final void Function(File recordingFile, Duration duration)?
+  onRecordingFinished;
   final bool autoStart;
 
   const RecorderWidget({
@@ -20,16 +21,16 @@ class RecorderWidget extends StatefulWidget {
 }
 
 class _RecorderWidgetState extends State<RecorderWidget> {
-  final _recorder = AudioRecorder();
+  late final AudioRecorder _recorder;
   bool _isRecording = false;
   bool _isBusy = false;
-  Duration _elapsed = Duration.zero;
   Timer? _timer;
-  String? _currentPath;
+  Duration _elapsed = Duration.zero;
 
   @override
   void initState() {
     super.initState();
+    _recorder = AudioRecorder();
     if (widget.autoStart) {
       _startRecording();
     }
@@ -43,49 +44,36 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   }
 
   Future<void> _startRecording() async {
-    if (_isBusy || _isRecording) return;
+    if (_isBusy) return;
     setState(() => _isBusy = true);
 
     try {
-      final hasPermission = await _recorder.hasPermission();
-      if (!hasPermission) {
-        // You can show a dialog here if you want.
-        setState(() => _isBusy = false);
-        return;
+      if (await _recorder.hasPermission()) {
+        final dir = await getApplicationDocumentsDirectory();
+        final path =
+            '${dir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
+        const config = RecordConfig(encoder: AudioEncoder.aacLc);
+        await _recorder.start(config, path: path);
+
+        setState(() {
+          _isRecording = true;
+          _elapsed = Duration.zero;
+        });
+
+        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          setState(() => _elapsed += const Duration(seconds: 1));
+        });
       }
-
-      final dir = await getApplicationDocumentsDirectory();
-      final fileName =
-          'rec_${DateTime.now().millisecondsSinceEpoch.toString()}.m4a';
-      final path = '${dir.path}/$fileName';
-      _currentPath = path;
-
-      await _recorder.start(
-        const RecordConfig(
-          encoder: AudioEncoder.aacLc,
-          bitRate: 128000,
-          sampleRate: 44100,
-        ),
-        path: path,
-      );
-
-      _elapsed = Duration.zero;
-      _timer?.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        setState(() => _elapsed += const Duration(seconds: 1));
-      });
-
-      setState(() {
-        _isRecording = true;
-        _isBusy = false;
-      });
     } catch (e) {
+      debugPrint('Error starting recording: $e');
+    } finally {
       setState(() => _isBusy = false);
     }
   }
 
   Future<void> _stopRecording() async {
-    if (_isBusy || !_isRecording) return;
+    if (_isBusy) return;
     setState(() => _isBusy = true);
 
     try {
@@ -94,18 +82,19 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
       setState(() {
         _isRecording = false;
-        _isBusy = false;
       });
 
       if (path != null && widget.onRecordingFinished != null) {
-        widget.onRecordingFinished!(File(path));
+        widget.onRecordingFinished!(File(path), _elapsed);
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Error stopping recording: $e');
+    } finally {
       setState(() => _isBusy = false);
     }
   }
 
-  String _formatDuration(Duration d) {
+  String _format(Duration d) {
     final mm = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final ss = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$mm:$ss';
@@ -113,47 +102,101 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FluentTheme.of(context);
-
-    return Acrylic(
-      tint: Colors.black,
-      blurAmount: 15,
-      elevation: 0.0,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF0078D4).withOpacity(0.95),
+            const Color(0xFF005A9E).withOpacity(0.95),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 48),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Big round record button
-            Button(
-              style: ButtonStyle(
-                shape: ButtonState.all(const CircleBorder()),
-                padding: ButtonState.all(const EdgeInsets.all(18)),
+            // Recording button
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: _isRecording
+                        ? const Color(0xFFE81123).withOpacity(0.5)
+                        : Colors.white.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-              onPressed: _isBusy
-                  ? null
-                  : _isRecording
-                  ? _stopRecording
-                  : _startRecording,
-              child: Icon(
-                _isRecording ? FluentIcons.stop : FluentIcons.mic,
-                size: 24,
-                color: theme.resources.textOnAccentFillColorPrimary,
+              child: FilledButton(
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all(const CircleBorder()),
+                  padding: WidgetStateProperty.all(const EdgeInsets.all(28)),
+                  backgroundColor: WidgetStateProperty.all(
+                    _isRecording ? const Color(0xFFE81123) : Colors.white,
+                  ),
+                ),
+                onPressed: _isBusy
+                    ? null
+                    : _isRecording
+                    ? _stopRecording
+                    : _startRecording,
+                child: Icon(
+                  _isRecording ? FluentIcons.stop : FluentIcons.microphone,
+                  size: 32,
+                  color: _isRecording ? Colors.white : const Color(0xFF0078D4),
+                ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 32),
+            // Recording info
             Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _isRecording ? 'Gravando...' : 'Pronto para gravar',
-                  style: theme.typography.bodyStrong,
+                Row(
+                  children: [
+                    if (_isRecording) ...[
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE81123),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    Text(
+                      _isRecording ? 'Gravando...' : 'Pronto para gravar',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Text(
-                  _formatDuration(_elapsed),
-                  style: theme.typography.caption,
+                  _format(_elapsed),
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white.withOpacity(0.9),
+                    letterSpacing: 2,
+                  ),
                 ),
               ],
             ),

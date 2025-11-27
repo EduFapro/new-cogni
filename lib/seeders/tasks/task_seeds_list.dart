@@ -10,6 +10,7 @@ final helloHowAreYouTask = TaskEntity(
   title: helloHowAreYouTaskTitle,
   transcript:
   'Olá, tudo bem! Agora vou fazer algumas perguntas para conhecer você melhor.',
+  videoAssetPath: VideoFilePaths.hello_how_are_you,
   taskMode: TaskMode.play,
   position: 1,
 );
@@ -18,6 +19,7 @@ final whatsYourNameTask = TaskEntity(
   taskID: whatsYourNameTaskID,
   moduleID: sociodemographicInfoId,
   title: whatsYourNameTaskTitle,
+  videoAssetPath: VideoFilePaths.whats_your_name,
   taskMode: TaskMode.record,
   position: 2,
 );
@@ -26,6 +28,7 @@ final whatsYourDOBTask = TaskEntity(
   taskID: whatsYourDOBTaskID,
   moduleID: sociodemographicInfoId,
   title: whatsYourDOBTaskTitle,
+  videoAssetPath: VideoFilePaths.whats_your_dob,
   taskMode: TaskMode.record,
   position: 3,
 );
@@ -34,6 +37,7 @@ final whatsYourEducationLevelTask = TaskEntity(
   taskID: whatsYourEducationLevelTaskID,
   moduleID: sociodemographicInfoId,
   title: whatsYourEducationLevelTaskTitle,
+  videoAssetPath: VideoFilePaths.whats_your_education_level,
   taskMode: TaskMode.record,
   position: 4,
 );
@@ -42,6 +46,7 @@ final whatWasYourProfessionTask = TaskEntity(
   taskID: whatWasYourProfessionTaskID,
   moduleID: sociodemographicInfoId,
   title: whatWasYourProfessionTaskTitle,
+  videoAssetPath: VideoFilePaths.what_was_your_profession,
   taskMode: TaskMode.record,
   position: 5,
 );
@@ -50,6 +55,7 @@ final whoDoYouLiveWithTask = TaskEntity(
   taskID: whoDoYouLiveWithTaskID,
   moduleID: sociodemographicInfoId,
   title: whoDoYouLiveWithTaskTitle,
+  videoAssetPath: VideoFilePaths.who_do_you_live_with,
   taskMode: TaskMode.record,
   position: 6,
 );
@@ -58,6 +64,7 @@ final doYouExerciseFrequentlyTask = TaskEntity(
   taskID: doYouExerciseFrequentlyTaskID,
   moduleID: sociodemographicInfoId,
   title: doYouExerciseFrequentlyTaskTitle,
+  videoAssetPath: VideoFilePaths.do_you_exercise_frequently,
   taskMode: TaskMode.record,
   position: 7,
 );
@@ -66,6 +73,7 @@ final doYouReadFrequentlyTask = TaskEntity(
   taskID: doYouReadFrequentlyTaskID,
   moduleID: sociodemographicInfoId,
   title: doYouReadFrequentlyTaskTitle,
+  videoAssetPath: VideoFilePaths.do_you_read_frequently,
   taskMode: TaskMode.record,
   position: 8,
 );
@@ -74,6 +82,7 @@ final doYouPlayPuzzlesOrVideoGamesFrequentlyTask = TaskEntity(
   taskID: doYouPlayPuzzlesOrVideoGamesFrequentlyTaskID,
   moduleID: sociodemographicInfoId,
   title: doYouPlayPuzzlesOrVideoGamesFrequentlyTaskTitle,
+  videoAssetPath: VideoFilePaths.do_you_play_puzzles_or_video_games_frequently,
   taskMode: TaskMode.record,
   position: 9,
 );
@@ -82,6 +91,7 @@ final doYouHaveAnyDiseasesTask = TaskEntity(
   taskID: doYouHaveAnyDiseasesTaskID,
   moduleID: sociodemographicInfoId,
   title: doYouHaveAnyDiseasesTaskTitle,
+  videoAssetPath: VideoFilePaths.do_you_have_any_diseases,
   taskMode: TaskMode.record,
   position: 10,
 );

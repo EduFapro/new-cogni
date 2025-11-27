@@ -10,6 +10,7 @@ import '../../evaluation/domain/usecases/create_participant_evaluation_usecase.d
 import '../../module/data/module_local_datasource.dart';
 import '../../module/data/module_repository_impl.dart'; // ✅ Added
 import '../../task/data/task_local_datasource.dart';
+import '../../task/data/task_repository_impl.dart';
 
 import '../../module_instance/data/module_instance_local_datasource.dart';
 import '../../module_instance/data/module_instance_repository_impl.dart';
@@ -20,7 +21,8 @@ import '../../task_instance/data/task_instance_repository_impl.dart';
 import '../data/participant_local_datasource.dart';
 import '../domain/participant_entity.dart';
 
-class CreateParticipantEvaluationNotifier extends AsyncNotifier<ParticipantEntity?> {
+class CreateParticipantEvaluationNotifier
+    extends AsyncNotifier<ParticipantEntity?> {
   late final CreateParticipantEvaluationUseCase _useCase;
 
   @override
@@ -28,7 +30,9 @@ class CreateParticipantEvaluationNotifier extends AsyncNotifier<ParticipantEntit
     final dbHelper = ref.read(participantDbHelperProvider);
     final db = await dbHelper.database;
 
-    AppLogger.info('[PROVIDER] Initializing CreateParticipantEvaluationUseCase');
+    AppLogger.info(
+      '[PROVIDER] Initializing CreateParticipantEvaluationUseCase',
+    );
 
     _useCase = CreateParticipantEvaluationUseCase(
       participantDataSource: ParticipantLocalDataSource(dbHelper: dbHelper),
@@ -43,10 +47,12 @@ class CreateParticipantEvaluationNotifier extends AsyncNotifier<ParticipantEntit
       taskDataSource: TaskLocalDataSource(dbHelper: dbHelper),
       taskInstanceRepository: TaskInstanceRepositoryImpl(
         localDataSource: TaskInstanceLocalDataSource(dbHelper: dbHelper),
+        taskRepository: TaskRepositoryImpl(
+          localDataSource: TaskLocalDataSource(dbHelper: dbHelper),
+        ),
       ),
       db: db,
     );
-
 
     return null;
   }
@@ -59,7 +65,7 @@ class CreateParticipantEvaluationNotifier extends AsyncNotifier<ParticipantEntit
     state = const AsyncLoading();
     AppLogger.info(
       '[PROVIDER] Creating participant with evaluation for evaluatorId=$evaluatorId '
-          'selectedModules=$selectedModuleIds',
+      'selectedModules=$selectedModuleIds',
     );
 
     try {

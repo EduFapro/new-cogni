@@ -10,11 +10,9 @@ class TaskImageBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Image.asset(
-        assetPath,
-        fit: BoxFit.cover,
-      ),
+    return Image.asset(
+      assetPath,
+      fit: BoxFit.cover,
     );
   }
 }

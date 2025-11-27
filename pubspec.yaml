@@ -23,16 +23,24 @@ dependencies:
   crypto:
   excel:
   record:
+
+  # Option A: media_kit (cross-platform, recommended)
+  media_kit:
+  media_kit_video:
+  media_kit_libs_windows_video:
+
+  # Option B: video_player(+win) if you want it
   video_player:
+  video_player_win:
 
 dependency_overrides:
-  math_expressions: 3.1.0
-
-scripts:
-  seed: dart run tool/run_fake_seed.dart
+  math_expressions:
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/svg/logo.svg
+    - assets/video/task_prompts/
     - .env
+
+dev_dependencies:
+  flutter_lints: ^6.0.0

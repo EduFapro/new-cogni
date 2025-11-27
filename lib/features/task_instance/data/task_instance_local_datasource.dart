@@ -102,9 +102,11 @@ class TaskInstanceLocalDataSource {
   }
 
   Future<List<TaskInstanceModel>> getTaskInstancesForModuleInstance(
-      int moduleInstanceId) async {
+    int moduleInstanceId,
+  ) async {
     AppLogger.db(
-        'Fetching task instances for moduleInstanceId=$moduleInstanceId');
+      'Fetching task instances for moduleInstanceId=$moduleInstanceId',
+    );
     try {
       final db = await _db;
       final maps = await db.query(
@@ -113,13 +115,15 @@ class TaskInstanceLocalDataSource {
         whereArgs: [moduleInstanceId],
       );
       AppLogger.db(
-          'Fetched ${maps.length} task instances for moduleInstanceId=$moduleInstanceId');
+        'Fetched ${maps.length} task instances for moduleInstanceId=$moduleInstanceId',
+      );
       return maps.map(TaskInstanceModel.fromMap).toList();
     } catch (e, s) {
       AppLogger.error(
-          'Error fetching task instances for moduleInstanceId=$moduleInstanceId',
-          e,
-          s);
+        'Error fetching task instances for moduleInstanceId=$moduleInstanceId',
+        e,
+        s,
+      );
       return [];
     }
   }
@@ -128,8 +132,9 @@ class TaskInstanceLocalDataSource {
     AppLogger.db('Counting task instances');
     try {
       final db = await _db;
-      final result = await db
-          .rawQuery('SELECT COUNT(*) as count FROM ${Tables.taskInstances}');
+      final result = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM ${Tables.taskInstances}',
+      );
       final count = result.first['count'] as int?;
       AppLogger.db('Task instance count: $count');
       return count;
@@ -152,7 +157,8 @@ class TaskInstanceLocalDataSource {
       ''');
       if (result.isNotEmpty) {
         AppLogger.db(
-            'Found pending task instance ID=${result.first[TaskInstanceFields.id]}');
+          'Found pending task instance ID=${result.first[TaskInstanceFields.id]}',
+        );
         return TaskInstanceModel.fromMap(result.first);
       }
       AppLogger.db('No pending task instance found');
@@ -163,7 +169,7 @@ class TaskInstanceLocalDataSource {
     }
   }
 
-  Future<int> markAsCompleted(int id, {String? duration}) async {
+  Future<void> markAsCompleted(int id, {String? duration}) async {
     AppLogger.db('Marking task instance ID=$id as completed');
     try {
       final db = await _db;
@@ -178,12 +184,11 @@ class TaskInstanceLocalDataSource {
         whereArgs: [id],
       );
       AppLogger.db(
-          'Task instance ID=$id marked as completed ($rows row(s) affected)');
-      return rows;
+        'Task instance ID=$id marked as completed ($rows row(s) affected)',
+      );
     } catch (e, s) {
-      AppLogger.error(
-          'Error marking task instance ID=$id as completed', e, s);
-      return 0;
+      AppLogger.db('⛔ Error marking task instance ID=$id as completed');
+      AppLogger.error('⛔ DB ERROR marking task instance', e, s);
     }
   }
 }

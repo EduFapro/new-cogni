@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:segundo_cogni/features/task_instance/domain/task_instance_entity.dart';
 import 'package:video_player/video_player.dart';
+import '../../../shared/media/recorder_widget.dart';
 
 import '../../task/domain/task_entity.dart';
 
@@ -26,7 +27,7 @@ class _VideoRecordTaskViewState extends State<VideoRecordTaskView> {
   void initState() {
     super.initState();
 
-    controller = VideoPlayerController.asset(widget.task.videoPath!)
+    controller = VideoPlayerController.asset(widget.task.videoAssetPath!)
       ..initialize().then((_) {
         setState(() {});
         controller.play();
@@ -54,15 +55,15 @@ class _VideoRecordTaskViewState extends State<VideoRecordTaskView> {
           Expanded(
             child: controller.value.isInitialized
                 ? AspectRatio(
-              aspectRatio: controller.value.aspectRatio,
-              child: VideoPlayer(controller),
-            )
+                    aspectRatio: controller.value.aspectRatio,
+                    child: VideoPlayer(controller),
+                  )
                 : const ProgressRing(),
           ),
 
           if (videoCompleted)
             RecorderWidget(
-              onRecordingFinished: (file) {
+              onRecordingFinished: (file, duration) {
                 // TODO save recording → then next task
               },
             ),

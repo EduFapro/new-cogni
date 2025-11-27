@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'core/router.dart';
@@ -18,6 +19,8 @@ Future<void> initDatabaseFactory() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.info('Flutter bindings initialized');
+  MediaKit.ensureInitialized();
+  AppLogger.info('MediaKit initialized');
 
   // 🔐 Initialize encryption helper and connect logger
   await DeterministicEncryptionHelper.init();

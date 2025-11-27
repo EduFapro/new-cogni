@@ -9,24 +9,39 @@ import 'package:segundo_cogni/features/module/domain/module_repository.dart';
 import 'package:segundo_cogni/features/module_instance/domain/module_instance_repository.dart';
 import 'package:segundo_cogni/features/task_instance/domain/task_instance_repository.dart';
 import 'package:segundo_cogni/features/module/domain/module_entity.dart';
-import 'package:segundo_cogni/features/task/domain/task_entity.dart';
 import 'package:segundo_cogni/features/module_instance/domain/module_instance_entity.dart';
 import 'package:segundo_cogni/features/task_instance/domain/task_instance_entity.dart';
 import 'package:segundo_cogni/core/constants/enums/person_enums.dart';
 import 'package:segundo_cogni/core/constants/enums/laterality_enums.dart';
+import 'package:segundo_cogni/core/constants/enums/progress_status.dart';
 
 // Mocks
 class MockModuleRepository implements ModuleRepository {
   @override
   Future<List<ModuleEntity>> getAllModules() async {
     return [
-      ModuleEntity(moduleID: 1, title: 'Module 1', description: 'Desc 1'),
-      ModuleEntity(moduleID: 2, title: 'Module 2', description: 'Desc 2'),
+      ModuleEntity(moduleID: 1, title: 'Module 1'),
+      ModuleEntity(moduleID: 2, title: 'Module 2'),
     ];
   }
 
   @override
+  Future<int?> insertModule(ModuleEntity module) async => 1;
+
+  @override
   Future<ModuleEntity?> getModuleById(int id) async => null;
+
+  @override
+  Future<ModuleEntity?> getModuleByTitle(String title) async => null;
+
+  @override
+  Future<int> updateModule(ModuleEntity module) async => 1;
+
+  @override
+  Future<int> deleteModule(int id) async => 1;
+
+  @override
+  Future<int> getNumberOfModules() async => 2;
 }
 
 class MockModuleInstanceRepository implements ModuleInstanceRepository {
@@ -38,30 +53,60 @@ class MockModuleInstanceRepository implements ModuleInstanceRepository {
   }
 
   @override
-  Future<List<ModuleInstanceEntity>> getByEvaluationId(
+  Future<int> setModuleInstanceStatus(
+    int instanceId,
+    ModuleStatus status,
+  ) async => 1;
+
+  @override
+  Future<int> deleteModuleInstance(int id) async => 1;
+
+  @override
+  Future<List<ModuleInstanceEntity>> getAllModuleInstances() async => [];
+
+  @override
+  Future<int> getCount() async => 0;
+
+  @override
+  Future<ModuleInstanceEntity?> getModuleInstanceById(int id) async => null;
+
+  @override
+  Future<List<ModuleInstanceEntity>> getModuleInstancesByEvaluationId(
     int evaluationId,
   ) async => [];
 
   @override
-  Future<void> updateStatus(int id, dynamic status) async {}
+  Future<int> updateModuleInstance(ModuleInstanceEntity instance) async => 1;
 }
 
 class MockTaskInstanceRepository implements TaskInstanceRepository {
   @override
-  Future<int> insert(TaskInstanceEntity instance) async {
+  Future<int?> insert(TaskInstanceEntity instance) async {
     return 200 + instance.taskId;
   }
 
   @override
-  Future<List<TaskInstanceEntity>> getByModuleInstanceId(
+  Future<List<TaskInstanceEntity>> getByModuleInstance(
     int moduleInstanceId,
   ) async => [];
 
   @override
-  Future<void> updateStatus(int id, dynamic status) async {}
+  Future<int> update(TaskInstanceEntity entity) async => 1;
 
   @override
-  Future<void> updateResponse(int id, String response) async {}
+  Future<int> delete(int id) async => 1;
+
+  @override
+  Future<List<TaskInstanceEntity>> getAll() async => [];
+
+  @override
+  Future<TaskInstanceEntity?> getById(int id) async => null;
+
+  @override
+  Future<TaskInstanceEntity?> getInstanceWithTask(int id) async => null;
+
+  @override
+  Future<int> markAsCompleted(int id, {String? duration}) async => 1;
 }
 
 void main() {
@@ -76,9 +121,9 @@ void main() {
     dbHelper = TestDatabaseHelper.instance;
     final db = await dbHelper.database;
 
-    participantDataSource = ParticipantLocalDataSource(db);
-    evaluationDataSource = EvaluationLocalDataSource(db);
-    taskDataSource = TaskLocalDataSource(db);
+    participantDataSource = ParticipantLocalDataSource(dbHelper: dbHelper);
+    evaluationDataSource = EvaluationLocalDataSource(dbHelper: dbHelper);
+    taskDataSource = TaskLocalDataSource(dbHelper: dbHelper);
 
     // Seed a task for Module 1
     await db.insert('tasks', {
@@ -114,7 +159,7 @@ void main() {
       birthDate: DateTime(2000, 1, 1),
       sex: Sex.male,
       educationLevel: EducationLevel.completeHighSchool,
-      laterality: Laterality.right,
+      laterality: Laterality.rightHanded,
     );
 
     final created = await useCase.execute(

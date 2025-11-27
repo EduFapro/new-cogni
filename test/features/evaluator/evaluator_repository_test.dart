@@ -14,9 +14,8 @@ void main() {
     dbHelper = TestDatabaseHelper.instance;
     final db = await dbHelper.database;
     localDataSource = EvaluatorLocalDataSource(db);
-    repository = EvaluatorRepositoryImpl(
+    repository = EvaluatorRepositoryImpl.local(
       localDataSource,
-      null,
     ); // Remote DS is null for now
   });
 
@@ -31,7 +30,7 @@ void main() {
       email: 'john.doe@example.com',
       username: 'johndoe',
       password: 'password123',
-      birthDate: DateTime(1990, 1, 1),
+      birthDate: '1990-01-01',
       specialty: 'Psychology',
       cpf: '12345678900',
     );

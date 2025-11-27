@@ -11,7 +11,7 @@ class AppLogger {
       lineLength: 100,
       colors: true,
       printEmojis: true,
-      printTime: true,
+      dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
     ),
   );
 
@@ -32,11 +32,7 @@ class AppLogger {
 
   static void error(String message, [dynamic error, StackTrace? stack]) {
     if (_isRelease) return;
-    _logger.e(
-      message,
-      error: error,
-      stackTrace: stack,
-    );
+    _logger.e(message, error: error, stackTrace: stack);
   }
 
   static void db(String message) {
@@ -58,5 +54,4 @@ class AppLogger {
     if (_isRelease) return;
     _logger.i('[SEED] $message');
   }
-
 }

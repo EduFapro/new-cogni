@@ -3,7 +3,6 @@ import '../../core/logger/app_logger.dart';
 import '../../core/constants/database_constants.dart';
 import '../../features/evaluator/application/evaluator_secure_service.dart';
 import '../../features/evaluator/data/evaluator_model.dart';
-import '../../features/evaluator/data/evaluator_model_extensions.dart';
 
 Future<void> seedDummyEvaluator(DatabaseExecutor db) async {
   AppLogger.seed('[DUMMY] Seeding dummy evaluator...');

@@ -98,14 +98,38 @@ class EvaluatorLocalDataSource {
     }
   }
 
+  /// Get evaluator by email (decrypted)
+  Future<EvaluatorModel?> getEvaluatorByEmail(String email) async {
+    AppLogger.db('[EVALUATOR] Fetching evaluator by email: $email');
+    try {
+      final encEmail = DeterministicEncryptionHelper.encryptText(email);
+      final result = await _db.query(
+        Tables.evaluators,
+        where: '${EvaluatorFields.email} = ?',
+        whereArgs: [encEmail],
+        limit: 1,
+      );
+
+      return result.isNotEmpty
+          ? EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(result.first))
+          : null;
+    } catch (e, s) {
+      AppLogger.error('[EVALUATOR] Error fetching evaluator by email', e, s);
+      return null;
+    }
+  }
+
   /// Login using encrypted username + hashed password
   Future<EvaluatorModel?> login(String username, String password) async {
-    final encryptedUsername = DeterministicEncryptionHelper.encryptText(username);
+    final encryptedUsername = DeterministicEncryptionHelper.encryptText(
+      username,
+    );
     final hashedPassword = EvaluatorSecureService.hash(password);
 
     final result = await _db.query(
       Tables.evaluators,
-      where: '${EvaluatorFields.username} = ? AND ${EvaluatorFields.password} = ?',
+      where:
+          '${EvaluatorFields.username} = ? AND ${EvaluatorFields.password} = ?',
       whereArgs: [encryptedUsername, hashedPassword],
       limit: 1,
     );

@@ -17,7 +17,7 @@ CREATE TABLE ${Tables.taskInstances} (
   ${TaskInstanceFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${TaskInstanceFields.taskId} INTEGER NOT NULL,
   ${TaskInstanceFields.moduleInstanceId} INTEGER NOT NULL,
-  ${TaskInstanceFields.status} INT NOT NULL CHECK(${TaskInstanceFields.status} IN (0, 1)),
+  ${TaskInstanceFields.status} INT NOT NULL CHECK(${TaskInstanceFields.status} IN (1, 2, 3)),
   ${TaskInstanceFields.completingTime} TEXT,
   FOREIGN KEY (${TaskInstanceFields.taskId}) REFERENCES ${Tables.tasks}(${TaskFields.id}),
   FOREIGN KEY (${TaskInstanceFields.moduleInstanceId}) REFERENCES ${Tables.moduleInstances}(${ModuleInstanceFields.id})

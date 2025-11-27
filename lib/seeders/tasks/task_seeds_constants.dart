@@ -1,4 +1,4 @@
-part of task_seeds;
+part of 'task_seeds.dart';
 
 /// IDs & titles for all tasks.
 /// Keep these in sync with prompts and audio files.

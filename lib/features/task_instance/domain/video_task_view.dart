@@ -8,11 +8,7 @@ class VideoTaskView extends StatefulWidget {
   final TaskEntity task;
   final TaskInstanceEntity instance;
 
-  const VideoTaskView({
-    super.key,
-    required this.task,
-    required this.instance,
-  });
+  const VideoTaskView({super.key, required this.task, required this.instance});
 
   @override
   State<VideoTaskView> createState() => _VideoTaskViewState();
@@ -24,7 +20,7 @@ class _VideoTaskViewState extends State<VideoTaskView> {
   @override
   void initState() {
     super.initState();
-    controller = VideoPlayerController.asset(widget.task.videoPath!)
+    controller = VideoPlayerController.asset(widget.task.videoAssetPath!)
       ..initialize().then((_) {
         setState(() {});
         controller.play();
@@ -49,9 +45,9 @@ class _VideoTaskViewState extends State<VideoTaskView> {
       content: Center(
         child: controller.value.isInitialized
             ? AspectRatio(
-          aspectRatio: controller.value.aspectRatio,
-          child: VideoPlayer(controller),
-        )
+                aspectRatio: controller.value.aspectRatio,
+                child: VideoPlayer(controller),
+              )
             : const ProgressRing(),
       ),
     );

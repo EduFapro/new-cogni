@@ -45,7 +45,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
           final surname = surnameController.text.trim();
           if (name.isNotEmpty && surname.isNotEmpty) {
             usernameController.text =
-            "${name.toLowerCase()}_${surname.toLowerCase()}";
+                "${name.toLowerCase()}_${surname.toLowerCase()}";
           } else {
             usernameController.clear();
           }
@@ -63,7 +63,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
     // Listen for registration result
     ref.listen<AsyncValue<EvaluatorRegistrationState>>(
       evaluatorRegistrationProvider,
-          (prev, next) {
+      (prev, next) {
         next.whenData((value) async {
           if (value == EvaluatorRegistrationState.success) {
             AppLogger.info('Evaluator registered successfully — redirecting');
@@ -73,8 +73,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
               context,
               builder: (ctx, close) => InfoBar(
                 title: const Text("Avaliador registrado!"),
-                content:
-                const Text("Você será redirecionado para o home!"),
+                content: const Text("Você será redirecionado para o home!"),
                 severity: InfoBarSeverity.success,
                 isLong: true,
                 onClose: close,
@@ -144,7 +143,9 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
               children: [
                 Expanded(child: _buildTextField("Nome", nameController)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildTextField("Sobrenome", surnameController)),
+                Expanded(
+                  child: _buildTextField("Sobrenome", surnameController),
+                ),
               ],
             ),
 
@@ -170,7 +171,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
                         controller: usernameController,
                         enabled: manualUsername.value,
                         validator: (v) =>
-                        v!.isEmpty ? "Campo obrigatório" : null,
+                            v!.isEmpty ? "Campo obrigatório" : null,
                       ),
                     ),
                   ),
@@ -183,7 +184,8 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
                       onChanged: (v) {
                         manualUsername.value = v ?? false;
                         AppLogger.debug(
-                            'Manual username mode: ${manualUsername.value}');
+                          'Manual username mode: ${manualUsername.value}',
+                        );
                       },
                     ),
                   ),
@@ -221,12 +223,10 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
               child: Expander(
                 key: ValueKey(isDateExpanded.value),
                 initiallyExpanded: isDateExpanded.value,
-                onStateChanged: (open) =>
-                isDateExpanded.value = open,
+                onStateChanged: (open) => isDateExpanded.value = open,
                 header: Text(
                   selectedDate.value != null
-                      ? DateFormat('dd/MM/yyyy')
-                      .format(selectedDate.value!)
+                      ? DateFormat('dd/MM/yyyy').format(selectedDate.value!)
                       : "Selecionar data",
                 ),
                 content: SfDateRangePicker(
@@ -234,7 +234,8 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
                     selectedDate.value = args.value;
                     isDateExpanded.value = false;
                     AppLogger.debug(
-                        'Selected birth date: ${selectedDate.value}');
+                      'Selected birth date: ${selectedDate.value}',
+                    );
                   },
                   selectionMode: DateRangePickerSelectionMode.single,
                   initialSelectedDate: selectedDate.value,
@@ -251,9 +252,11 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
 
             FilledButton(
               style: ButtonStyle(
-                backgroundColor: ButtonState.all(AppColors.primary),
+                backgroundColor: WidgetStateProperty.all(AppColors.primary),
               ),
-              onPressed: state.isLoading || isRedirecting.value ? null : _submit,
+              onPressed: state.isLoading || isRedirecting.value
+                  ? null
+                  : _submit,
               child: (state.isLoading || isRedirecting.value)
                   ? const ProgressRing()
                   : const Text("Registrar"),
@@ -277,20 +280,21 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
     );
   }
 
-  Widget _buildPasswordField(String label, TextEditingController controller,
-      ValueNotifier<bool> show, {TextEditingController? confirm}) {
+  Widget _buildPasswordField(
+    String label,
+    TextEditingController controller,
+    ValueNotifier<bool> show, {
+    TextEditingController? confirm,
+  }) {
     return InfoLabel(
       label: label,
       child: TextFormBox(
         controller: controller,
         obscureText: !show.value,
-        placeholder: label == "Senha"
-            ? "Digite a senha"
-            : "Repita a senha",
+        placeholder: label == "Senha" ? "Digite a senha" : "Repita a senha",
         validator: (v) {
           if (v == null || v.isEmpty) return "Campo obrigatório";
-          if (label == "Confirmar Senha" &&
-              v != confirm?.text) {
+          if (label == "Confirmar Senha" && v != confirm?.text) {
             return "As senhas não coincidem";
           }
           if (label == "Senha" && v.length < 6) {
@@ -299,9 +303,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
           return null;
         },
         suffix: IconButton(
-          icon: Icon(show.value
-              ? FluentIcons.hide3
-              : FluentIcons.view),
+          icon: Icon(show.value ? FluentIcons.hide3 : FluentIcons.view),
           onPressed: () => show.value = !show.value,
         ),
       ),

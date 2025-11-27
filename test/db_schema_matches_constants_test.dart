@@ -6,7 +6,6 @@ import 'package:segundo_cogni/features/recording_file/data/recording_file_consta
 import 'package:segundo_cogni/features/task/data/task_constants.dart';
 import 'package:segundo_cogni/features/task_instance/data/task_instance_constants.dart';
 import 'package:segundo_cogni/features/task_prompt/data/task_prompt_constants.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 
 import 'package:segundo_cogni/core/constants/database_constants.dart';
 import 'package:segundo_cogni/core/database/test_database_helper.dart';

@@ -2,7 +2,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:segundo_cogni/features/participant/presentation/participant_provider.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../providers/evaluator_providers.dart';
-import '../../evaluation/domain/evaluation_entity.dart';
 import '../../evaluation/presentation/evaluation_provider.dart';
 import '../domain/participant_with_evaluation.dart';
 

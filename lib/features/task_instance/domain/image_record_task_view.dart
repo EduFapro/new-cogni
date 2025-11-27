@@ -20,20 +20,17 @@ class ImageRecordTaskView extends StatelessWidget {
       content: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              task.imagePath!,
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset(task.imageAssetPath, fit: BoxFit.cover),
           ),
 
           Align(
             alignment: Alignment.bottomCenter,
             child: RecorderWidget(
-              onRecordingFinished: (file) {
+              onRecordingFinished: (file, duration) {
                 // TODO save recording → then next task
               },
             ),
-          )
+          ),
         ],
       ),
     );

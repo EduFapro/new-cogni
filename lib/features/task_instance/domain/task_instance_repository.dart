@@ -7,4 +7,6 @@ abstract class TaskInstanceRepository {
   Future<int> update(TaskInstanceEntity entity);
   Future<int> delete(int id);
   Future<List<TaskInstanceEntity>> getByModuleInstance(int moduleInstanceId);
+  Future<TaskInstanceEntity?> getInstanceWithTask(int id);
+  Future<void> markAsCompleted(int id, {String? duration});
 }
