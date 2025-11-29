@@ -11,7 +11,9 @@ class AuthLocalDataSource {
   AuthLocalDataSource(this._db);
   Future<EvaluatorModel?> getEvaluatorByEmail(String email) async {
     final encryptedEmail = DeterministicEncryptionHelper.encryptText(email);
-    AppLogger.debug('Looking up evaluator: $email (encrypted: $encryptedEmail)');
+    AppLogger.debug(
+      'Looking up evaluator: $email (encrypted: $encryptedEmail)',
+    );
 
     final result = await _db.query(
       Tables.evaluators,
@@ -26,9 +28,9 @@ class AuthLocalDataSource {
     }
 
     AppLogger.db('Evaluator found for $email');
-    return EvaluatorModel.fromMap(result.first);
+    final encrypted = EvaluatorModel.fromMap(result.first);
+    return EvaluatorSecureService.decrypt(encrypted);
   }
-
 
   Future<void> clearCurrentUser() async {
     AppLogger.db('Clearing current user from DB');

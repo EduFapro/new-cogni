@@ -35,4 +35,22 @@ class ModuleInstanceEntity {
   @override
   String toString() =>
       'ModuleInstanceEntity(id: $id, moduleId: $moduleId, evaluationId: $evaluationId, status: $status)';
+
+  // For sending to backend API
+  Map<String, dynamic> toJsonForApi() => {
+    if (id != null) 'id': id,
+    'moduleId': moduleId,
+    'evaluationId': evaluationId,
+    'status': status.numericValue,
+  };
+
+  // For receiving from backend API
+  factory ModuleInstanceEntity.fromJson(Map<String, dynamic> json) {
+    return ModuleInstanceEntity(
+      id: json['id'] as int?,
+      moduleId: json['moduleId'] as int,
+      evaluationId: json['evaluationId'] as int,
+      status: ModuleStatus.fromValue(json['status'] as int),
+    );
+  }
 }

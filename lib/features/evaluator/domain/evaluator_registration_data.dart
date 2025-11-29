@@ -35,4 +35,23 @@ class EvaluatorRegistrationData {
     'isAdmin': isAdmin,
     'firstLogin': firstLogin,
   };
+
+  // For sending to backend API (same as toMap)
+  Map<String, dynamic> toJson() => toMap();
+
+  // For receiving from backend API
+  factory EvaluatorRegistrationData.fromJson(Map<String, dynamic> json) {
+    return EvaluatorRegistrationData(
+      name: json['name'] as String,
+      surname: json['surname'] as String,
+      email: json['email'] as String,
+      birthDate: json['birthDate'] as String,
+      specialty: json['specialty'] as String,
+      cpf: json['cpfOrNif'] as String,
+      username: json['username'] as String,
+      password: json['password'] as String,
+      isAdmin: json['isAdmin'] as bool? ?? false,
+      firstLogin: json['firstLogin'] as bool? ?? true,
+    );
+  }
 }

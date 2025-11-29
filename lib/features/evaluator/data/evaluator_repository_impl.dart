@@ -2,70 +2,65 @@ import '../../../core/logger/app_logger.dart';
 import '../domain/evaluator_repository.dart';
 import '../domain/evaluator_registration_data.dart';
 import 'evaluator_local_datasource.dart';
-import 'evaluator_remote_datasource.dart';
+import 'evaluator_remote_data_source.dart';
 import 'evaluator_model.dart';
 
 class EvaluatorRepositoryImpl implements EvaluatorRepository {
-  final EvaluatorLocalDataSource? _local;
-  final EvaluatorRemoteDataSource? _remote;
-  final bool _isLocal;
+  final EvaluatorLocalDataSource local;
+  final EvaluatorRemoteDataSource? remote;
 
-  EvaluatorRepositoryImpl.local(this._local)
-      : _remote = null,
-        _isLocal = true {
-    AppLogger.info('[REPO] EvaluatorRepositoryImpl running in LOCAL mode');
-  }
-
-  EvaluatorRepositoryImpl.remote(this._remote)
-      : _local = null,
-        _isLocal = false {
-    AppLogger.info('[REPO] EvaluatorRepositoryImpl running in REMOTE mode');
-  }
-
-  String get _mode => _isLocal ? 'LOCAL' : 'REMOTE';
+  EvaluatorRepositoryImpl({required this.local, this.remote});
 
   Future<List<EvaluatorModel>> getAllEvaluators() async {
-    AppLogger.info('[REPO] Fetching all evaluators ($_mode)');
-    try {
-      if (_isLocal) {
-        final list = await _local!.getAll();
-        AppLogger.db('Fetched ${list.length} evaluators from local DB');
-        return list;
-      } else {
-        final list = await _remote!.fetchAllEvaluators();
-        AppLogger.info('Fetched ${list.length} evaluators from API');
-        return list;
-      }
-    } catch (e, s) {
-      AppLogger.error('[REPO] Error fetching all evaluators ($_mode)', e, s);
-      rethrow;
-    }
+    AppLogger.info('[REPO] Fetching all evaluators');
+    // Always fetch from local as primary source of truth for the app
+    final list = await local.getAll();
+    AppLogger.db('Fetched ${list.length} evaluators from local DB');
+    return list;
   }
 
   Future<void> addEvaluator(EvaluatorModel evaluator) async {
-    AppLogger.info('[REPO] Adding evaluator ${evaluator.email} ($_mode)');
-    try {
-      if (_isLocal) {
-        await _local!.insert(evaluator);
-        AppLogger.db('[REPO] Evaluator inserted into local DB');
-      } else {
-        await _remote!.createEvaluator(evaluator);
-        AppLogger.info('[REPO] Evaluator created remotely');
-      }
-    } catch (e, s) {
-      AppLogger.error('[REPO] Failed to add evaluator', e, s);
-      rethrow;
-    }
+    // This method seems to be used for internal/testing or direct model insertion
+    // We'll insert locally only for now as it takes a Model, not RegistrationData
+    AppLogger.info('[REPO] Adding evaluator ${evaluator.email} locally');
+    await local.insert(evaluator);
   }
 
   @override
   Future<void> insertEvaluator(EvaluatorRegistrationData data) async {
+    AppLogger.info('[REPO] Inserting new evaluator: ${data.username}');
+
+    // 1. Local Insert
     final model = EvaluatorModel.fromDTO(data);
-    await _local!.insert(model); // Local insert secures data internally.
+    await local.insert(model);
+    AppLogger.db('[REPO] Evaluator inserted into local DB');
+
+    // 2. Remote Sync (Fire-and-forget)
+    if (remote != null) {
+      _syncToBackend(() async {
+        final backendId = await remote!.createEvaluator(data);
+        if (backendId != null) {
+          AppLogger.info(
+            '[REPO] Evaluator synced to backend with ID: $backendId',
+          );
+        }
+      });
+    }
   }
 
   @override
   Future<bool> hasAnyEvaluatorAdmin() async {
-    return await _local!.hasAnyEvaluatorAdmin();
+    return await local.hasAnyEvaluatorAdmin();
+  }
+
+  // Helper method for fire-and-forget backend sync
+  void _syncToBackend(Future<void> Function() syncOperation) {
+    syncOperation().catchError((error, stackTrace) {
+      AppLogger.error(
+        'Backend sync failed (continuing locally)',
+        error,
+        stackTrace,
+      );
+    });
   }
 }

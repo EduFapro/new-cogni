@@ -2,22 +2,42 @@ import '../../task_instance/domain/task_instance_entity.dart';
 import '../../task_instance/domain/task_instance_repository.dart';
 import 'task_instance_local_datasource.dart';
 import 'task_instance_model.dart';
+import 'task_instance_remote_data_source.dart';
 
 import '../../task/domain/task_repository.dart';
+import '../../../core/logger/app_logger.dart';
 
 class TaskInstanceRepositoryImpl implements TaskInstanceRepository {
   final TaskInstanceLocalDataSource localDataSource;
+  final TaskInstanceRemoteDataSource? remoteDataSource;
   final TaskRepository taskRepository;
 
   TaskInstanceRepositoryImpl({
     required this.localDataSource,
     required this.taskRepository,
+    this.remoteDataSource,
   });
 
   @override
   Future<int?> insert(TaskInstanceEntity entity) async {
+    // 1. Local Insert
     final model = TaskInstanceModel.fromEntity(entity);
-    return await localDataSource.create(model);
+    final id = await localDataSource.create(model);
+
+    // 2. Remote Sync (Fire-and-forget)
+    if (remoteDataSource != null && id != null) {
+      _syncToBackend(() async {
+        final entityWithId = entity.copyWith(id: id);
+        final backendId = await remoteDataSource!.createTaskInstance(
+          entityWithId,
+        );
+        if (backendId != null) {
+          AppLogger.info('TaskInstance synced to backend with ID: $backendId');
+        }
+      });
+    }
+
+    return id;
   }
 
   @override
@@ -64,6 +84,28 @@ class TaskInstanceRepositoryImpl implements TaskInstanceRepository {
 
   @override
   Future<void> markAsCompleted(int id, {String? duration}) async {
-    return await localDataSource.markAsCompleted(id, duration: duration);
+    // 1. Local Update
+    await localDataSource.markAsCompleted(id, duration: duration);
+
+    // 2. Remote Sync (Fire-and-forget)
+    if (remoteDataSource != null) {
+      _syncToBackend(() async {
+        final success = await remoteDataSource!.markAsCompleted(id, duration);
+        if (success) {
+          AppLogger.info('TaskInstance $id marked as completed on backend');
+        }
+      });
+    }
+  }
+
+  // Helper method for fire-and-forget backend sync
+  void _syncToBackend(Future<void> Function() syncOperation) {
+    syncOperation().catchError((error, stackTrace) {
+      AppLogger.error(
+        'Backend sync failed (continuing locally)',
+        error,
+        stackTrace,
+      );
+    });
   }
 }

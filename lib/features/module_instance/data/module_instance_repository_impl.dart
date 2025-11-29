@@ -1,22 +1,47 @@
 import '../../../core/constants/enums/progress_status.dart';
+import '../../../core/logger/app_logger.dart';
 import '../domain/module_instance_repository.dart';
 import '../domain/module_instance_entity.dart';
 import 'module_instance_model.dart';
 import 'module_instance_local_datasource.dart';
+import 'module_instance_remote_data_source.dart';
 
 class ModuleInstanceRepositoryImpl implements ModuleInstanceRepository {
   final ModuleInstanceLocalDataSource localDataSource;
+  final ModuleInstanceRemoteDataSource? remoteDataSource;
 
-  ModuleInstanceRepositoryImpl({required this.localDataSource});
+  ModuleInstanceRepositoryImpl({
+    required this.localDataSource,
+    this.remoteDataSource,
+  });
 
   @override
   Future<ModuleInstanceEntity?> createModuleInstance(
-      ModuleInstanceEntity instance) async {
+    ModuleInstanceEntity instance,
+  ) async {
+    // 1. Local Insert
     final model = ModuleInstanceModel.fromEntity(instance);
     final id = await localDataSource.insertModuleInstance(model);
     if (id == null) return null;
+
     final created = await localDataSource.getModuleInstanceById(id);
-    return created?.toEntity();
+    final createdEntity = created?.toEntity();
+
+    // 2. Remote Sync (Fire-and-forget)
+    if (remoteDataSource != null && createdEntity != null) {
+      _syncToBackend(() async {
+        final backendId = await remoteDataSource!.createModuleInstance(
+          createdEntity,
+        );
+        if (backendId != null) {
+          AppLogger.info(
+            'ModuleInstance synced to backend with ID: $backendId',
+          );
+        }
+      });
+    }
+
+    return createdEntity;
   }
 
   @override
@@ -33,9 +58,11 @@ class ModuleInstanceRepositoryImpl implements ModuleInstanceRepository {
 
   @override
   Future<List<ModuleInstanceEntity>> getModuleInstancesByEvaluationId(
-      int evaluationId) async {
-    final models =
-    await localDataSource.getModuleInstancesByEvaluationId(evaluationId);
+    int evaluationId,
+  ) async {
+    final models = await localDataSource.getModuleInstancesByEvaluationId(
+      evaluationId,
+    );
     return models.map((m) => m.toEntity()).toList();
   }
 
@@ -56,7 +83,39 @@ class ModuleInstanceRepositoryImpl implements ModuleInstanceRepository {
   }
 
   @override
-  Future<int> setModuleInstanceStatus(int instanceId, ModuleStatus status) async {
-    return await localDataSource.setStatus(instanceId, status);
+  Future<int> setModuleInstanceStatus(
+    int instanceId,
+    ModuleStatus status,
+  ) async {
+    // 1. Local Update
+    final result = await localDataSource.setStatus(instanceId, status);
+
+    // 2. Remote Sync (Fire-and-forget)
+    if (remoteDataSource != null) {
+      _syncToBackend(() async {
+        final success = await remoteDataSource!.updateModuleInstanceStatus(
+          instanceId,
+          status.numericValue,
+        );
+        if (success) {
+          AppLogger.info(
+            'ModuleInstance $instanceId status updated on backend',
+          );
+        }
+      });
+    }
+
+    return result;
+  }
+
+  // Helper method for fire-and-forget backend sync
+  void _syncToBackend(Future<void> Function() syncOperation) {
+    syncOperation().catchError((error, stackTrace) {
+      AppLogger.error(
+        'Backend sync failed (continuing locally)',
+        error,
+        stackTrace,
+      );
+    });
   }
 }

@@ -15,6 +15,49 @@ import 'package:segundo_cogni/core/constants/enums/person_enums.dart';
 import 'package:segundo_cogni/core/constants/enums/laterality_enums.dart';
 import 'package:segundo_cogni/core/constants/enums/progress_status.dart';
 
+import 'package:segundo_cogni/features/participant/data/participant_remote_data_source.dart';
+import 'package:segundo_cogni/features/evaluation/data/evaluation_remote_data_source.dart';
+import 'package:segundo_cogni/features/evaluation/domain/evaluation_entity.dart';
+import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
+
+// ... existing imports ...
+
+// Mocks for Remote Data Sources
+class MockParticipantRemoteDataSource implements ParticipantRemoteDataSource {
+  bool createCalled = false;
+  ParticipantEntity? createdParticipant;
+  int? evaluatorId;
+
+  @override
+  Future<int?> createParticipant(
+    ParticipantEntity participant,
+    int evaluatorId,
+  ) async {
+    createCalled = true;
+    createdParticipant = participant;
+    this.evaluatorId = evaluatorId;
+    return 999; // Backend ID
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class MockEvaluationRemoteDataSource implements EvaluationRemoteDataSource {
+  bool createCalled = false;
+  EvaluationEntity? createdEvaluation;
+
+  @override
+  Future<int?> createEvaluation(EvaluationEntity evaluation) async {
+    createCalled = true;
+    createdEvaluation = evaluation;
+    return 888; // Backend ID
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 // Mocks
 class MockModuleRepository implements ModuleRepository {
   @override
@@ -115,31 +158,41 @@ void main() {
   late ParticipantLocalDataSource participantDataSource;
   late EvaluationLocalDataSource evaluationDataSource;
   late TaskLocalDataSource taskDataSource;
+  late MockParticipantRemoteDataSource participantRemoteDataSource;
+  late MockEvaluationRemoteDataSource evaluationRemoteDataSource;
 
   setUp(() async {
     await TestDatabaseHelper.delete();
+    await DeterministicEncryptionHelper.init(); // Initialize encryption
     dbHelper = TestDatabaseHelper.instance;
     final db = await dbHelper.database;
 
     participantDataSource = ParticipantLocalDataSource(dbHelper: dbHelper);
     evaluationDataSource = EvaluationLocalDataSource(dbHelper: dbHelper);
     taskDataSource = TaskLocalDataSource(dbHelper: dbHelper);
+    participantRemoteDataSource = MockParticipantRemoteDataSource();
+    evaluationRemoteDataSource = MockEvaluationRemoteDataSource();
 
     // Seed a task for Module 1
     await db.insert('tasks', {
       'task_id': 1,
       'module_id': 1,
       'title': 'Task 1',
-      'description': 'Task Desc',
-      'command': 'Do this',
-      'response_type': 'text',
-      'media_type': 'none',
-      'task_order': 1,
+      'transcript': 'Task Desc',
+      'mode': 0,
+      'image_path': 'path/to/image',
+      'video_path': null,
+      'position': 1,
+      'may_repeat_prompt': 1,
+      'test_only': 0,
+      'time_for_completion': 60,
     });
 
     useCase = CreateParticipantEvaluationUseCase(
       participantDataSource: participantDataSource,
+      participantRemoteDataSource: participantRemoteDataSource,
       evaluationDataSource: evaluationDataSource,
+      evaluationRemoteDataSource: evaluationRemoteDataSource,
       moduleRepository: MockModuleRepository(),
       moduleInstanceRepository: MockModuleInstanceRepository(),
       taskDataSource: taskDataSource,
@@ -152,44 +205,64 @@ void main() {
     await dbHelper.close();
   });
 
-  test('✅ execute creates participant, evaluation, and instances', () async {
-    final participant = ParticipantEntity(
-      name: 'Test',
-      surname: 'User',
-      birthDate: DateTime(2000, 1, 1),
-      sex: Sex.male,
-      educationLevel: EducationLevel.completeHighSchool,
-      laterality: Laterality.rightHanded,
-    );
+  test(
+    '✅ execute creates participant, evaluation, and instances AND syncs to backend',
+    () async {
+      final participant = ParticipantEntity(
+        name: 'Test',
+        surname: 'User',
+        birthDate: DateTime(2000, 1, 1),
+        sex: Sex.male,
+        educationLevel: EducationLevel.completeHighSchool,
+        laterality: Laterality.rightHanded,
+      );
 
-    final created = await useCase.execute(
-      participant: participant,
-      evaluatorId: 1,
-      selectedModuleIds: [1],
-    );
+      final created = await useCase.execute(
+        participant: participant,
+        evaluatorId: 1,
+        selectedModuleIds: [1],
+      );
 
-    expect(created.participantID, isNotNull);
+      expect(created.participantID, isNotNull);
 
-    // Verify Participant in DB
-    final db = await dbHelper.database;
-    final savedParticipant = await db.query(
-      'participants',
-      where: 'participant_id = ?',
-      whereArgs: [created.participantID],
-    );
-    expect(savedParticipant, isNotEmpty);
-    expect(savedParticipant.first['name'], isNot('Test')); // Should be hashed
+      // Verify Participant in DB
+      final db = await dbHelper.database;
+      final savedParticipant = await db.query(
+        'participants',
+        where: 'participant_id = ?',
+        whereArgs: [created.participantID],
+      );
+      expect(savedParticipant, isNotEmpty);
+      // Name should be hashed in DB
+      expect(savedParticipant.first['name'], isNot('Test'));
 
-    // Verify Evaluation in DB
-    final savedEvaluation = await db.query(
-      'evaluations',
-      where: 'participant_id = ?',
-      whereArgs: [created.participantID],
-    );
-    expect(savedEvaluation, isNotEmpty);
-    expect(savedEvaluation.first['evaluator_id'], 1);
+      // Verify Evaluation in DB
+      final savedEvaluation = await db.query(
+        'evaluations',
+        where: 'participant_id = ?',
+        whereArgs: [created.participantID],
+      );
+      expect(savedEvaluation, isNotEmpty);
+      expect(savedEvaluation.first['evaluator_id'], 1);
 
-    // Verify Module/Task Instances (Mocked repos don't save to DB, but we verify the flow completed without error)
-    // In a real integration test with full DB repos, we would query those tables too.
-  });
+      // Verify Sync to Backend
+      await Future.delayed(Duration.zero); // Allow microtask to run
+
+      expect(participantRemoteDataSource.createCalled, isTrue);
+      expect(
+        participantRemoteDataSource.createdParticipant?.name,
+        'Test',
+      ); // Should send plain text?
+      // Wait, UseCase sends `createdParticipant` which comes from `participant.copyWith(participantID: ...)`.
+      // The input `participant` has plain text name.
+      // The `hashedParticipant` is only used for local insert.
+      // So remote sync should receive plain text (or however `participant` was passed).
+
+      expect(evaluationRemoteDataSource.createCalled, isTrue);
+      expect(
+        evaluationRemoteDataSource.createdEvaluation?.participantID,
+        999,
+      ); // Should use backend participant ID
+    },
+  );
 }

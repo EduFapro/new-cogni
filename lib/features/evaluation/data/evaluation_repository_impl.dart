@@ -5,11 +5,13 @@ import '../domain/evaluation_entity.dart';
 import '../domain/evaluation_repository.dart';
 import 'evaluation_constants.dart';
 import 'evaluation_local_datasource.dart';
+import 'evaluation_remote_data_source.dart';
 
 class EvaluationRepositoryImpl implements EvaluationRepository {
   final EvaluationLocalDataSource local;
+  final EvaluationRemoteDataSource? remote;
 
-  EvaluationRepositoryImpl({required this.local});
+  EvaluationRepositoryImpl({required this.local, this.remote});
 
   // ⚠️ This should no longer be used directly outside a transaction
   @override
@@ -62,12 +64,40 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
     AppLogger.db(
       'EvaluationRepositoryImpl.setEvaluationStatus → id=$evaluationId, status=$status',
     );
+
+    // 1. Update local DB (primary operation)
     final db = await local.dbHelper.database;
-    return await db.update(
+    final result = await db.update(
       Tables.evaluations,
       {EvaluationFields.status: status.numericValue},
       where: '${EvaluationFields.id} = ?',
       whereArgs: [evaluationId],
     );
+
+    // 2. Sync to backend (fire-and-forget)
+    if (remote != null) {
+      _syncToBackend(() async {
+        final success = await remote!.updateEvaluationStatus(
+          evaluationId,
+          status.numericValue,
+        );
+        if (success) {
+          AppLogger.info('Evaluation $evaluationId status updated on backend');
+        }
+      });
+    }
+
+    return result;
+  }
+
+  // Helper method for fire-and-forget backend sync
+  void _syncToBackend(Future<void> Function() syncOperation) {
+    syncOperation().catchError((error, stackTrace) {
+      AppLogger.error(
+        'Backend sync failed (continuing locally)',
+        error,
+        stackTrace,
+      );
+    });
   }
 }

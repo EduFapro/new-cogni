@@ -39,4 +39,24 @@ class TaskInstanceEntity {
   @override
   String toString() =>
       'TaskInstanceEntity(id: $id, taskId: $taskId, moduleInstanceId: $moduleInstanceId, status: $status, completingTime: $completingTime)';
+
+  // For sending to backend API
+  Map<String, dynamic> toJsonForApi() => {
+    if (id != null) 'id': id,
+    'taskId': taskId,
+    'moduleInstanceId': moduleInstanceId,
+    'status': status.numericValue,
+    if (completingTime != null) 'completingTime': completingTime,
+  };
+
+  // For receiving from backend API
+  factory TaskInstanceEntity.fromJson(Map<String, dynamic> json) {
+    return TaskInstanceEntity(
+      id: json['id'] as int?,
+      taskId: json['taskId'] as int,
+      moduleInstanceId: json['moduleInstanceId'] as int,
+      status: TaskStatus.fromValue(json['status'] as int),
+      completingTime: json['completingTime'] as String?,
+    );
+  }
 }

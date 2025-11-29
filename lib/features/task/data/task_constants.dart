@@ -1,4 +1,5 @@
 import '../../../core/constants/database_constants.dart';
+import '../../module/data/module_constants.dart';
 
 class TaskFields {
   static const id = 'task_id';
@@ -42,7 +43,7 @@ CREATE TABLE ${Tables.tasks} (
   ${TaskFields.mayRepeatPrompt} INTEGER NOT NULL,
   ${TaskFields.testOnly} INTEGER NOT NULL,
   ${TaskFields.timeForCompletion} INTEGER NOT NULL,
-  FOREIGN KEY (${TaskFields.moduleId}) REFERENCES ${Tables.modules}(${TaskFields.id}),
+  FOREIGN KEY (${TaskFields.moduleId}) REFERENCES ${Tables.modules}(${ModuleFields.id}),
   CHECK(${TaskFields.mode} >= 0 AND ${TaskFields.mode} <= 1),
   CHECK(${TaskFields.mayRepeatPrompt} >= 0 AND ${TaskFields.mayRepeatPrompt} <= 1)
 )

@@ -4,7 +4,6 @@ import '../../../core/database/base_database_helper.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
-import '../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../data/participant_constants.dart';
 import '../domain/participant_entity.dart';
 
@@ -75,11 +74,7 @@ class ParticipantLocalDataSource {
     final db = await _db;
     final maps = await db.query(Tables.participants);
     final participants = maps.map((map) {
-      final entity = ParticipantEntity.fromMap(map);
-      return entity.copyWith(
-        name: DeterministicEncryptionHelper.decryptText(entity.name),
-        surname: DeterministicEncryptionHelper.decryptText(entity.surname),
-      );
+      return ParticipantEntity.fromMap(map);
     }).toList();
 
     AppLogger.db(
@@ -195,11 +190,7 @@ class ParticipantLocalDataSource {
 
     final maps = await db.rawQuery(query, [evaluatorId]);
     final participants = maps.map((map) {
-      final entity = ParticipantEntity.fromMap(map);
-      return entity.copyWith(
-        name: DeterministicEncryptionHelper.decryptText(entity.name),
-        surname: DeterministicEncryptionHelper.decryptText(entity.surname),
-      );
+      return ParticipantEntity.fromMap(map);
     }).toList();
 
     AppLogger.db(

@@ -3,6 +3,7 @@ import 'package:segundo_cogni/core/database/test_database_helper.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_local_datasource.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_repository_impl.dart';
 import 'package:segundo_cogni/features/evaluator/domain/evaluator_registration_data.dart';
+import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
 
 void main() {
   late TestDatabaseHelper dbHelper;
@@ -11,12 +12,11 @@ void main() {
 
   setUp(() async {
     await TestDatabaseHelper.delete();
+    await DeterministicEncryptionHelper.init();
     dbHelper = TestDatabaseHelper.instance;
     final db = await dbHelper.database;
     localDataSource = EvaluatorLocalDataSource(db);
-    repository = EvaluatorRepositoryImpl.local(
-      localDataSource,
-    ); // Remote DS is null for now
+    repository = EvaluatorRepositoryImpl(local: localDataSource);
   });
 
   tearDown(() async {

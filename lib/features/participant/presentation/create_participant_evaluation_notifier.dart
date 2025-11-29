@@ -21,6 +21,10 @@ import '../../task_instance/data/task_instance_repository_impl.dart';
 import '../data/participant_local_datasource.dart';
 import '../domain/participant_entity.dart';
 
+import '../../../providers/network_provider.dart';
+import '../../participant/data/participant_remote_data_source.dart';
+import '../../evaluation/data/evaluation_remote_data_source.dart';
+
 class CreateParticipantEvaluationNotifier
     extends AsyncNotifier<ParticipantEntity?> {
   late final CreateParticipantEvaluationUseCase _useCase;
@@ -29,18 +33,21 @@ class CreateParticipantEvaluationNotifier
   FutureOr<ParticipantEntity?> build() async {
     final dbHelper = ref.read(participantDbHelperProvider);
     final db = await dbHelper.database;
+    final networkService = ref.read(networkServiceProvider);
 
     AppLogger.info(
-      '[PROVIDER] Initializing CreateParticipantEvaluationUseCase',
+      '[PROVIDER] Initializing CreateParticipantEvaluationUseCase (dual-write)',
     );
 
     _useCase = CreateParticipantEvaluationUseCase(
       participantDataSource: ParticipantLocalDataSource(dbHelper: dbHelper),
+      participantRemoteDataSource: ParticipantRemoteDataSource(networkService),
       evaluationDataSource: EvaluationLocalDataSource(dbHelper: dbHelper),
+      evaluationRemoteDataSource: EvaluationRemoteDataSource(networkService),
       moduleRepository: ModuleRepositoryImpl(
         local: ModuleLocalDataSource(dbHelper: dbHelper),
         taskLocal: TaskLocalDataSource(dbHelper: dbHelper),
-      ), // ✅ ADD THIS
+      ),
       moduleInstanceRepository: ModuleInstanceRepositoryImpl(
         localDataSource: ModuleInstanceLocalDataSource(dbHelper: dbHelper),
       ),

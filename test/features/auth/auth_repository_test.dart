@@ -4,6 +4,7 @@ import 'package:segundo_cogni/features/auth/data/auth_local_datasource.dart';
 import 'package:segundo_cogni/features/auth/data/auth_repository_impl.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_model.dart';
 import 'package:segundo_cogni/features/evaluator/application/evaluator_secure_service.dart';
+import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
 
 void main() {
   late TestDatabaseHelper dbHelper;
@@ -23,11 +24,18 @@ void main() {
   );
 
   Future<void> seedUser() async {
+    // Insert into evaluators table first (needed for login and FK)
+    final encrypted = EvaluatorSecureService.encrypt(dummyUser);
+    final db = await dbHelper.database;
+    await db.insert('evaluators', encrypted.toMap());
+
+    // Also save as current user
     await authDataSource.saveCurrentUser(dummyUser);
   }
 
   setUp(() async {
     await TestDatabaseHelper.delete();
+    await DeterministicEncryptionHelper.init();
     dbHelper = TestDatabaseHelper.instance;
     final db = await dbHelper.database;
     authDataSource = AuthLocalDataSource(db);

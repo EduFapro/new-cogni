@@ -25,11 +25,17 @@ class ParticipantEntity {
   static ParticipantEntity fromMap(Map<String, dynamic> map) {
     return ParticipantEntity(
       participantID: map[ParticipantFields.id],
-      name: DeterministicEncryptionHelper.decryptText(map[ParticipantFields.name]),
-      surname: DeterministicEncryptionHelper.decryptText(map[ParticipantFields.surname]),
+      name: DeterministicEncryptionHelper.decryptText(
+        map[ParticipantFields.name],
+      ),
+      surname: DeterministicEncryptionHelper.decryptText(
+        map[ParticipantFields.surname],
+      ),
       birthDate: DateTime.parse(map[ParticipantFields.birthDate]),
       sex: Sex.fromValue(map[ParticipantFields.sex]),
-      educationLevel: EducationLevel.fromValue(map[ParticipantFields.educationLevel]),
+      educationLevel: EducationLevel.fromValue(
+        map[ParticipantFields.educationLevel],
+      ),
       laterality: Laterality.fromValue(map[ParticipantFields.laterality]),
     );
   }
@@ -37,12 +43,39 @@ class ParticipantEntity {
   Map<String, dynamic> toMap() => {
     ParticipantFields.id: participantID,
     ParticipantFields.name: DeterministicEncryptionHelper.encryptText(name),
-    ParticipantFields.surname: DeterministicEncryptionHelper.encryptText(surname),
+    ParticipantFields.surname: DeterministicEncryptionHelper.encryptText(
+      surname,
+    ),
     ParticipantFields.birthDate: birthDate.toIso8601String(),
     ParticipantFields.sex: sex.numericValue,
     ParticipantFields.educationLevel: educationLevel.numericValue,
     ParticipantFields.laterality: laterality.numericValue,
   };
+
+  // For sending to backend API (unencrypted - backend stores plain text)
+  Map<String, dynamic> toJsonForApi({int? evaluatorId}) => {
+    if (participantID != null) 'id': participantID,
+    'name': name, // Plain text (not encrypted)
+    'surname': surname, // Plain text (not encrypted)
+    'birthDate': birthDate.toIso8601String().split('T')[0], // yyyy-MM-dd format
+    'sex': sex.numericValue,
+    'educationLevel': educationLevel.numericValue,
+    'laterality': laterality.numericValue,
+    if (evaluatorId != null) 'evaluatorId': evaluatorId,
+  };
+
+  // For receiving from backend API
+  factory ParticipantEntity.fromJson(Map<String, dynamic> json) {
+    return ParticipantEntity(
+      participantID: json['id'] as int?,
+      name: json['name'] as String,
+      surname: json['surname'] as String,
+      birthDate: DateTime.parse(json['birthDate'] as String),
+      sex: Sex.fromValue(json['sex'] as int),
+      educationLevel: EducationLevel.fromValue(json['educationLevel'] as int),
+      laterality: Laterality.fromValue(json['laterality'] as int),
+    );
+  }
 
   ParticipantEntity copyWith({
     int? participantID,

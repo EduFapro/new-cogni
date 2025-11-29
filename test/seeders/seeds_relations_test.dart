@@ -5,12 +5,14 @@ import 'package:segundo_cogni/features/module/data/module_constants.dart';
 import 'package:segundo_cogni/features/task/data/task_constants.dart';
 import 'package:segundo_cogni/features/task_prompt/data/task_prompt_constants.dart';
 import 'package:segundo_cogni/seeders/seed_runner.dart';
+import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
 
 void main() {
   late TestDatabaseHelper dbHelper;
   late SeedRunner seedRunner;
 
   setUp(() async {
+    await DeterministicEncryptionHelper.init();
     dbHelper = TestDatabaseHelper.instance;
     await dbHelper.initDb();
     seedRunner = SeedRunner();
@@ -28,8 +30,7 @@ void main() {
       final modules = await db.query(Tables.modules);
       final tasks = await db.query(Tables.tasks);
 
-      final moduleIds =
-      modules.map((m) => m[ModuleFields.id] as int).toSet();
+      final moduleIds = modules.map((m) => m[ModuleFields.id] as int).toSet();
 
       for (final t in tasks) {
         final mid = t[TaskFields.moduleId] as int?;
@@ -37,7 +38,7 @@ void main() {
           mid != null && moduleIds.contains(mid),
           true,
           reason:
-          'Task ${t[TaskFields.id]} has invalid module_id=$mid (not found in ${Tables.modules})',
+              'Task ${t[TaskFields.id]} has invalid module_id=$mid (not found in ${Tables.modules})',
         );
       }
     });
@@ -48,8 +49,7 @@ void main() {
       final tasks = await db.query(Tables.tasks);
       final prompts = await db.query(Tables.taskPrompts);
 
-      final taskIds =
-      tasks.map((t) => t[TaskFields.id] as int).toSet();
+      final taskIds = tasks.map((t) => t[TaskFields.id] as int).toSet();
 
       for (final p in prompts) {
         final tid = p[TaskPromptFields.taskID] as int?;
@@ -57,7 +57,7 @@ void main() {
           tid != null && taskIds.contains(tid),
           true,
           reason:
-          'Prompt ${p[TaskPromptFields.promptID]} has invalid task_id=$tid (not found in ${Tables.tasks})',
+              'Prompt ${p[TaskPromptFields.promptID]} has invalid task_id=$tid (not found in ${Tables.tasks})',
         );
       }
     });

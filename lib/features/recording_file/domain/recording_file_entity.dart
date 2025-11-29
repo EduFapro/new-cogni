@@ -24,4 +24,20 @@ class RecordingFileEntity {
   @override
   String toString() =>
       'RecordingFileEntity(id: $id, taskInstanceId: $taskInstanceId, filePath: $filePath)';
+
+  // For sending to backend API
+  Map<String, dynamic> toJsonForApi() => {
+    if (id != null) 'id': id,
+    'taskInstanceId': taskInstanceId,
+    'filePath': filePath,
+  };
+
+  // For receiving from backend API
+  factory RecordingFileEntity.fromJson(Map<String, dynamic> json) {
+    return RecordingFileEntity(
+      id: json['id'] as int?,
+      taskInstanceId: json['taskInstanceId'] as int,
+      filePath: json['filePath'] as String,
+    );
+  }
 }

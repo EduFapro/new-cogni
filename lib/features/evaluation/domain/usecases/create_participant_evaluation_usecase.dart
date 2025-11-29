@@ -6,8 +6,10 @@ import '../../../../core/constants/enums/progress_status.dart';
 import '../../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../../../participant/domain/participant_entity.dart';
 import '../../../participant/data/participant_local_datasource.dart';
+import '../../../participant/data/participant_remote_data_source.dart';
 
 import '../../../evaluation/data/evaluation_local_datasource.dart';
+import '../../../evaluation/data/evaluation_remote_data_source.dart';
 import '../../../evaluation/domain/evaluation_entity.dart';
 
 import '../../../module/domain/module_repository.dart';
@@ -20,7 +22,9 @@ import '../../../task_instance/domain/task_instance_repository.dart';
 
 class CreateParticipantEvaluationUseCase {
   final ParticipantLocalDataSource participantDataSource;
+  final ParticipantRemoteDataSource? participantRemoteDataSource;
   final EvaluationLocalDataSource evaluationDataSource;
+  final EvaluationRemoteDataSource? evaluationRemoteDataSource;
   final ModuleRepository moduleRepository;
   final ModuleInstanceRepository moduleInstanceRepository;
   final TaskLocalDataSource taskDataSource;
@@ -29,7 +33,9 @@ class CreateParticipantEvaluationUseCase {
 
   CreateParticipantEvaluationUseCase({
     required this.participantDataSource,
+    this.participantRemoteDataSource,
     required this.evaluationDataSource,
+    this.evaluationRemoteDataSource,
     required this.moduleRepository,
     required this.moduleInstanceRepository,
     required this.taskDataSource,
@@ -43,7 +49,9 @@ class CreateParticipantEvaluationUseCase {
     required List<int> selectedModuleIds,
     int language = 1,
   }) async {
-    AppLogger.info('[USECASE] Starting participant creation: ${participant.name} (selectedModules=$selectedModuleIds)');
+    AppLogger.info(
+      '[USECASE] Starting participant creation: ${participant.name} (selectedModules=$selectedModuleIds)',
+    );
 
     late final int participantId;
     late final int evaluationId;
@@ -53,18 +61,22 @@ class CreateParticipantEvaluationUseCase {
       await db.transaction((txn) async {
         final hashedParticipant = participant.copyWith(
           name: DeterministicEncryptionHelper.encryptText(participant.name),
-          surname: DeterministicEncryptionHelper.encryptText(participant.surname),
+          surname: DeterministicEncryptionHelper.encryptText(
+            participant.surname,
+          ),
         );
 
-        final insertedParticipantId = await participantDataSource.insertParticipant(txn, hashedParticipant.toMap());
+        final insertedParticipantId = await participantDataSource
+            .insertParticipant(txn, hashedParticipant.toMap());
 
         if (insertedParticipantId == null) {
-          AppLogger.error('[USECASE] ❌ Failed to insert participant (null returned)');
+          AppLogger.error(
+            '[USECASE] ❌ Failed to insert participant (null returned)',
+          );
           throw Exception('Participant insertion failed');
         }
         participantId = insertedParticipantId;
         AppLogger.db('[USECASE] ✅ Participant inserted: id=$participantId');
-
 
         final evaluation = EvaluationEntity(
           evaluatorID: evaluatorId,
@@ -73,15 +85,17 @@ class CreateParticipantEvaluationUseCase {
           language: language,
         );
 
-        final insertedEvaluationId = await evaluationDataSource.insertEvaluation(txn, evaluation.toMap());
+        final insertedEvaluationId = await evaluationDataSource
+            .insertEvaluation(txn, evaluation.toMap());
 
         if (insertedEvaluationId == null) {
-          AppLogger.error('[USECASE] ❌ Failed to insert evaluation (null returned)');
+          AppLogger.error(
+            '[USECASE] ❌ Failed to insert evaluation (null returned)',
+          );
           throw Exception('Evaluation insertion failed');
         }
         evaluationId = insertedEvaluationId;
         AppLogger.db('[USECASE] ✅ Evaluation inserted: id=$evaluationId');
-
       });
 
       // 🔁 SECOND TRANSACTION: Fetch modules and create module/task instances
@@ -96,7 +110,13 @@ class CreateParticipantEvaluationUseCase {
 
       final modulesToUse = selectedModuleIds.isEmpty
           ? allModules
-          : allModules.where((m) => m.moduleID != null && selectedModuleIds.contains(m.moduleID)).toList();
+          : allModules
+                .where(
+                  (m) =>
+                      m.moduleID != null &&
+                      selectedModuleIds.contains(m.moduleID),
+                )
+                .toList();
 
       AppLogger.info('[USECASE] 📦 Using ${modulesToUse.length} modules');
 
@@ -105,19 +125,25 @@ class CreateParticipantEvaluationUseCase {
 
         final moduleInstance = ModuleInstanceEntity(
           moduleId: module.moduleID!,
-          status: ModuleStatus.pending, evaluationId: evaluationId,
+          status: ModuleStatus.pending,
+          evaluationId: evaluationId,
         );
 
-        final moduleInstanceCreated = await moduleInstanceRepository.createModuleInstance(moduleInstance);
+        final moduleInstanceCreated = await moduleInstanceRepository
+            .createModuleInstance(moduleInstance);
         final moduleInstanceId = moduleInstanceCreated?.id;
 
         if (moduleInstanceId == null) {
-          AppLogger.error('[USECASE] ❌ Failed to create ModuleInstance for moduleId=${module.moduleID}');
+          AppLogger.error(
+            '[USECASE] ❌ Failed to create ModuleInstance for moduleId=${module.moduleID}',
+          );
           continue;
         }
 
         final tasks = await taskDataSource.getTasksByModuleId(module.moduleID!);
-        AppLogger.info('[USECASE] 🔧 Found ${tasks.length} tasks for moduleId=${module.moduleID}');
+        AppLogger.info(
+          '[USECASE] 🔧 Found ${tasks.length} tasks for moduleId=${module.moduleID}',
+        );
 
         for (final task in tasks) {
           if (task.taskID == null) continue;
@@ -128,18 +154,85 @@ class CreateParticipantEvaluationUseCase {
             status: TaskStatus.pending,
           );
 
-          final taskInstanceId = await taskInstanceRepository.insert(taskInstance);
-          AppLogger.db('[USECASE] ✅ TaskInstance inserted: id=$taskInstanceId (taskId=${task.taskID})');
+          final taskInstanceId = await taskInstanceRepository.insert(
+            taskInstance,
+          );
+          AppLogger.db(
+            '[USECASE] ✅ TaskInstance inserted: id=$taskInstanceId (taskId=${task.taskID})',
+          );
         }
       }
 
-      final createdParticipant = participant.copyWith(participantID: participantId);
-      AppLogger.info('[USECASE] ✅ Participant + Evaluation + Modules + Tasks created successfully');
+      final createdParticipant = participant.copyWith(
+        participantID: participantId,
+      );
+      AppLogger.info(
+        '[USECASE] ✅ Participant + Evaluation + Modules + Tasks created successfully',
+      );
+
+      // 🔁 SYNC TO BACKEND (Fire-and-forget)
+      _syncToBackend(
+        participant: createdParticipant,
+        evaluatorId: evaluatorId,
+        evaluationId: evaluationId,
+        language: language,
+      );
 
       return createdParticipant;
     } catch (e, s) {
-      AppLogger.error('[USECASE] ❌ Creation failed. DB may be partially written.', e, s);
+      AppLogger.error(
+        '[USECASE] ❌ Creation failed. DB may be partially written.',
+        e,
+        s,
+      );
       rethrow;
     }
+  }
+
+  void _syncToBackend({
+    required ParticipantEntity participant,
+    required int evaluatorId,
+    required int evaluationId,
+    required int language,
+  }) {
+    if (participantRemoteDataSource == null ||
+        evaluationRemoteDataSource == null) {
+      return;
+    }
+
+    Future.microtask(() async {
+      try {
+        // 1. Sync Participant
+        final backendParticipantId = await participantRemoteDataSource!
+            .createParticipant(participant, evaluatorId);
+
+        if (backendParticipantId != null) {
+          AppLogger.info(
+            '[USECASE] Participant synced to backend ID: $backendParticipantId',
+          );
+
+          // 2. Sync Evaluation (only if participant synced)
+          final evaluation = EvaluationEntity(
+            evaluationID:
+                evaluationId, // Local ID, but backend will generate its own
+            evaluatorID: evaluatorId,
+            participantID: backendParticipantId, // Use backend participant ID
+            status: EvaluationStatus.pending,
+            language: language,
+            evaluationDate: DateTime.now(), // Or pass from execute if needed
+          );
+
+          final backendEvaluationId = await evaluationRemoteDataSource!
+              .createEvaluation(evaluation);
+          if (backendEvaluationId != null) {
+            AppLogger.info(
+              '[USECASE] Evaluation synced to backend ID: $backendEvaluationId',
+            );
+          }
+        }
+      } catch (e, s) {
+        AppLogger.error('[USECASE] Backend sync failed', e, s);
+      }
+    });
   }
 }

@@ -1,6 +1,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/database/prod_database_helper.dart';
+import '../../../providers/network_provider.dart';
 import '../data/module_instance_local_datasource.dart';
+import '../data/module_instance_remote_data_source.dart';
 import '../data/module_instance_repository_impl.dart';
 import '../domain/module_instance_entity.dart';
 import '../domain/module_instance_repository.dart';
@@ -14,7 +16,14 @@ final moduleInstanceRepositoryProvider = Provider<ModuleInstanceRepository>((
 ) {
   final dbHelper = ref.watch(moduleInstanceDbHelperProvider);
   final local = ModuleInstanceLocalDataSource(dbHelper: dbHelper);
-  return ModuleInstanceRepositoryImpl(localDataSource: local);
+
+  final networkService = ref.watch(networkServiceProvider);
+  final remote = ModuleInstanceRemoteDataSource(networkService);
+
+  return ModuleInstanceRepositoryImpl(
+    localDataSource: local,
+    remoteDataSource: remote,
+  );
 });
 
 /// Provider for fetching module instances by evaluation ID

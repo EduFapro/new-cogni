@@ -1,10 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/database/prod_database_helper.dart';
-import '../../../core/environment.dart';
 import '../../../core/logger/app_logger.dart';
-import '../../../providers/providers.dart';
+import '../../../providers/network_provider.dart';
 import '../data/evaluator_local_datasource.dart';
-import '../data/evaluator_remote_datasource.dart';
+import '../data/evaluator_remote_data_source.dart';
 import '../data/evaluator_repository_impl.dart';
 import '../domain/evaluator_repository.dart';
 
@@ -12,17 +11,21 @@ class EvaluatorRepositoryNotifier extends AsyncNotifier<EvaluatorRepository> {
   @override
   Future<EvaluatorRepository> build() async {
     try {
-      final env = ref.watch(environmentProvider);
-      AppLogger.info('EvaluatorRepositoryNotifier started (env=$env)');
+      AppLogger.info('EvaluatorRepositoryNotifier initializing...');
 
-      if (env == AppEnv.local) {
-        final db = await ProdDatabaseHelper.instance.database;
-        AppLogger.db('Initializing local EvaluatorRepository...');
-        return EvaluatorRepositoryImpl.local(EvaluatorLocalDataSource(db));
-      } else {
-        AppLogger.info('Initializing remote EvaluatorRepository...');
-        return EvaluatorRepositoryImpl.remote(EvaluatorRemoteDataSource());
-      }
+      // Local Data Source
+      final db = await ProdDatabaseHelper.instance.database;
+      final localDataSource = EvaluatorLocalDataSource(db);
+
+      // Remote Data Source
+      final networkService = ref.read(networkServiceProvider);
+      final remoteDataSource = EvaluatorRemoteDataSource(networkService);
+
+      AppLogger.info('Initializing dual-write EvaluatorRepository');
+      return EvaluatorRepositoryImpl(
+        local: localDataSource,
+        remote: remoteDataSource,
+      );
     } catch (e, s) {
       AppLogger.error('EvaluatorRepository initialization failed', e, s);
       rethrow;
@@ -31,6 +34,6 @@ class EvaluatorRepositoryNotifier extends AsyncNotifier<EvaluatorRepository> {
 }
 
 final evaluatorRepositoryProvider =
-AsyncNotifierProvider<EvaluatorRepositoryNotifier, EvaluatorRepository>(
-  EvaluatorRepositoryNotifier.new,
-);
+    AsyncNotifierProvider<EvaluatorRepositoryNotifier, EvaluatorRepository>(
+      EvaluatorRepositoryNotifier.new,
+    );
