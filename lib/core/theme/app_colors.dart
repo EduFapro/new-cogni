@@ -28,16 +28,17 @@ class AppColors {
   static const Color primary = Color(0xFF0063B1); // azul Microsoft
   static const Color secondary = Color(0xFF107C10); // verde
   static const Color accent = Color(0xFFB4009E); // roxo
+  static const Color accentOrange = Color(0xFFFF8C00); // laranja para destaque
   static const Color neutralLight = Color(0xFFF3F2F1);
   static const Color neutralDark = Color(0xFF201F1E);
 
   // === New Dark Blue Shades ===
-  static const Color midnightBlue = Color(0xFF0D1B2A);   // Very dark navy
-  static const Color deepSeaBlue = Color(0xFF1B263B);    // Muted deep blue
-  static const Color steelBlue = Color(0xFF2C3E50);      // Grayish blue
-  static const Color indigoBlue = Color(0xFF283593);     // Rich indigo
-  static const Color navyBlue = Color(0xFF001F54);       // Classic navy
-  static const Color darkCyanBlue = Color(0xFF0A3D62);   // Cyan-tinted navy
+  static const Color midnightBlue = Color(0xFF0D1B2A); // Very dark navy
+  static const Color deepSeaBlue = Color(0xFF1B263B); // Muted deep blue
+  static const Color steelBlue = Color(0xFF2C3E50); // Grayish blue
+  static const Color indigoBlue = Color(0xFF283593); // Rich indigo
+  static const Color navyBlue = Color(0xFF001F54); // Classic navy
+  static const Color darkCyanBlue = Color(0xFF0A3D62); // Cyan-tinted navy
 
   static const List<Color> darkBluePalette = [
     midnightBlue,

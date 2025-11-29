@@ -33,10 +33,8 @@ class DeterministicEncryptionHelper {
     final env = EnvHelper.currentEnv;
 
     AppLogger.info('[EncryptionHelper] 🔍 ENV content:');
-    AppLogger.info(
-        '  - ENCRYPTION_KEY: ${key.substring(0, 4)}...(hidden)');
-    AppLogger.info(
-        '  - ENCRYPTION_IV: ${iv.substring(0, 4)}...(hidden)');
+    AppLogger.info('  - ENCRYPTION_KEY: ${key.substring(0, 4)}...(hidden)');
+    AppLogger.info('  - ENCRYPTION_IV: ${iv.substring(0, 4)}...(hidden)');
     AppLogger.info('  - ENV: $env');
 
     if (key.length != 32 || iv.length != 16) {
@@ -50,13 +48,23 @@ class DeterministicEncryptionHelper {
 
     _initialized = true;
     AppLogger.info(
-        '[EncryptionHelper] 🔑 Encryption helper initialized successfully (ENV=$env)');
+      '[EncryptionHelper] 🔑 Encryption helper initialized successfully (ENV=$env)',
+    );
+  }
+
+  /// Getter for the encryption key (for FileEncryptionHelper)
+  static encrypt.Key get key {
+    if (!_initialized) {
+      throw Exception('EncryptionHelper not initialized. Call init() first.');
+    }
+    return _key;
   }
 
   static String encryptText(String plainText) {
     if (plainText.isEmpty) return '';
-    final encrypter =
-    encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.cbc));
+    final encrypter = encrypt.Encrypter(
+      encrypt.AES(_key, mode: encrypt.AESMode.cbc),
+    );
     final encrypted = encrypter.encrypt(plainText, iv: _fixedIV);
     final base64Text = base64Encode(encrypted.bytes);
     AppLogger.info('[EncryptionHelper][Encrypt] "$plainText" → $base64Text');
@@ -67,14 +75,16 @@ class DeterministicEncryptionHelper {
     if (encryptedText.isEmpty) return '';
     try {
       final bytes = base64Decode(encryptedText);
-      final encrypter =
-      encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.cbc));
+      final encrypter = encrypt.Encrypter(
+        encrypt.AES(_key, mode: encrypt.AESMode.cbc),
+      );
       final decrypted = encrypter.decrypt(
         encrypt.Encrypted(Uint8List.fromList(bytes)),
         iv: _fixedIV,
       );
       AppLogger.info(
-          '[EncryptionHelper][Decrypt] $encryptedText → "$decrypted"');
+        '[EncryptionHelper][Decrypt] $encryptedText → "$decrypted"',
+      );
       return decrypted;
     } catch (e, s) {
       AppLogger.error(

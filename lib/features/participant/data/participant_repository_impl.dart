@@ -45,6 +45,14 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
   }
 
   @override
+  Future<void> updateParticipant(ParticipantEntity participant) async {
+    AppLogger.db(
+      'ParticipantRepositoryImpl.updateParticipant → id=${participant.participantID}',
+    );
+    await local.updateParticipant(participant);
+  }
+
+  @override
   Future<List<ParticipantEntity>> getParticipantsByEvaluatorId(
     int evaluatorId,
   ) async {

@@ -132,6 +132,50 @@ class ParticipantLocalDataSource {
     }
   }
 
+  Future<void> updateParticipant(ParticipantEntity participant) async {
+    AppLogger.db(
+      'ParticipantLocalDataSource.updateParticipant → id=${participant.participantID}',
+    );
+    final db = await _db;
+
+    final payload = Map<String, dynamic>.from(participant.toMap());
+
+    // Normalize enums to numeric values
+    if (payload[ParticipantFields.sex] is Sex) {
+      payload[ParticipantFields.sex] =
+          (payload[ParticipantFields.sex] as Sex).numericValue;
+    }
+
+    if (payload[ParticipantFields.educationLevel] is EducationLevel) {
+      payload[ParticipantFields.educationLevel] =
+          (payload[ParticipantFields.educationLevel] as EducationLevel)
+              .numericValue;
+    }
+
+    if (payload[ParticipantFields.laterality] is Laterality) {
+      payload[ParticipantFields.laterality] =
+          (payload[ParticipantFields.laterality] as Laterality).numericValue;
+    }
+
+    try {
+      final count = await db.update(
+        Tables.participants,
+        payload,
+        where: '${ParticipantFields.id} = ?',
+        whereArgs: [participant.participantID],
+      );
+      AppLogger.db(
+        'ParticipantLocalDataSource.updateParticipant → updated $count rows',
+      );
+    } catch (e, s) {
+      AppLogger.error(
+        'ParticipantLocalDataSource.updateParticipant → error updating id=${participant.participantID}',
+        e,
+        s,
+      );
+    }
+  }
+
   Future<List<ParticipantEntity>> getParticipantsByEvaluatorId(
     int evaluatorId,
   ) async {
@@ -157,7 +201,6 @@ class ParticipantLocalDataSource {
         surname: DeterministicEncryptionHelper.decryptText(entity.surname),
       );
     }).toList();
-
 
     AppLogger.db(
       'ParticipantLocalDataSource.getParticipantsByEvaluatorId → found ${participants.length} participants',

@@ -50,8 +50,15 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     try {
       if (await _recorder.hasPermission()) {
         final dir = await getApplicationDocumentsDirectory();
+        // Create Cognivoice folder if it doesn't exist
+        final cognivoiceDir = Directory('${dir.path}/Cognivoice');
+        if (!await cognivoiceDir.exists()) {
+          await cognivoiceDir.create(recursive: true);
+        }
+
+        // Save temp file inside Cognivoice folder
         final path =
-            '${dir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
+            '${cognivoiceDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
         const config = RecordConfig(encoder: AudioEncoder.aacLc);
         await _recorder.start(config, path: path);

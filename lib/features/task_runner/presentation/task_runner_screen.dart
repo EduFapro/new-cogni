@@ -1,12 +1,19 @@
+import 'dart:io';
+
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../core/constants/enums/progress_status.dart';
 import '../../../../core/constants/enums/task_mode.dart';
 import '../../../../core/logger/app_logger.dart';
+import '../../../shared/encryption/deterministic_encryption_helper.dart';
+import '../../../shared/encryption/file_encryption_helper.dart';
+import '../../../shared/utils/recording_file_path_helper.dart';
 import '../../evaluation/presentation/evaluation_provider.dart';
 import '../../module_instance/presentation/module_instance_provider.dart';
 import '../../participant/presentation/participant_list_provider.dart';
+import '../../participant/presentation/participant_provider.dart';
+import '../../../providers/evaluator_providers.dart';
 import '../../recording_file/data/recording_file_providers.dart';
 import '../../recording_file/domain/recording_file_entity.dart';
 import '../../task/domain/task_entity.dart';
@@ -163,14 +170,103 @@ class TaskRunnerScreen extends ConsumerWidget {
       '✅ Current instance: ID=${currentInstance.id}, moduleInstanceId=${currentInstance.moduleInstanceId}',
     );
 
-    // 2) Se tiver gravação, salva em recording_files
+    // 2) Se tiver gravação, processa o arquivo
     if (recordingPath != null && recordingPath.isNotEmpty) {
-      AppLogger.info('💾 Saving recording: $recordingPath');
-      final entity = RecordingFileEntity(
-        taskInstanceId: currentInstance.id!,
-        filePath: recordingPath,
-      );
-      await recordingRepo.insert(entity);
+      AppLogger.info('💾 Processing recording: $recordingPath');
+
+      try {
+        // Get evaluator and participant info for proper file naming
+        final moduleInstance = await moduleInstanceRepo.getModuleInstanceById(
+          currentInstance.moduleInstanceId,
+        );
+
+        if (moduleInstance == null) {
+          AppLogger.error('❌ Module instance not found');
+          throw Exception('Module instance not found');
+        }
+
+        final evaluationRepo = ref.read(evaluationRepositoryProvider);
+        final evaluation = await evaluationRepo.getById(
+          moduleInstance.evaluationId,
+        );
+
+        if (evaluation == null) {
+          AppLogger.error('❌ Evaluation not found');
+          throw Exception('Evaluation not found');
+        }
+
+        final participantRepo = ref.read(participantRepositoryProvider);
+        final participant = await participantRepo.getById(
+          evaluation.participantID,
+        );
+
+        if (participant == null) {
+          AppLogger.error('❌ Participant not found');
+          throw Exception('Participant not found');
+        }
+
+        // Get evaluator info from current user
+        final currentUser = ref.read(currentUserProvider);
+        if (currentUser == null || currentUser.evaluatorId == null) {
+          AppLogger.error('❌ No current user or evaluator ID');
+          throw Exception('No current user');
+        }
+
+        final evaluatorId = currentUser.evaluatorId!;
+        // Decrypt evaluator names for readable folder names
+        final evaluatorName =
+            '${DeterministicEncryptionHelper.decryptText(currentUser.name)} ${DeterministicEncryptionHelper.decryptText(currentUser.surname)}';
+
+        // Get task entity ID
+        final taskEntityId =
+            currentInstance.task?.taskID ?? currentInstance.taskId;
+
+        // Decrypt participant names for readable folder names
+        final participantName =
+            '${DeterministicEncryptionHelper.decryptText(participant.name)} ${DeterministicEncryptionHelper.decryptText(participant.surname)}';
+
+        // Generate proper file path
+        final properPath = await RecordingFilePathHelper.generateRecordingPath(
+          evaluatorId: evaluatorId,
+          evaluatorName: evaluatorName,
+          participantId: participant.participantID!,
+          participantName: participantName,
+          taskEntityId: taskEntityId!,
+        );
+
+        // Move the temporary recording to the proper location
+        final tempFile = File(recordingPath);
+
+        if (await tempFile.exists()) {
+          await tempFile.copy(properPath);
+          await tempFile.delete();
+          AppLogger.info('✅ Moved file from $recordingPath to $properPath');
+        } else {
+          AppLogger.error('❌ Temporary file not found: $recordingPath');
+          throw Exception('Temporary file not found');
+        }
+
+        // Encrypt the file
+        final encryptedPath = await FileEncryptionHelper.encryptFile(
+          properPath,
+        );
+        AppLogger.info('🔐 Encrypted file: $encryptedPath');
+
+        // Delete the original unencrypted file
+        await FileEncryptionHelper.deleteOriginalFile(properPath);
+
+        // Save encrypted path to database
+        final entity = RecordingFileEntity(
+          taskInstanceId: currentInstance.id!,
+          filePath: encryptedPath, // Save the .enc path
+        );
+        await recordingRepo.insert(entity);
+        AppLogger.info('✅ Saved encrypted recording path to database');
+      } catch (e, s) {
+        AppLogger.error('❌ Failed to process recording file', e, s);
+        // Even if file processing fails, continue with task completion
+        // The recording still happened, just the file organization failed
+      }
     }
 
     // 3) Marca a task como concluída
