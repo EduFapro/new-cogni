@@ -3,7 +3,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/constants/enums/progress_status.dart';
 
-import '../../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../../../participant/domain/participant_entity.dart';
 import '../../../participant/data/participant_local_datasource.dart';
 import '../../../participant/data/participant_remote_data_source.dart';
@@ -59,15 +58,8 @@ class CreateParticipantEvaluationUseCase {
     try {
       // 🔁 FIRST TRANSACTION: Insert participant and evaluation
       await db.transaction((txn) async {
-        final hashedParticipant = participant.copyWith(
-          name: DeterministicEncryptionHelper.encryptText(participant.name),
-          surname: DeterministicEncryptionHelper.encryptText(
-            participant.surname,
-          ),
-        );
-
         final insertedParticipantId = await participantDataSource
-            .insertParticipant(txn, hashedParticipant.toMap());
+            .insertParticipant(txn, participant.toMap());
 
         if (insertedParticipantId == null) {
           AppLogger.error(

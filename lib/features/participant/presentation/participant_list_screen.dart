@@ -23,7 +23,10 @@ class ParticipantListScreen extends HookConsumerWidget {
           final status = p.statusLabel.toLowerCase();
           final evalDate = p.evaluationDateFormatted.toLowerCase();
 
-          final matchesText = name.contains(query) || status.contains(query) || evalDate.contains(query);
+          final matchesText =
+              name.contains(query) ||
+              status.contains(query) ||
+              evalDate.contains(query);
           final matchesFilter = switch (statusFilter.value) {
             ParticipantStatusFilter.all => true,
             ParticipantStatusFilter.completed => p.isCompleted,
@@ -33,8 +36,7 @@ class ParticipantListScreen extends HookConsumerWidget {
           };
 
           return matchesText && matchesFilter;
-        }).toList()
-          ..sort((a, b) => a.fullName.compareTo(b.fullName));
+        }).toList()..sort((a, b) => a.fullName.compareTo(b.fullName));
 
         return Column(
           children: [
@@ -52,7 +54,9 @@ class ParticipantListScreen extends HookConsumerWidget {
                   ComboBox<ParticipantStatusFilter>(
                     value: statusFilter.value,
                     items: ParticipantStatusFilter.values
-                        .map((f) => ComboBoxItem(value: f, child: Text(f.label)))
+                        .map(
+                          (f) => ComboBoxItem(value: f, child: Text(f.label)),
+                        )
                         .toList(),
                     onChanged: (val) {
                       if (val != null) statusFilter.value = val;
@@ -69,9 +73,14 @@ class ParticipantListScreen extends HookConsumerWidget {
                           context: context,
                           builder: (_) => ContentDialog(
                             title: const Text('Exportado!'),
-                            content: const Text('Arquivo salvo em documentos do app.'),
+                            content: const Text(
+                              'Arquivo salvo em documentos do app.',
+                            ),
                             actions: [
-                              Button(child: const Text('OK'), onPressed: () => Navigator.pop(context)),
+                              Button(
+                                child: const Text('OK'),
+                                onPressed: () => Navigator.pop(context),
+                              ),
                             ],
                           ),
                         );
@@ -86,8 +95,8 @@ class ParticipantListScreen extends HookConsumerWidget {
         );
       },
       loading: () => const Center(child: ProgressRing()),
-      error: (err, st) => Center(child: Text('Erro ao carregar participantes: $err')),
+      error: (err, st) =>
+          Center(child: Text('Erro ao carregar participantes: $err')),
     );
   }
 }
-
