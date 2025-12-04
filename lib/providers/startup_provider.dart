@@ -1,25 +1,53 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/logger/app_logger.dart';
 import '../../features/evaluator/data/evaluator_local_datasource.dart';
+import '../../seeders/seed_runner.dart';
+import '../features/auth/data/auth_local_datasource.dart';
+import '../features/auth/data/auth_repository_impl.dart';
 import '../core/database/prod_database_helper.dart';
+import 'providers.dart';
 
-enum StartupState { ready }
+/// The route that the app should navigate to after startup.
+final startupProvider = FutureProvider<String>((ref) async {
+  AppLogger.info('[STARTUP] Starting application initialization...');
 
-final startupProvider =
-FutureProvider<StartupState>((ref) async {
-  AppLogger.info('[STARTUP] Checking evaluator presence...');
-  final db = await ProdDatabaseHelper.instance.database;
-  final evaluatorDS = EvaluatorLocalDataSource(db);
+  try {
+    // 1. Get Database
+    final db = await ProdDatabaseHelper.instance.database;
 
-  final evaluators = await evaluatorDS.getAll();
+    // 2. Run Seeding (Idempotent)
+    AppLogger.info('[STARTUP] Running database seeder...');
+    await SeedRunner().run(db: db);
 
-  if (evaluators.isEmpty) {
-    AppLogger.warning(
-        '[STARTUP] No evaluators found — seeder might not have run yet');
-  } else {
-    AppLogger.info(
-        '[STARTUP] Found ${evaluators.length} evaluator(s), proceeding to login');
+    // 3. Initialize Data Sources & Repositories
+    final evaluatorDS = EvaluatorLocalDataSource(db);
+    final authDS = AuthLocalDataSource(db);
+    final authRepo = AuthRepositoryImpl(authDS);
+
+    // 4. Check for Auto-Login
+    AppLogger.info('[STARTUP] Checking for current user...');
+    final currentUser = await authRepo.fetchCurrentUserOrNull();
+
+    if (currentUser != null) {
+      AppLogger.info('[STARTUP] Auto-login success: ${currentUser.email}');
+      // Update the user provider
+      ref.read(currentUserProvider.notifier).setUser(currentUser);
+      return '/home';
+    }
+
+    // 5. Check for Existing Evaluators
+    AppLogger.info('[STARTUP] Checking for existing evaluators...');
+    final anyEvaluator = await evaluatorDS.getFirstEvaluator();
+
+    if (anyEvaluator != null) {
+      AppLogger.info('[STARTUP] Evaluator exists → go to login');
+      return '/login';
+    } else {
+      AppLogger.info('[STARTUP] No evaluator found → go to registration');
+      return '/register';
+    }
+  } catch (e, stack) {
+    AppLogger.error('[STARTUP] Critical error during initialization', e, stack);
+    rethrow; // Let the UI handle the error state
   }
-
-  return StartupState.ready;
 });
