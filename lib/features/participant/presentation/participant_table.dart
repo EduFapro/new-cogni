@@ -198,7 +198,7 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                                 // Get current evaluator name
                                 final evaluator = ref.read(currentUserProvider);
                                 final evaluatorName = evaluator != null
-                                    ? '${evaluator.name}${evaluator.surname}'
+                                    ? '${evaluator.name} ${evaluator.surname}'
                                     : null;
 
                                 // Fetch modules

@@ -9,6 +9,7 @@ import '../core/database/prod_database_helper.dart';
 import '../core/network.dart';
 import '../core/environment.dart';
 import '../shared/env/env_helper.dart';
+import '../core/utils/file_helper.dart';
 import 'providers.dart';
 
 /// The route that the app should navigate to after startup.

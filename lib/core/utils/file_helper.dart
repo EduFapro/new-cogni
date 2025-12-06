@@ -9,6 +9,8 @@ import '../../core/constants/enums/progress_status.dart';
 import '../../core/constants/enums/person_enums.dart';
 import '../../core/constants/enums/laterality_enums.dart';
 import 'package:intl/intl.dart';
+import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 Future<void> exportParticipantsToExcel(
   List<ParticipantWithEvaluation> list,
@@ -142,7 +144,12 @@ Future<void> exportSingleParticipantToExcel(
 
   final directory = await getApplicationDocumentsDirectory();
 
-  // Create organized folder structure: Documents/Cognivoice/Avaliador_<name>/Paciente_<name>/
+  // Helper for snake_case
+  String _toSnakeCase(String text) {
+    return text.toLowerCase().trim().replaceAll(RegExp(r'\s+'), '_');
+  }
+
+  // Create organized folder structure: Documents/Cognivoice/avaliador_<name>/
   final cognivoiceDir = Directory('${directory.path}/Cognivoice');
   if (!await cognivoiceDir.exists()) {
     await cognivoiceDir.create(recursive: true);
@@ -151,22 +158,17 @@ Future<void> exportSingleParticipantToExcel(
   // Add evaluator folder if name is provided
   String basePath = cognivoiceDir.path;
   if (evaluatorName != null && evaluatorName.isNotEmpty) {
-    final evaluatorDir = Directory('$basePath/Avaliador_$evaluatorName');
+    final folderName = _toSnakeCase('avaliador_$evaluatorName');
+    final evaluatorDir = Directory('$basePath/$folderName');
     if (!await evaluatorDir.exists()) {
       await evaluatorDir.create(recursive: true);
     }
     basePath = evaluatorDir.path;
   }
 
-  final participantDir = Directory(
-    '$basePath/Paciente_${participant.fullName}',
-  );
-  if (!await participantDir.exists()) {
-    await participantDir.create(recursive: true);
-  }
-
-  final filePath =
-      '${participantDir.path}/participante_${participant.fullName}.xlsx';
+  // File name: paciente_<name>.xlsx (snake_case)
+  final fileName = _toSnakeCase('paciente_${participant.fullName}') + '.xlsx';
+  final filePath = '$basePath/$fileName';
 
   final fileBytes = excel.encode();
   if (fileBytes == null) return;
@@ -176,4 +178,42 @@ Future<void> exportSingleParticipantToExcel(
     ..writeAsBytesSync(fileBytes);
 
   debugPrint('📁 Exported single participant to $filePath');
+}
+
+/// Checks if legacy data cleanup is needed.
+/// Returns true if DB is missing but Cognivoice folder exists.
+Future<bool> checkLegacyData() async {
+  try {
+    // 1. Check if Database exists
+    final dbPath = await databaseFactoryFfi.getDatabasesPath();
+    final dbFile = File('$dbPath/cognivoice_db.db');
+    final dbExists = await dbFile.exists();
+
+    if (dbExists) return false;
+
+    // 2. Check if Cognivoice folder exists
+    final directory = await getApplicationDocumentsDirectory();
+    final cognivoiceDir = Directory('${directory.path}/Cognivoice');
+
+    return await cognivoiceDir.exists();
+  } catch (e) {
+    debugPrint('❌ [CLEANUP] Error checking legacy data: $e');
+    return false;
+  }
+}
+
+/// Performs the cleanup of the legacy Cognivoice folder.
+Future<void> performLegacyCleanup() async {
+  try {
+    final directory = await getApplicationDocumentsDirectory();
+    final cognivoiceDir = Directory('${directory.path}/Cognivoice');
+
+    if (await cognivoiceDir.exists()) {
+      debugPrint('⚠️ [CLEANUP] Deleting legacy folder: ${cognivoiceDir.path}');
+      await cognivoiceDir.delete(recursive: true);
+      debugPrint('✅ [CLEANUP] Legacy folder deleted successfully.');
+    }
+  } catch (e) {
+    debugPrint('❌ [CLEANUP] Error performing legacy cleanup: $e');
+  }
 }
