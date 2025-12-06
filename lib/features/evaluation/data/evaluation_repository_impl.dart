@@ -7,6 +7,9 @@ import 'evaluation_constants.dart';
 import 'evaluation_local_datasource.dart';
 import 'evaluation_remote_data_source.dart';
 
+import '../../../shared/env/env_helper.dart';
+import '../../../core/environment.dart';
+
 class EvaluationRepositoryImpl implements EvaluationRepository {
   final EvaluationLocalDataSource local;
   final EvaluationRemoteDataSource? remote;
@@ -76,15 +79,21 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
 
     // 2. Sync to backend (fire-and-forget)
     if (remote != null) {
-      _syncToBackend(() async {
-        final success = await remote!.updateEvaluationStatus(
-          evaluationId,
-          status.numericValue,
-        );
-        if (success) {
-          AppLogger.info('Evaluation $evaluationId status updated on backend');
-        }
-      });
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          final success = await remote!.updateEvaluationStatus(
+            evaluationId,
+            status.numericValue,
+          );
+          if (success) {
+            AppLogger.info(
+              'Evaluation $evaluationId status updated on backend',
+            );
+          }
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping Evaluation status sync.');
+      }
     }
 
     return result;

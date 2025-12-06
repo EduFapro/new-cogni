@@ -6,6 +6,8 @@ import 'task_instance_remote_data_source.dart';
 
 import '../../task/domain/task_repository.dart';
 import '../../../core/logger/app_logger.dart';
+import '../../../shared/env/env_helper.dart';
+import '../../../core/environment.dart';
 
 class TaskInstanceRepositoryImpl implements TaskInstanceRepository {
   final TaskInstanceLocalDataSource localDataSource;
@@ -26,15 +28,21 @@ class TaskInstanceRepositoryImpl implements TaskInstanceRepository {
 
     // 2. Remote Sync (Fire-and-forget)
     if (remoteDataSource != null && id != null) {
-      _syncToBackend(() async {
-        final entityWithId = entity.copyWith(id: id);
-        final backendId = await remoteDataSource!.createTaskInstance(
-          entityWithId,
-        );
-        if (backendId != null) {
-          AppLogger.info('TaskInstance synced to backend with ID: $backendId');
-        }
-      });
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          final entityWithId = entity.copyWith(id: id);
+          final backendId = await remoteDataSource!.createTaskInstance(
+            entityWithId,
+          );
+          if (backendId != null) {
+            AppLogger.info(
+              'TaskInstance synced to backend with ID: $backendId',
+            );
+          }
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping TaskInstance sync.');
+      }
     }
 
     return id;
@@ -89,12 +97,18 @@ class TaskInstanceRepositoryImpl implements TaskInstanceRepository {
 
     // 2. Remote Sync (Fire-and-forget)
     if (remoteDataSource != null) {
-      _syncToBackend(() async {
-        final success = await remoteDataSource!.markAsCompleted(id, duration);
-        if (success) {
-          AppLogger.info('TaskInstance $id marked as completed on backend');
-        }
-      });
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          final success = await remoteDataSource!.markAsCompleted(id, duration);
+          if (success) {
+            AppLogger.info('TaskInstance $id marked as completed on backend');
+          }
+        });
+      } else {
+        AppLogger.info(
+          '📴 Offline mode: Skipping TaskInstance completion sync.',
+        );
+      }
     }
   }
 

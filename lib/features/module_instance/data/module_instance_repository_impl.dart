@@ -6,6 +6,9 @@ import 'module_instance_model.dart';
 import 'module_instance_local_datasource.dart';
 import 'module_instance_remote_data_source.dart';
 
+import '../../../shared/env/env_helper.dart';
+import '../../../core/environment.dart';
+
 class ModuleInstanceRepositoryImpl implements ModuleInstanceRepository {
   final ModuleInstanceLocalDataSource localDataSource;
   final ModuleInstanceRemoteDataSource? remoteDataSource;
@@ -29,16 +32,20 @@ class ModuleInstanceRepositoryImpl implements ModuleInstanceRepository {
 
     // 2. Remote Sync (Fire-and-forget)
     if (remoteDataSource != null && createdEntity != null) {
-      _syncToBackend(() async {
-        final backendId = await remoteDataSource!.createModuleInstance(
-          createdEntity,
-        );
-        if (backendId != null) {
-          AppLogger.info(
-            'ModuleInstance synced to backend with ID: $backendId',
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          final backendId = await remoteDataSource!.createModuleInstance(
+            createdEntity,
           );
-        }
-      });
+          if (backendId != null) {
+            AppLogger.info(
+              'ModuleInstance synced to backend with ID: $backendId',
+            );
+          }
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping ModuleInstance sync.');
+      }
     }
 
     return createdEntity;
@@ -92,17 +99,21 @@ class ModuleInstanceRepositoryImpl implements ModuleInstanceRepository {
 
     // 2. Remote Sync (Fire-and-forget)
     if (remoteDataSource != null) {
-      _syncToBackend(() async {
-        final success = await remoteDataSource!.updateModuleInstanceStatus(
-          instanceId,
-          status.numericValue,
-        );
-        if (success) {
-          AppLogger.info(
-            'ModuleInstance $instanceId status updated on backend',
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          final success = await remoteDataSource!.updateModuleInstanceStatus(
+            instanceId,
+            status.numericValue,
           );
-        }
-      });
+          if (success) {
+            AppLogger.info(
+              'ModuleInstance $instanceId status updated on backend',
+            );
+          }
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping ModuleInstance status sync.');
+      }
     }
 
     return result;

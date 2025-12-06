@@ -11,6 +11,8 @@ import '../../core/constants/enums/laterality_enums.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import '../../shared/encryption/file_encryption_helper.dart';
+import '../../features/recording_file/domain/recording_file_entity.dart';
 
 Future<void> exportParticipantsToExcel(
   List<ParticipantWithEvaluation> list,
@@ -215,5 +217,58 @@ Future<void> performLegacyCleanup() async {
     }
   } catch (e) {
     debugPrint('❌ [CLEANUP] Error performing legacy cleanup: $e');
+  }
+}
+
+/// Decrypts and saves all recordings for a participant to their folder.
+Future<void> downloadRecordingsForParticipant(
+  ParticipantWithEvaluation participant,
+  List<RecordingFileEntity> recordings,
+) async {
+  try {
+    int successCount = 0;
+    int failCount = 0;
+
+    for (final recording in recordings) {
+      final encryptedPath = recording.filePath;
+      final encryptedFile = File(encryptedPath);
+
+      if (!await encryptedFile.exists()) {
+        debugPrint('⚠️ Recording file not found: $encryptedPath');
+        failCount++;
+        continue;
+      }
+
+      // Determine destination path (parent of .encrypted)
+      // encryptedPath: .../Paciente_Name/.encrypted/file.aac.enc
+      // parent: .../Paciente_Name/.encrypted
+      // grandParent: .../Paciente_Name
+
+      final parentDir = encryptedFile.parent; // .encrypted
+      final grandParentDir = parentDir.parent; // Paciente_Name
+
+      // Original filename without .enc
+      // If path is .../file.aac.enc, basename is file.aac.enc
+      // We want file.aac
+      final filenameEnc = encryptedPath.split(Platform.pathSeparator).last;
+      final filename = filenameEnc.replaceAll('.enc', '');
+
+      final destinationPath = '${grandParentDir.path}/$filename';
+
+      try {
+        await FileEncryptionHelper.decryptFile(encryptedPath, destinationPath);
+        successCount++;
+      } catch (e) {
+        debugPrint('❌ Failed to decrypt $filename: $e');
+        failCount++;
+      }
+    }
+
+    debugPrint(
+      '✅ Download complete. Success: $successCount, Failed: $failCount',
+    );
+  } catch (e) {
+    debugPrint('❌ Error downloading recordings: $e');
+    rethrow;
   }
 }

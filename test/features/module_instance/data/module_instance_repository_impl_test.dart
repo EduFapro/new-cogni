@@ -7,6 +7,8 @@ import 'package:segundo_cogni/features/module_instance/data/module_instance_mode
 import 'package:segundo_cogni/features/module_instance/data/module_instance_remote_data_source.dart';
 import 'package:segundo_cogni/features/module_instance/data/module_instance_repository_impl.dart';
 import 'package:segundo_cogni/features/module_instance/domain/module_instance_entity.dart';
+import 'package:segundo_cogni/shared/env/env_helper.dart';
+import 'package:segundo_cogni/core/environment.dart';
 
 // Manual Mocks
 class MockModuleInstanceLocalDataSource
@@ -80,12 +82,17 @@ void main() {
   late ModuleInstanceRepositoryImpl repository;
 
   setUp(() {
+    EnvHelper.setMockEnv(AppEnv.local);
     localDataSource = MockModuleInstanceLocalDataSource();
     remoteDataSource = MockModuleInstanceRemoteDataSource();
     repository = ModuleInstanceRepositoryImpl(
       localDataSource: localDataSource,
       remoteDataSource: remoteDataSource,
     );
+  });
+
+  tearDown(() {
+    EnvHelper.setMockEnv(null);
   });
 
   test('✅ createModuleInstance inserts locally and syncs to backend', () async {

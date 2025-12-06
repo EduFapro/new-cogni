@@ -5,6 +5,8 @@ import 'package:segundo_cogni/features/recording_file/data/recording_file_local_
 import 'package:segundo_cogni/features/recording_file/data/recording_file_remote_data_source.dart';
 import 'package:segundo_cogni/features/recording_file/data/recording_file_repository_impl.dart';
 import 'package:segundo_cogni/features/recording_file/domain/recording_file_entity.dart';
+import 'package:segundo_cogni/shared/env/env_helper.dart';
+import 'package:segundo_cogni/core/environment.dart';
 
 // Manual Mocks
 class MockRecordingFileLocalDataSource implements RecordingFileLocalDataSource {
@@ -47,12 +49,17 @@ void main() {
   late RecordingFileRepositoryImpl repository;
 
   setUp(() {
+    EnvHelper.setMockEnv(AppEnv.local);
     localDataSource = MockRecordingFileLocalDataSource();
     remoteDataSource = MockRecordingFileRemoteDataSource();
     repository = RecordingFileRepositoryImpl(
       localDataSource: localDataSource,
       remoteDataSource: remoteDataSource,
     );
+  });
+
+  tearDown(() {
+    EnvHelper.setMockEnv(null);
   });
 
   test(

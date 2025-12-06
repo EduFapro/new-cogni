@@ -33,8 +33,15 @@ class EnvHelper {
     return value;
   }
 
+  static AppEnv? _mockEnv;
+
+  static void setMockEnv(AppEnv? env) {
+    _mockEnv = env;
+  }
+
   /// Nome do ambiente (default = "local").
   static AppEnv get currentEnv {
+    if (_mockEnv != null) return _mockEnv!;
     final mode = (dotenv.env['APP_MODE'] ?? 'local').toLowerCase();
     return switch (mode) {
       'offline' => AppEnv.offline,

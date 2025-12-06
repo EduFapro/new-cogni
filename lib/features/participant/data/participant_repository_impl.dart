@@ -4,6 +4,9 @@ import '../../participant/domain/participant_repository.dart';
 import 'participant_local_datasource.dart';
 import 'participant_remote_data_source.dart';
 
+import '../../../shared/env/env_helper.dart';
+import '../../../core/environment.dart';
+
 class ParticipantRepositoryImpl implements ParticipantRepository {
   final ParticipantLocalDataSource local;
   final ParticipantRemoteDataSource? remote;
@@ -22,13 +25,17 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
 
     // 2. Sync to backend (fire-and-forget)
     if (remote != null && participant.participantID != null) {
-      _syncToBackend(() async {
-        // Note: In a real scenario, you'd need the evaluatorId
-        // For now, we'll skip the backend sync or handle it differently
-        AppLogger.info(
-          'Participant created locally, backend sync requires evaluatorId context',
-        );
-      });
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          // Note: In a real scenario, you'd need the evaluatorId
+          // For now, we'll skip the backend sync or handle it differently
+          AppLogger.info(
+            'Participant created locally, backend sync requires evaluatorId context',
+          );
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping Participant sync.');
+      }
     }
   }
 
@@ -61,12 +68,16 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
 
     // 2. Sync deletion to backend (fire-and-forget)
     if (remote != null) {
-      _syncToBackend(() async {
-        final success = await remote!.deleteParticipant(id);
-        if (success) {
-          AppLogger.info('Participant $id deleted from backend');
-        }
-      });
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          final success = await remote!.deleteParticipant(id);
+          if (success) {
+            AppLogger.info('Participant $id deleted from backend');
+          }
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping Participant deletion sync.');
+      }
     }
   }
 
@@ -81,12 +92,16 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
 
     // 2. Sync update to backend (fire-and-forget)
     if (remote != null && participant.participantID != null) {
-      _syncToBackend(() async {
-        // Note: Similar issue with evaluatorId
-        AppLogger.info(
-          'Participant updated locally, backend sync requires evaluatorId context',
-        );
-      });
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          // Note: Similar issue with evaluatorId
+          AppLogger.info(
+            'Participant updated locally, backend sync requires evaluatorId context',
+          );
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping Participant update sync.');
+      }
     }
   }
 

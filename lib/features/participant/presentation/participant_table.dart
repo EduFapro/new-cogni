@@ -12,6 +12,8 @@ import 'edit_participant_dialog.dart';
 import '../../task_instance/domain/task_instance_providers.dart';
 import '../../task_instance/domain/task_instance_entity.dart';
 import '../../module_instance/domain/module_instance_entity.dart';
+import '../../recording_file/data/recording_file_providers.dart';
+import '../../recording_file/domain/recording_file_entity.dart';
 
 class ParticipantTable extends ConsumerStatefulWidget {
   final List<ParticipantWithEvaluation> participants;
@@ -192,7 +194,96 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                               ),
                             ),
 
-                            // 4. Exportar Excel
+                            // 4. Baixar Gravações
+                            Button(
+                              onPressed: () async {
+                                final modules = await ref.read(
+                                  moduleInstancesByEvaluationProvider(
+                                    item.evaluation!.evaluationID!,
+                                  ).future,
+                                );
+
+                                final taskRepo = ref.read(
+                                  taskInstanceRepositoryProvider,
+                                );
+                                final recordingRepo = ref.read(
+                                  recordingFileRepositoryProvider,
+                                );
+
+                                final recordings = <RecordingFileEntity>[];
+
+                                for (final module in modules) {
+                                  if (module.id != null) {
+                                    final tasks = await taskRepo
+                                        .getByModuleInstance(module.id!);
+                                    for (final task in tasks) {
+                                      if (task.id != null) {
+                                        final rec = await recordingRepo
+                                            .getByTaskInstanceId(task.id!);
+                                        if (rec != null) {
+                                          recordings.add(rec);
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+
+                                if (recordings.isEmpty) {
+                                  if (context.mounted) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => ContentDialog(
+                                        title: const Text('Aviso'),
+                                        content: const Text(
+                                          'Nenhuma gravação encontrada para este participante.',
+                                        ),
+                                        actions: [
+                                          Button(
+                                            child: const Text('OK'),
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  return;
+                                }
+
+                                await downloadRecordingsForParticipant(
+                                  item,
+                                  recordings,
+                                );
+
+                                if (context.mounted) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => ContentDialog(
+                                      title: const Text('Sucesso'),
+                                      content: Text(
+                                        '${recordings.length} gravações baixadas/descriptografadas com sucesso.',
+                                      ),
+                                      actions: [
+                                        Button(
+                                          child: const Text('OK'),
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text(
+                                'Baixar Gravações',
+                                style: TextStyle(
+                                  color: Colors.purple,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+
+                            // 5. Exportar Excel
                             Button(
                               onPressed: () async {
                                 // Get current evaluator name

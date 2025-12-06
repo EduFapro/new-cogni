@@ -5,6 +5,9 @@ import '../../recording_file/data/recording_file_local_datasource.dart';
 import '../../recording_file/data/recording_file_remote_data_source.dart';
 import '../../../core/logger/app_logger.dart';
 
+import '../../../shared/env/env_helper.dart';
+import '../../../core/environment.dart';
+
 class RecordingFileRepositoryImpl implements RecordingFileRepository {
   final RecordingFileLocalDataSource localDataSource;
   final RecordingFileRemoteDataSource? remoteDataSource;
@@ -22,19 +25,23 @@ class RecordingFileRepositoryImpl implements RecordingFileRepository {
 
     // 2. Remote Sync (Fire-and-forget)
     if (remoteDataSource != null && id != null) {
-      _syncToBackend(() async {
-        final entityWithId = entity.copyWith(id: id);
-        // Note: This only sends metadata, not the file itself yet
-        final backendId = await remoteDataSource!.createRecordingFile(
-          entityWithId,
-        );
-        if (backendId != null) {
-          AppLogger.info(
-            'RecordingFile metadata synced to backend with ID: $backendId',
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          final entityWithId = entity.copyWith(id: id);
+          // Note: This only sends metadata, not the file itself yet
+          final backendId = await remoteDataSource!.createRecordingFile(
+            entityWithId,
           );
-          // TODO: Upload actual file content if needed
-        }
-      });
+          if (backendId != null) {
+            AppLogger.info(
+              'RecordingFile metadata synced to backend with ID: $backendId',
+            );
+            // TODO: Upload actual file content if needed
+          }
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping RecordingFile sync.');
+      }
     }
 
     return id;

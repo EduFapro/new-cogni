@@ -35,6 +35,36 @@ class _MediaRecordTaskScreenState extends State<MediaRecordTaskScreen> {
     widget.onRecordingFinished?.call(file.path, duration);
   }
 
+  Future<void> _onQuit() async {
+    final shouldQuit = await showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Sair da Tarefa?'),
+        content: const Text(
+          'Se você sair agora, o progresso desta tarefa não será salvo.\n'
+          'Você poderá realizá-la novamente mais tarde.',
+        ),
+        actions: [
+          Button(
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: ButtonState.all(Colors.red.dark),
+            ),
+            child: const Text('Sair'),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldQuit == true && mounted) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget? bottomOverlay;
@@ -44,6 +74,7 @@ class _MediaRecordTaskScreenState extends State<MediaRecordTaskScreen> {
       bottomOverlay = RecorderWidget(
         autoStart: true,
         onRecordingFinished: _onRecordingFinished,
+        onQuit: _onQuit,
       );
     }
 

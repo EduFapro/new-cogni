@@ -8,11 +8,13 @@ import 'package:record/record.dart';
 class RecorderWidget extends StatefulWidget {
   final void Function(File recordingFile, Duration duration)?
   onRecordingFinished;
+  final VoidCallback? onQuit;
   final bool autoStart;
 
   const RecorderWidget({
     super.key,
     this.onRecordingFinished,
+    this.onQuit,
     this.autoStart = false,
   });
 
@@ -23,6 +25,7 @@ class RecorderWidget extends StatefulWidget {
 class _RecorderWidgetState extends State<RecorderWidget> {
   late final AudioRecorder _recorder;
   bool _isRecording = false;
+  bool _isPaused = false;
   bool _isBusy = false;
   Timer? _timer;
   Duration _elapsed = Duration.zero;
@@ -65,18 +68,48 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
         setState(() {
           _isRecording = true;
+          _isPaused = false;
           _elapsed = Duration.zero;
         });
 
-        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          setState(() => _elapsed += const Duration(seconds: 1));
-        });
+        _startTimer();
       }
     } catch (e) {
       debugPrint('Error starting recording: $e');
     } finally {
       setState(() => _isBusy = false);
     }
+  }
+
+  Future<void> _pauseRecording() async {
+    if (!_isRecording || _isPaused) return;
+
+    try {
+      await _recorder.pause();
+      _timer?.cancel();
+      setState(() => _isPaused = true);
+    } catch (e) {
+      debugPrint('Error pausing recording: $e');
+    }
+  }
+
+  Future<void> _resumeRecording() async {
+    if (!_isRecording || !_isPaused) return;
+
+    try {
+      await _recorder.resume();
+      setState(() => _isPaused = false);
+      _startTimer();
+    } catch (e) {
+      debugPrint('Error resuming recording: $e');
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() => _elapsed += const Duration(seconds: 1));
+    });
   }
 
   Future<void> _stopRecording() async {
@@ -89,6 +122,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
       setState(() {
         _isRecording = false;
+        _isPaused = false;
       });
 
       if (path != null && widget.onRecordingFinished != null) {
@@ -129,80 +163,147 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 48),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Recording button
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: _isRecording
-                        ? const Color(0xFFE81123).withOpacity(0.5)
-                        : Colors.white.withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: 2,
+            // Recording info
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_isRecording) ...[
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: _isPaused
+                          ? Colors.orange
+                          : const Color(0xFFE81123),
+                      shape: BoxShape.circle,
+                    ),
                   ),
+                  const SizedBox(width: 12),
                 ],
-              ),
-              child: FilledButton(
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all(const CircleBorder()),
-                  padding: WidgetStateProperty.all(const EdgeInsets.all(28)),
-                  backgroundColor: WidgetStateProperty.all(
-                    _isRecording ? const Color(0xFFE81123) : Colors.white,
+                Text(
+                  _isRecording
+                      ? (_isPaused ? 'Pausado' : 'Gravando...')
+                      : 'Pronto para gravar',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                onPressed: _isBusy
-                    ? null
-                    : _isRecording
-                    ? _stopRecording
-                    : _startRecording,
-                child: Icon(
-                  _isRecording ? FluentIcons.stop : FluentIcons.microphone,
-                  size: 32,
-                  color: _isRecording ? Colors.white : const Color(0xFF0078D4),
-                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _format(_elapsed),
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w300,
+                color: Colors.white.withOpacity(0.9),
+                letterSpacing: 2,
               ),
             ),
-            const SizedBox(width: 32),
-            // Recording info
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 32),
+
+            // Controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    if (_isRecording) ...[
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE81123),
-                          shape: BoxShape.circle,
+                // Quit Button (Only visible when paused)
+                if (_isPaused) ...[
+                  FilledButton(
+                    style: ButtonStyle(
+                      backgroundColor: ButtonState.all(Colors.red.dark),
+                      padding: ButtonState.all(
+                        const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                    ],
-                    Text(
-                      _isRecording ? 'Gravando...' : 'Pronto para gravar',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    ),
+                    onPressed: widget.onQuit,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(FluentIcons.cancel, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'SAIR',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+
+                // Pause/Resume Button (Only visible when recording)
+                if (_isRecording) ...[
+                  FilledButton(
+                    style: ButtonStyle(
+                      backgroundColor: ButtonState.all(Colors.white),
+                      foregroundColor: ButtonState.all(const Color(0xFF0078D4)),
+                      padding: ButtonState.all(
+                        const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _format(_elapsed),
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.white.withOpacity(0.9),
-                    letterSpacing: 2,
+                    onPressed: _isPaused ? _resumeRecording : _pauseRecording,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isPaused ? FluentIcons.play : FluentIcons.pause,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _isPaused ? 'RETOMAR' : 'PAUSAR',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+
+                // Stop/Start Button
+                FilledButton(
+                  style: ButtonStyle(
+                    backgroundColor: ButtonState.all(
+                      _isRecording ? const Color(0xFFE81123) : Colors.white,
+                    ),
+                    foregroundColor: ButtonState.all(
+                      _isRecording ? Colors.white : const Color(0xFF0078D4),
+                    ),
+                    padding: ButtonState.all(
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                  ),
+                  onPressed: _isBusy
+                      ? null
+                      : _isRecording
+                      ? _stopRecording
+                      : _startRecording,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _isRecording
+                            ? FluentIcons.stop
+                            : FluentIcons.microphone,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _isRecording ? 'PARAR' : 'GRAVAR',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
               ],

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -22,17 +23,43 @@ class SplashScreen extends HookConsumerWidget {
           await showDialog(
             context: context,
             builder: (context) => ContentDialog(
-              title: const Text('Limpeza de Instalação Anterior'),
-              content: const Text(
-                'Detectamos uma pasta "Cognivoice" de uma instalação anterior, mas nenhum banco de dados.\n\n'
-                'Para garantir o funcionamento correto, esta pasta antiga será removida antes de iniciar o aplicativo.',
+              title: const Text(
+                'Limpeza de Instalação Anterior',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              content: const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Foi encontrada uma pasta chamada "Cognivoice" na sua pasta de Documentos, possivelmente originada de uma instalação anterior do aplicativo.',
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    '⚠️ Essa pasta será removida automaticamente para que a nova instalação funcione corretamente.',
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Se precisar de algum conteúdo dessa pasta, faça um backup manual antes de prosseguir.',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
               actions: [
-                Button(
+                FilledButton(
                   child: const Text('OK, Entendi'),
                   onPressed: () async {
                     Navigator.pop(context);
                     await performLegacyCleanup();
+                  },
+                ),
+                Button(
+                  style: ButtonStyle(
+                    backgroundColor: ButtonState.all(Colors.red.dark),
+                  ),
+                  child: const Text('Cancelar e Fechar'),
+                  onPressed: () {
+                    exit(0);
                   },
                 ),
               ],

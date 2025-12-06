@@ -44,12 +44,13 @@ class RecordingFilePathHelper {
       final evaluatorPath = '$cognivoicePath/Avaliador_$sanitizedEvaluatorName';
       final participantPath =
           '$evaluatorPath/Paciente_$sanitizedParticipantName';
+      final encryptedPath = '$participantPath/.encrypted';
 
       // Create directories if they don't exist
-      final participantDir = Directory(participantPath);
-      if (!await participantDir.exists()) {
-        await participantDir.create(recursive: true);
-        AppLogger.info('✅ Created directory structure: $participantPath');
+      final encryptedDir = Directory(encryptedPath);
+      if (!await encryptedDir.exists()) {
+        await encryptedDir.create(recursive: true);
+        AppLogger.info('✅ Created directory structure: $encryptedPath');
       }
 
       // Generate filename
@@ -61,7 +62,7 @@ class RecordingFilePathHelper {
           'A${formattedEvaluatorId}_P${formattedParticipantId}_T${taskEntityId}_$dateString.aac';
 
       // Full path with forward slashes (works on both Windows and Unix)
-      final fullPath = '$participantPath/$filename';
+      final fullPath = '$encryptedPath/$filename';
 
       // Normalize path separators
       final normalizedPath = fullPath.replaceAll('\\', '/');

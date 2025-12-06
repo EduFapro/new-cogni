@@ -5,6 +5,9 @@ import 'evaluator_local_datasource.dart';
 import 'evaluator_remote_data_source.dart';
 import 'evaluator_model.dart';
 
+import '../../../shared/env/env_helper.dart';
+import '../../../core/environment.dart';
+
 class EvaluatorRepositoryImpl implements EvaluatorRepository {
   final EvaluatorLocalDataSource local;
   final EvaluatorRemoteDataSource? remote;
@@ -37,14 +40,18 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
 
     // 2. Remote Sync (Fire-and-forget)
     if (remote != null) {
-      _syncToBackend(() async {
-        final backendId = await remote!.createEvaluator(data);
-        if (backendId != null) {
-          AppLogger.info(
-            '[REPO] Evaluator synced to backend with ID: $backendId',
-          );
-        }
-      });
+      if (EnvHelper.currentEnv != AppEnv.offline) {
+        _syncToBackend(() async {
+          final backendId = await remote!.createEvaluator(data);
+          if (backendId != null) {
+            AppLogger.info(
+              '[REPO] Evaluator synced to backend with ID: $backendId',
+            );
+          }
+        });
+      } else {
+        AppLogger.info('📴 Offline mode: Skipping Evaluator sync.');
+      }
     }
   }
 

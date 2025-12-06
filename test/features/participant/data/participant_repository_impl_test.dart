@@ -7,6 +7,9 @@ import 'package:segundo_cogni/features/participant/domain/participant_entity.dar
 import 'package:segundo_cogni/core/database/base_database_helper.dart';
 import 'package:segundo_cogni/core/database/test_database_helper.dart';
 
+import 'package:segundo_cogni/shared/env/env_helper.dart';
+import 'package:segundo_cogni/core/environment.dart';
+
 // Manual Mocks
 class MockParticipantLocalDataSource implements ParticipantLocalDataSource {
   @override
@@ -46,12 +49,17 @@ void main() {
   late ParticipantRepositoryImpl repository;
 
   setUp(() {
+    EnvHelper.setMockEnv(AppEnv.local);
     localDataSource = MockParticipantLocalDataSource();
     remoteDataSource = MockParticipantRemoteDataSource();
     repository = ParticipantRepositoryImpl(
       local: localDataSource,
       remote: remoteDataSource,
     );
+  });
+
+  tearDown(() {
+    EnvHelper.setMockEnv(null);
   });
 
   test('🗑️ deleteParticipant deletes locally and syncs to backend', () async {

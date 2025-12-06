@@ -6,6 +6,8 @@ import 'package:segundo_cogni/features/evaluation/data/evaluation_local_datasour
 import 'package:segundo_cogni/features/evaluation/data/evaluation_remote_data_source.dart';
 import 'package:segundo_cogni/features/evaluation/data/evaluation_repository_impl.dart';
 import 'package:segundo_cogni/features/evaluation/domain/evaluation_entity.dart';
+import 'package:segundo_cogni/shared/env/env_helper.dart';
+import 'package:segundo_cogni/core/environment.dart';
 
 // Manual Mocks
 class MockEvaluationLocalDataSource implements EvaluationLocalDataSource {
@@ -40,6 +42,7 @@ void main() {
   late TestDatabaseHelper dbHelper;
 
   setUp(() async {
+    EnvHelper.setMockEnv(AppEnv.local);
     await TestDatabaseHelper.delete();
     dbHelper = TestDatabaseHelper.instance;
     localDataSource = MockEvaluationLocalDataSource();
@@ -63,6 +66,7 @@ void main() {
 
   tearDown(() async {
     await dbHelper.close();
+    EnvHelper.setMockEnv(null);
   });
 
   test('✅ setEvaluationStatus updates locally and syncs to backend', () async {

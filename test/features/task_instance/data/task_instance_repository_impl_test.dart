@@ -9,6 +9,8 @@ import 'package:segundo_cogni/features/task_instance/data/task_instance_model.da
 import 'package:segundo_cogni/features/task_instance/data/task_instance_remote_data_source.dart';
 import 'package:segundo_cogni/features/task_instance/data/task_instance_repository_impl.dart';
 import 'package:segundo_cogni/features/task_instance/domain/task_instance_entity.dart';
+import 'package:segundo_cogni/shared/env/env_helper.dart';
+import 'package:segundo_cogni/core/environment.dart';
 
 // Manual Mocks
 class MockTaskInstanceLocalDataSource implements TaskInstanceLocalDataSource {
@@ -89,6 +91,7 @@ void main() {
   late TaskInstanceRepositoryImpl repository;
 
   setUp(() {
+    EnvHelper.setMockEnv(AppEnv.local);
     localDataSource = MockTaskInstanceLocalDataSource();
     remoteDataSource = MockTaskInstanceRemoteDataSource();
     taskRepository = MockTaskRepository();
@@ -97,6 +100,10 @@ void main() {
       taskRepository: taskRepository,
       remoteDataSource: remoteDataSource,
     );
+  });
+
+  tearDown(() {
+    EnvHelper.setMockEnv(null);
   });
 
   test('✅ insert task instance inserts locally and syncs to backend', () async {
