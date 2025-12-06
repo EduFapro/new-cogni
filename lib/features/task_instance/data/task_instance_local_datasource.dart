@@ -109,15 +109,20 @@ class TaskInstanceLocalDataSource {
     );
     try {
       final db = await _db;
-      final maps = await db.query(
-        Tables.taskInstances,
-        where: '${TaskInstanceFields.moduleInstanceId} = ?',
-        whereArgs: [moduleInstanceId],
+      final result = await db.rawQuery(
+        '''
+        SELECT ti.*, t.${TaskFields.title} as task_title
+        FROM ${Tables.taskInstances} ti
+        INNER JOIN ${Tables.tasks} t ON ti.${TaskInstanceFields.taskId} = t.${TaskFields.id}
+        WHERE ti.${TaskInstanceFields.moduleInstanceId} = ?
+      ''',
+        [moduleInstanceId],
       );
+
       AppLogger.db(
-        'Fetched ${maps.length} task instances for moduleInstanceId=$moduleInstanceId',
+        'Fetched ${result.length} task instances for moduleInstanceId=$moduleInstanceId',
       );
-      return maps.map(TaskInstanceModel.fromMap).toList();
+      return result.map(TaskInstanceModel.fromMap).toList();
     } catch (e, s) {
       AppLogger.error(
         'Error fetching task instances for moduleInstanceId=$moduleInstanceId',

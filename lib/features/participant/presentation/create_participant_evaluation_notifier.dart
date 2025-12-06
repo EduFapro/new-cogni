@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/logger/app_logger.dart';
 import '../../../providers/participant_providers.dart';
+import '../../../shared/env/env_helper.dart';
 
 import '../../evaluation/data/evaluation_local_datasource.dart';
 import '../../evaluation/domain/usecases/create_participant_evaluation_usecase.dart';
@@ -59,6 +60,7 @@ class CreateParticipantEvaluationNotifier
         ),
       ),
       db: db,
+      appEnv: EnvHelper.currentEnv,
     );
 
     return null;

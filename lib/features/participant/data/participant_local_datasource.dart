@@ -134,6 +134,7 @@ class ParticipantLocalDataSource {
     final db = await _db;
 
     final payload = Map<String, dynamic>.from(participant.toMap());
+    payload.remove(ParticipantFields.id); // Don't update the primary key
 
     // Normalize enums to numeric values
     if (payload[ParticipantFields.sex] is Sex) {
@@ -151,6 +152,10 @@ class ParticipantLocalDataSource {
       payload[ParticipantFields.laterality] =
           (payload[ParticipantFields.laterality] as Laterality).numericValue;
     }
+
+    AppLogger.db(
+      'ParticipantLocalDataSource.updateParticipant → payload=$payload',
+    );
 
     try {
       final count = await db.update(

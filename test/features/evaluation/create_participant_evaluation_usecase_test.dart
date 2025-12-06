@@ -19,6 +19,7 @@ import 'package:segundo_cogni/features/participant/data/participant_remote_data_
 import 'package:segundo_cogni/features/evaluation/data/evaluation_remote_data_source.dart';
 import 'package:segundo_cogni/features/evaluation/domain/evaluation_entity.dart';
 import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
+import 'package:segundo_cogni/core/environment.dart';
 
 // ... existing imports ...
 
@@ -198,6 +199,7 @@ void main() {
       taskDataSource: taskDataSource,
       taskInstanceRepository: MockTaskInstanceRepository(),
       db: db,
+      appEnv: AppEnv.local,
     );
   });
 

@@ -1,6 +1,8 @@
 import '../../task_instance/domain/task_instance_entity.dart';
 import '../../task_instance/data/task_instance_constants.dart';
 import '../../../core/constants/enums/progress_status.dart';
+import '../../../core/constants/enums/task_mode.dart';
+import '../../task/domain/task_entity.dart';
 
 class TaskInstanceModel extends TaskInstanceEntity {
   const TaskInstanceModel({
@@ -13,13 +15,30 @@ class TaskInstanceModel extends TaskInstanceEntity {
   });
 
   factory TaskInstanceModel.fromMap(Map<String, dynamic> map) {
-    return TaskInstanceModel(
+    final model = TaskInstanceModel(
       id: map[TaskInstanceFields.id] as int?,
       taskId: map[TaskInstanceFields.taskId] as int,
       moduleInstanceId: map[TaskInstanceFields.moduleInstanceId] as int,
       status: TaskStatus.fromValue(map[TaskInstanceFields.status] as int),
       completingTime: map[TaskInstanceFields.completingTime] as String?,
     );
+
+    // If task_title is present (from JOIN), populate the task entity
+    if (map.containsKey('task_title')) {
+      return TaskInstanceModel.fromEntity(
+        model.copyWith(
+          task: TaskEntity(
+            taskID: model.taskId,
+            moduleID: 0, // Dummy
+            title: map['task_title'] as String,
+            taskMode: TaskMode.play, // Dummy
+            position: 0, // Dummy
+          ),
+        ),
+      );
+    }
+
+    return model;
   }
 
   Map<String, dynamic> toMap() => {

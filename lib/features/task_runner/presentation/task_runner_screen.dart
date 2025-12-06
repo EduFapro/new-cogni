@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../core/constants/enums/progress_status.dart';
 import '../../../../core/constants/enums/task_mode.dart';
 import '../../../../core/logger/app_logger.dart';
-import '../../../shared/encryption/deterministic_encryption_helper.dart';
 import '../../../shared/encryption/file_encryption_helper.dart';
 import '../../../shared/utils/recording_file_path_helper.dart';
 import '../../evaluation/presentation/evaluation_provider.dart';
@@ -213,17 +212,15 @@ class TaskRunnerScreen extends ConsumerWidget {
         }
 
         final evaluatorId = currentUser.evaluatorId!;
-        // Decrypt evaluator names for readable folder names
-        final evaluatorName =
-            '${DeterministicEncryptionHelper.decryptText(currentUser.name)} ${DeterministicEncryptionHelper.decryptText(currentUser.surname)}';
+        // Evaluator names are now stored as plain text
+        final evaluatorName = '${currentUser.name} ${currentUser.surname}';
 
         // Get task entity ID
         final taskEntityId =
             currentInstance.task?.taskID ?? currentInstance.taskId;
 
-        // Decrypt participant names for readable folder names
-        final participantName =
-            '${DeterministicEncryptionHelper.decryptText(participant.name)} ${DeterministicEncryptionHelper.decryptText(participant.surname)}';
+        // Participant names are now stored as plain text
+        final participantName = '${participant.name} ${participant.surname}';
 
         // Generate proper file path
         final properPath = await RecordingFilePathHelper.generateRecordingPath(

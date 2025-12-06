@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:intl/intl.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../core/constants/enums/progress_status.dart';
 import '../../../core/theme/app_colors.dart';
@@ -8,6 +9,9 @@ import '../../evaluation/presentation/module_evaluation_screen.dart';
 import '../../module_instance/presentation/module_instance_provider.dart';
 import '../domain/participant_with_evaluation.dart';
 import 'edit_participant_dialog.dart';
+import '../../task_instance/domain/task_instance_providers.dart';
+import '../../task_instance/domain/task_instance_entity.dart';
+import '../../module_instance/domain/module_instance_entity.dart';
 
 class ParticipantTable extends ConsumerStatefulWidget {
   final List<ParticipantWithEvaluation> participants;
@@ -73,9 +77,31 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                       // Name
                       Expanded(
                         flex: 3,
-                        child: Text(
-                          item.fullName,
-                          style: const TextStyle(fontSize: 14),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                isExpanded
+                                    ? FluentIcons.chevron_up
+                                    : FluentIcons.chevron_down,
+                                size: 12,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  if (isExpanded) {
+                                    _expandedRows.remove(index);
+                                  } else {
+                                    _expandedRows.add(index);
+                                  }
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              item.fullName,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
                         ),
                       ),
 
@@ -94,8 +120,9 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            // 1. Prosseguir com Avaliação - FIRST & HIGHLIGHTED
+                            // 1. Prosseguir com Avaliação
                             FilledButton(
                               style: ButtonStyle(
                                 backgroundColor: ButtonState.all(
@@ -122,7 +149,7 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                               ),
                             ),
 
-                            // 2. Mais Informações - Toggles accordion
+                            // 2. Mais Informações
                             Button(
                               onPressed: () {
                                 setState(() {
@@ -138,7 +165,9 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                                     ? 'Ocultar Informações'
                                     : 'Mais Informações',
                                 style: TextStyle(
-                                  color: Colors.green,
+                                  color: isExpanded
+                                      ? AppColors.coolGray500
+                                      : Colors.green,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -172,9 +201,33 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                                     ? '${evaluator.name}${evaluator.surname}'
                                     : null;
 
+                                // Fetch modules
+                                final modules = await ref.read(
+                                  moduleInstancesByEvaluationProvider(
+                                    item.evaluation!.evaluationID!,
+                                  ).future,
+                                );
+
+                                // Fetch tasks for each module
+                                final tasksByModule =
+                                    <int, List<TaskInstanceEntity>>{};
+                                final taskRepo = ref.read(
+                                  taskInstanceRepositoryProvider,
+                                );
+
+                                for (final module in modules) {
+                                  if (module.id != null) {
+                                    final tasks = await taskRepo
+                                        .getByModuleInstance(module.id!);
+                                    tasksByModule[module.id!] = tasks;
+                                  }
+                                }
+
                                 await exportSingleParticipantToExcel(
                                   item,
                                   evaluatorName: evaluatorName,
+                                  modules: modules,
+                                  tasksByModule: tasksByModule,
                                 );
 
                                 if (context.mounted) {
@@ -261,6 +314,35 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 1. Dados Pessoais
+                const Text(
+                  'Dados Pessoais',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.indigoBlue,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildInfoRow('Nome Completo:', item.fullName),
+                _buildInfoRow(
+                  'Data de Nascimento:',
+                  DateFormat('dd/MM/yyyy').format(item.participant.birthDate),
+                ),
+                _buildInfoRow('Sexo:', item.participant.sex.label),
+                _buildInfoRow(
+                  'Escolaridade:',
+                  item.participant.educationLevel.label,
+                ),
+                _buildInfoRow(
+                  'Lateralidade:',
+                  item.participant.laterality.label,
+                ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+
+                // 2. Detalhes da Avaliação
                 const Text(
                   'Detalhes da Avaliação',
                   style: TextStyle(

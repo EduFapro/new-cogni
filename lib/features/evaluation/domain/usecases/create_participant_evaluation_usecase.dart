@@ -2,6 +2,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/constants/enums/progress_status.dart';
+import '../../../../core/environment.dart';
 
 import '../../../participant/domain/participant_entity.dart';
 import '../../../participant/data/participant_local_datasource.dart';
@@ -29,6 +30,7 @@ class CreateParticipantEvaluationUseCase {
   final TaskLocalDataSource taskDataSource;
   final TaskInstanceRepository taskInstanceRepository;
   final Database db;
+  final AppEnv appEnv;
 
   CreateParticipantEvaluationUseCase({
     required this.participantDataSource,
@@ -40,6 +42,7 @@ class CreateParticipantEvaluationUseCase {
     required this.taskDataSource,
     required this.taskInstanceRepository,
     required this.db,
+    required this.appEnv,
   });
 
   Future<ParticipantEntity> execute({
@@ -187,6 +190,11 @@ class CreateParticipantEvaluationUseCase {
     required int evaluationId,
     required int language,
   }) {
+    if (appEnv == AppEnv.offline) {
+      AppLogger.info('[USECASE] 📴 Offline mode: Skipping backend sync.');
+      return;
+    }
+
     if (participantRemoteDataSource == null ||
         evaluationRemoteDataSource == null) {
       return;
