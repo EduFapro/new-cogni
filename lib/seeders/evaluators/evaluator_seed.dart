@@ -20,7 +20,7 @@ Future<void> seedDummyEvaluator(DatabaseExecutor db) async {
     firstLogin: true,
   );
 
-  final secured = EvaluatorSecureService.encrypt(evaluator);
+  final secured = await EvaluatorSecureService.encrypt(evaluator);
 
   await db.insert(
     Tables.evaluators,

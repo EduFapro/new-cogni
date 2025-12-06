@@ -1,7 +1,7 @@
 import 'package:sqflite_common/sqlite_api.dart';
 import '../../../core/constants/database_constants.dart';
 import '../../../core/logger/app_logger.dart';
-import '../../../shared/encryption/deterministic_encryption_helper.dart';
+
 import '../../evaluator/application/evaluator_secure_service.dart';
 import '../../evaluator/data/evaluator_model.dart';
 import '../../evaluator/data/evaluator_constants.dart';
@@ -10,15 +10,12 @@ class AuthLocalDataSource {
   final Database _db;
   AuthLocalDataSource(this._db);
   Future<EvaluatorModel?> getEvaluatorByEmail(String email) async {
-    final encryptedEmail = DeterministicEncryptionHelper.encryptText(email);
-    AppLogger.debug(
-      'Looking up evaluator: $email (encrypted: $encryptedEmail)',
-    );
+    AppLogger.debug('Looking up evaluator: $email');
 
     final result = await _db.query(
       Tables.evaluators,
       where: '${EvaluatorFields.email} = ?',
-      whereArgs: [encryptedEmail],
+      whereArgs: [email],
       limit: 1,
     );
 
@@ -29,7 +26,7 @@ class AuthLocalDataSource {
 
     AppLogger.db('Evaluator found for $email');
     final encrypted = EvaluatorModel.fromMap(result.first);
-    return EvaluatorSecureService.decrypt(encrypted);
+    return await EvaluatorSecureService.decrypt(encrypted);
   }
 
   Future<void> clearCurrentUser() async {
@@ -43,12 +40,12 @@ class AuthLocalDataSource {
     if (result.isEmpty) return null;
 
     final encrypted = EvaluatorModel.fromMap(result.first);
-    return EvaluatorSecureService.decrypt(encrypted);
+    return await EvaluatorSecureService.decrypt(encrypted);
   }
 
   Future<void> saveCurrentUser(EvaluatorModel user) async {
     AppLogger.db('Encrypting and saving current user to DB');
-    final encrypted = EvaluatorSecureService.encrypt(user);
+    final encrypted = await EvaluatorSecureService.encrypt(user);
     await _db.delete('current_user');
     await _db.insert('current_user', encrypted.toMap());
   }

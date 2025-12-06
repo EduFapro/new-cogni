@@ -233,8 +233,8 @@ void main() {
         whereArgs: [created.participantID],
       );
       expect(savedParticipant, isNotEmpty);
-      // Name should be hashed in DB
-      expect(savedParticipant.first['name'], isNot('Test'));
+      // Name should be PLAIN TEXT in DB
+      expect(savedParticipant.first['name'], 'Test');
 
       // Verify Evaluation in DB
       final savedEvaluation = await db.query(
@@ -249,20 +249,10 @@ void main() {
       await Future.delayed(Duration.zero); // Allow microtask to run
 
       expect(participantRemoteDataSource.createCalled, isTrue);
-      expect(
-        participantRemoteDataSource.createdParticipant?.name,
-        'Test',
-      ); // Should send plain text?
-      // Wait, UseCase sends `createdParticipant` which comes from `participant.copyWith(participantID: ...)`.
-      // The input `participant` has plain text name.
-      // The `hashedParticipant` is only used for local insert.
-      // So remote sync should receive plain text (or however `participant` was passed).
+      expect(participantRemoteDataSource.createdParticipant?.name, 'Test');
 
-      expect(evaluationRemoteDataSource.createCalled, isTrue);
-      expect(
-        evaluationRemoteDataSource.createdEvaluation?.participantID,
-        999,
-      ); // Should use backend participant ID
+      // Evaluation should NOT be synced manually (backend does it)
+      expect(evaluationRemoteDataSource.createCalled, isFalse);
     },
   );
 }

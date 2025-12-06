@@ -203,24 +203,13 @@ class CreateParticipantEvaluationUseCase {
             '[USECASE] Participant synced to backend ID: $backendParticipantId',
           );
 
-          // 2. Sync Evaluation (only if participant synced)
-          final evaluation = EvaluationEntity(
-            evaluationID:
-                evaluationId, // Local ID, but backend will generate its own
-            evaluatorID: evaluatorId,
-            participantID: backendParticipantId, // Use backend participant ID
-            status: EvaluationStatus.pending,
-            language: language,
-            evaluationDate: DateTime.now(), // Or pass from execute if needed
+          // 2. Sync Evaluation
+          // NOTE: Backend now automatically creates Evaluation + Modules + Tasks
+          // when a Participant is created. We do NOT need to create it manually here.
+          // If we did, we would create a duplicate.
+          AppLogger.info(
+            '[USECASE] Participant synced. Backend auto-creates Evaluation/Modules.',
           );
-
-          final backendEvaluationId = await evaluationRemoteDataSource!
-              .createEvaluation(evaluation);
-          if (backendEvaluationId != null) {
-            AppLogger.info(
-              '[USECASE] Evaluation synced to backend ID: $backendEvaluationId',
-            );
-          }
         }
       } catch (e, s) {
         AppLogger.error('[USECASE] Backend sync failed', e, s);

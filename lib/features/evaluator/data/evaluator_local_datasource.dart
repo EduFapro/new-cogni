@@ -2,7 +2,7 @@ import 'package:sqflite_common/sqlite_api.dart';
 
 import '../../../core/constants/database_constants.dart';
 import '../../../core/logger/app_logger.dart';
-import '../../../shared/encryption/deterministic_encryption_helper.dart';
+
 import '../application/evaluator_secure_service.dart';
 import 'evaluator_constants.dart';
 import 'evaluator_model.dart';
@@ -14,7 +14,7 @@ class EvaluatorLocalDataSource {
   /// Insert evaluator securely (encrypt PII, hash password)
   Future<void> insert(EvaluatorModel evaluator) async {
     AppLogger.db('[EVALUATOR] Inserting evaluator: ${evaluator.email}');
-    final secured = EvaluatorSecureService.encrypt(evaluator);
+    final secured = await EvaluatorSecureService.encrypt(evaluator);
     await _db.insert(
       Tables.evaluators,
       secured.toEvaluatorTableMap(),
@@ -26,10 +26,8 @@ class EvaluatorLocalDataSource {
   Future<List<EvaluatorModel>> getAll() async {
     AppLogger.db('[EVALUATOR] Fetching all evaluators');
     final result = await _db.query(Tables.evaluators);
-    return result
-        .map(EvaluatorModel.fromMap)
-        .map(EvaluatorSecureService.decrypt)
-        .toList();
+    final models = result.map(EvaluatorModel.fromMap).toList();
+    return Future.wait(models.map(EvaluatorSecureService.decrypt));
   }
 
   /// Get evaluator by ID (decrypted)
@@ -41,7 +39,9 @@ class EvaluatorLocalDataSource {
       limit: 1,
     );
     return result.isNotEmpty
-        ? EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(result.first))
+        ? await EvaluatorSecureService.decrypt(
+            EvaluatorModel.fromMap(result.first),
+          )
         : null;
   }
 
@@ -53,7 +53,9 @@ class EvaluatorLocalDataSource {
       limit: 1,
     );
     return result.isNotEmpty
-        ? EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(result.first))
+        ? await EvaluatorSecureService.decrypt(
+            EvaluatorModel.fromMap(result.first),
+          )
         : null;
   }
 
@@ -78,15 +80,14 @@ class EvaluatorLocalDataSource {
     );
   }
 
-  /// Existence check by email (encrypt the lookup value)
+  /// Existence check by email
   Future<bool> existsByEmail(String email) async {
     AppLogger.db('[EVALUATOR] Checking if evaluator exists for email: $email');
     try {
-      final encEmail = DeterministicEncryptionHelper.encryptText(email);
       final result = await _db.query(
         Tables.evaluators,
         where: '${EvaluatorFields.email} = ?',
-        whereArgs: [encEmail],
+        whereArgs: [email],
         limit: 1,
       );
       final exists = result.isNotEmpty;
@@ -102,16 +103,17 @@ class EvaluatorLocalDataSource {
   Future<EvaluatorModel?> getEvaluatorByEmail(String email) async {
     AppLogger.db('[EVALUATOR] Fetching evaluator by email: $email');
     try {
-      final encEmail = DeterministicEncryptionHelper.encryptText(email);
       final result = await _db.query(
         Tables.evaluators,
         where: '${EvaluatorFields.email} = ?',
-        whereArgs: [encEmail],
+        whereArgs: [email],
         limit: 1,
       );
 
       return result.isNotEmpty
-          ? EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(result.first))
+          ? await EvaluatorSecureService.decrypt(
+              EvaluatorModel.fromMap(result.first),
+            )
           : null;
     } catch (e, s) {
       AppLogger.error('[EVALUATOR] Error fetching evaluator by email', e, s);
@@ -119,23 +121,22 @@ class EvaluatorLocalDataSource {
     }
   }
 
-  /// Login using encrypted username + hashed password
+  /// Login using username + hashed password
   Future<EvaluatorModel?> login(String username, String password) async {
-    final encryptedUsername = DeterministicEncryptionHelper.encryptText(
-      username,
-    );
     final hashedPassword = EvaluatorSecureService.hash(password);
 
     final result = await _db.query(
       Tables.evaluators,
       where:
           '${EvaluatorFields.username} = ? AND ${EvaluatorFields.password} = ?',
-      whereArgs: [encryptedUsername, hashedPassword],
+      whereArgs: [username, hashedPassword],
       limit: 1,
     );
 
     return result.isNotEmpty
-        ? EvaluatorSecureService.decrypt(EvaluatorModel.fromMap(result.first))
+        ? await EvaluatorSecureService.decrypt(
+            EvaluatorModel.fromMap(result.first),
+          )
         : null;
   }
 }

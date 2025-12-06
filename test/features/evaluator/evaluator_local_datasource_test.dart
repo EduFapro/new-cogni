@@ -3,8 +3,8 @@ import 'package:segundo_cogni/core/database/test_database_helper.dart';
 import 'package:segundo_cogni/features/evaluator/application/evaluator_secure_service.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_local_datasource.dart';
 import 'package:segundo_cogni/features/evaluator/data/evaluator_model.dart';
-import 'package:segundo_cogni/features/evaluator/data/evaluator_model_extensions.dart';
 import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
+import 'package:segundo_cogni/shared/encryption/gcm_encryption_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +13,7 @@ void main() {
 
   setUp(() async {
     await DeterministicEncryptionHelper.init();
+    await GcmEncryptionHelper.init(); // Ensure GCM is also initialized
     await TestDatabaseHelper.delete(); // ✅ clean start
     dbHelper = TestDatabaseHelper.instance;
     await dbHelper.database;
@@ -34,7 +35,18 @@ void main() {
       username: 'johndoe',
       password: 'securePass123',
       specialty: 'Neurologist',
-    ).encryptedAndHashed();
+    );
+
+    // Encrypt before inserting (simulating what the repo/service would do)
+    // Actually, the datasource expects an ALREADY encrypted model for insert?
+    // Let's check the datasource. insert() calls encrypt() internally!
+    // Wait, let's check EvaluatorLocalDataSource.insert again.
+    // Step 1338:
+    // Future<void> insert(EvaluatorModel evaluator) async {
+    //   final secured = await EvaluatorSecureService.encrypt(evaluator);
+    //   await _db.insert(...)
+    // }
+    // So I should pass the PLAIN model to insert!
 
     await ds.insert(evaluator);
     final fetched = await ds.getFirstEvaluator();
@@ -42,11 +54,10 @@ void main() {
     expect(fetched, isNotNull);
 
     // Decrypt to validate correctness
-    expect(
-      DeterministicEncryptionHelper.decryptText(fetched!.email),
-      equals('john.doe@example.com'),
-    );
-    expect(fetched.password.length, 64); // SHA256 hash
+    // getFirstEvaluator returns DECRYPTED model.
+    expect(fetched!.email, equals('john.doe@example.com'));
+    // Password should be hashed.
+    expect(fetched.password.length, 60); // BCrypt hash length is 60
   });
 
   test('✅ Insert and fetch evaluator works with encryption', () async {
@@ -60,17 +71,14 @@ void main() {
       username: 'janedoe',
       password: 'superSecret!',
       specialty: 'Psychologist',
-    ).encryptedAndHashed();
+    );
 
     await ds.insert(evaluator);
 
     final fetched = await ds.getFirstEvaluator();
 
     expect(fetched, isNotNull);
-    expect(
-      DeterministicEncryptionHelper.decryptText(fetched!.email),
-      equals('jane@example.com'),
-    );
+    expect(fetched!.email, equals('jane@example.com'));
   });
 
   test(
@@ -90,7 +98,7 @@ void main() {
         username: 'johndoe',
         password: 'securePass123',
         specialty: 'Neurologist',
-      ).encryptedAndHashed();
+      );
 
       await ds.insert(evaluator);
       final fetched = await ds.getFirstEvaluator();
@@ -98,18 +106,9 @@ void main() {
       expect(fetched, isNotNull);
 
       // ✅ Validate decrypted fields match user input
-      expect(
-        DeterministicEncryptionHelper.decryptText(fetched!.name),
-        equals(name),
-      );
-      expect(
-        DeterministicEncryptionHelper.decryptText(fetched.surname),
-        equals(surname),
-      );
-      expect(
-        DeterministicEncryptionHelper.decryptText(fetched.email),
-        equals(email),
-      );
+      expect(fetched!.name, equals(name));
+      expect(fetched.surname, equals(surname));
+      expect(fetched.email, equals(email));
     },
   );
 
@@ -128,7 +127,7 @@ void main() {
       username: username,
       password: correctPassword,
       specialty: 'Psychiatrist',
-    ).encryptedAndHashed();
+    );
 
     await ds.insert(evaluator);
 
@@ -151,53 +150,11 @@ void main() {
       username: correctUsername,
       password: password,
       specialty: 'Neurologist',
-    ).encryptedAndHashed();
+    );
 
     await ds.insert(evaluator);
 
     final loggedIn = await ds.login(wrongUsername, password);
     expect(loggedIn, isNull); // ✅ Should not log in
-  });
-
-  test('❌ Login fails with wrong password', () async {
-    final evaluator = EvaluatorSecureService.encrypt(
-      EvaluatorModel(
-        evaluatorId: null,
-        name: 'Jane',
-        surname: 'Smith',
-        email: 'jane.smith@example.com',
-        birthDate: '1985-12-05',
-        cpfOrNif: '11122233344',
-        username: 'janesmith',
-        password: 'securePass123',
-        specialty: 'Psychologist',
-      ),
-    );
-
-    await ds.insert(evaluator);
-
-    final result = await ds.login('janesmith', 'wrongpass');
-    expect(result, isNull);
-  });
-
-  test('❌ Login fails with wrong username', () async {
-    final evaluator = EvaluatorSecureService.encrypt(
-      EvaluatorModel(
-        evaluatorId: null,
-        name: 'Jane',
-        surname: 'Smith',
-        email: 'jane.smith@example.com',
-        birthDate: '1985-12-05',
-        cpfOrNif: '11122233344',
-        username: 'janesmith',
-        password: 'securePass123',
-        specialty: 'Psychologist',
-      ),
-    );
-
-    await ds.insert(evaluator);
-
-    final result = await ds.login('notjanesmith', 'securePass123');
-    expect(result, isNull);
   });
 }

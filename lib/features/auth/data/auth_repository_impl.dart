@@ -1,34 +1,45 @@
 import '../../auth/domain/auth_repository.dart';
-import '../../evaluator/application/evaluator_secure_service.dart';
 import '../../evaluator/data/evaluator_model.dart';
 import 'datasources/evaluator_remote_datasource.dart';
 import 'auth_local_datasource.dart';
 
+import '../../../../shared/utils/password_helper.dart';
+import '../../../../core/network.dart';
+import '../../../../core/environment.dart';
+
 class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSource _local;
   final EvaluatorRemoteDataSource _remote;
+  final NetworkService _network;
 
-  AuthRepositoryImpl(this._local, this._remote);
+  final AppEnv _env;
+
+  AuthRepositoryImpl(this._local, this._remote, this._network, this._env);
 
   @override
   Future<EvaluatorModel?> login(String emailOrUsername, String password) async {
     print('[AuthRepositoryImpl] 🔐 Login request for: $emailOrUsername');
 
-    // 1. Try Remote Login
+    // 1. Try Remote Login (Only if NOT offline)
     String? token;
-    try {
-      token = await _remote.login(emailOrUsername, password);
-      if (token != null) {
-        print(
-          '[AuthRepositoryImpl] ☁️ Remote login successful. Token received.',
-        );
-      } else {
-        print(
-          '[AuthRepositoryImpl] ☁️ Remote login failed or returned no token.',
-        );
+    if (_env != AppEnv.offline) {
+      try {
+        token = await _remote.login(emailOrUsername, password);
+        if (token != null) {
+          _network.setToken(token);
+          print(
+            '[AuthRepositoryImpl] ☁️ Remote login successful. Token received.',
+          );
+        } else {
+          print(
+            '[AuthRepositoryImpl] ☁️ Remote login failed or returned no token.',
+          );
+        }
+      } catch (e) {
+        print('[AuthRepositoryImpl] ⚠️ Remote login error: $e');
       }
-    } catch (e) {
-      print('[AuthRepositoryImpl] ⚠️ Remote login error: $e');
+    } else {
+      print('[AuthRepositoryImpl] 📴 Offline mode: Skipping remote login.');
     }
 
     // 2. Local Lookup (Fallback or Sync)
@@ -41,10 +52,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     }
 
-    // Hash password instead of encrypting it
-    final hashedInputPassword = EvaluatorSecureService.hash(password);
-
-    if (evaluator.password != hashedInputPassword) {
+    // Verify password using BCrypt
+    if (!PasswordHelper.verify(password, evaluator.password)) {
       print('[AuthRepositoryImpl] ❌ Password mismatch');
       return null;
     }
@@ -53,6 +62,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // 3. Update Token if Remote Login Succeeded
     if (token != null) {
+      _network.setToken(token);
       final updatedEvaluator = evaluator.copyWith(token: token);
       await _local.saveCurrentUser(updatedEvaluator);
       return updatedEvaluator;
@@ -98,7 +108,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signOut() {
+  Future<void> signOut() async {
+    _network.setToken(null);
     return _local.clearCurrentUser();
   }
 }

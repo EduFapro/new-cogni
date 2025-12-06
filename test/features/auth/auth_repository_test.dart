@@ -7,6 +7,8 @@ import 'package:segundo_cogni/features/evaluator/application/evaluator_secure_se
 import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
 
 import 'package:segundo_cogni/features/auth/data/datasources/evaluator_remote_datasource.dart';
+import 'package:segundo_cogni/core/network.dart';
+import 'package:segundo_cogni/core/environment.dart';
 
 class MockEvaluatorRemoteDataSource implements EvaluatorRemoteDataSource {
   @override
@@ -15,10 +17,16 @@ class MockEvaluatorRemoteDataSource implements EvaluatorRemoteDataSource {
   }
 }
 
+class MockNetworkService extends NetworkService {
+  @override
+  void setToken(String? token) {}
+}
+
 void main() {
   late TestDatabaseHelper dbHelper;
   late AuthLocalDataSource authDataSource;
   late AuthRepositoryImpl authRepository;
+  late MockNetworkService mockNetworkService;
 
   final dummyUser = EvaluatorModel(
     evaluatorId: null,
@@ -34,7 +42,7 @@ void main() {
 
   Future<void> seedUser() async {
     // Insert into evaluators table first (needed for login and FK)
-    final encrypted = EvaluatorSecureService.encrypt(dummyUser);
+    final encrypted = await EvaluatorSecureService.encrypt(dummyUser);
     final db = await dbHelper.database;
     await db.insert('evaluators', encrypted.toEvaluatorTableMap());
 
@@ -48,9 +56,12 @@ void main() {
     dbHelper = TestDatabaseHelper.instance;
     final db = await dbHelper.database;
     authDataSource = AuthLocalDataSource(db);
+    mockNetworkService = MockNetworkService();
     authRepository = AuthRepositoryImpl(
       authDataSource,
       MockEvaluatorRemoteDataSource(),
+      mockNetworkService,
+      AppEnv.local,
     );
   });
 
@@ -66,20 +77,23 @@ void main() {
     expect(await authDataSource.getCachedUser(), isNull);
   });
 
-  test('🧠 Evaluator is encrypted before storage', () {
-    final encrypted = EvaluatorSecureService.encrypt(dummyUser);
+  test(
+    '🧠 Evaluator is NOT encrypted (except password) before storage',
+    () async {
+      final encrypted = await EvaluatorSecureService.encrypt(dummyUser);
 
-    expect(encrypted.name, isNot(dummyUser.name));
-    expect(encrypted.email, isNot(dummyUser.email));
-    expect(encrypted.password.length, 64); // SHA-256
-  });
+      expect(encrypted.name, dummyUser.name);
+      expect(encrypted.email, dummyUser.email);
+      expect(encrypted.password.length, 60); // BCrypt hash length
+    },
+  );
 
-  test('🛡️ Raw DB data is encrypted', () async {
+  test('🛡️ Raw DB data is NOT encrypted (except password)', () async {
     await seedUser();
 
     final raw = await dbHelper.database.then((db) => db.query('current_user'));
-    expect(raw.first['email'], isNot(dummyUser.email));
-    expect(raw.first['name'], isNot(dummyUser.name));
+    expect(raw.first['email'], dummyUser.email);
+    expect(raw.first['name'], dummyUser.name);
   });
 
   test('❌ fetchCurrentUserOrNull returns null when DB is empty', () async {

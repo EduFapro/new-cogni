@@ -7,14 +7,18 @@ import 'database_provider.dart'; // ✅ FIX
 
 import '../features/auth/data/datasources/evaluator_remote_datasource.dart';
 import 'network_provider.dart';
+import 'environment_provider.dart';
 
 final authRepositoryProvider = FutureProvider<AuthRepository>((ref) async {
   final dbHelper = ref.watch(databaseProvider);
   final db = await dbHelper.database;
   final network = ref.watch(networkServiceProvider);
+  final env = ref.watch(environmentProvider);
   return AuthRepositoryImpl(
     AuthLocalDataSource(db),
     EvaluatorRemoteDataSource(network),
+    network,
+    env,
   );
 });
 

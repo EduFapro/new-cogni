@@ -1,5 +1,6 @@
 // lib/shared/env/env_helper.dart
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../core/environment.dart';
 
 class EnvHelper {
   static bool _initialized = false;
@@ -32,7 +33,13 @@ class EnvHelper {
     return value;
   }
 
-  /// Nome do ambiente (default = "local" pra casar com seu AppEnv).
-  static String get currentEnv =>
-      (dotenv.env['ENV'] ?? 'local').toLowerCase();
+  /// Nome do ambiente (default = "local").
+  static AppEnv get currentEnv {
+    final mode = (dotenv.env['APP_MODE'] ?? 'local').toLowerCase();
+    return switch (mode) {
+      'offline' => AppEnv.offline,
+      'remote' => AppEnv.remote,
+      _ => AppEnv.local,
+    };
+  }
 }

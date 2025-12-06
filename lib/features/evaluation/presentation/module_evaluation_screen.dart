@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../module_instance/presentation/module_instance_provider.dart';
 import '../../participant/presentation/participant_list_provider.dart';
 import 'module_table.dart';
+import 'widgets/module_list_skeleton.dart';
 
 class ModuleEvaluationScreen extends ConsumerWidget {
   final int evaluationId;
@@ -37,7 +38,7 @@ class ModuleEvaluationScreen extends ConsumerWidget {
             Expanded(child: ModuleTable(modules: modules)),
           ],
         ),
-        loading: () => const Center(child: ProgressRing()),
+        loading: () => const ModuleListSkeleton(),
         error: (error, stack) =>
             Center(child: Text('Erro ao carregar módulos: $error')),
       ),

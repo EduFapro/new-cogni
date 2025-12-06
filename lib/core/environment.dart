@@ -1,4 +1,1 @@
-enum AppEnv {
-  local,
-  remote,
-}
+enum AppEnv { offline, local, remote }

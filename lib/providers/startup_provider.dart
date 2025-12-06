@@ -7,6 +7,7 @@ import '../features/auth/data/auth_repository_impl.dart';
 import '../features/auth/data/datasources/evaluator_remote_datasource.dart';
 import '../core/database/prod_database_helper.dart';
 import '../core/network.dart';
+import '../shared/env/env_helper.dart';
 import 'providers.dart';
 
 /// The route that the app should navigate to after startup.
@@ -36,7 +37,8 @@ final startupProvider = FutureProvider<String>((ref) async {
     final authDS = AuthLocalDataSource(db);
     final networkService = NetworkService();
     final remoteDS = EvaluatorRemoteDataSource(networkService);
-    final authRepo = AuthRepositoryImpl(authDS, remoteDS);
+    final env = EnvHelper.currentEnv;
+    final authRepo = AuthRepositoryImpl(authDS, remoteDS, networkService, env);
 
     // 4. Check for Auto-Login
     AppLogger.info('[STARTUP] Checking for current user...');
@@ -44,6 +46,10 @@ final startupProvider = FutureProvider<String>((ref) async {
 
     if (currentUser != null) {
       AppLogger.info('[STARTUP] Auto-login success: ${currentUser.email}');
+      // Set token in network service
+      if (currentUser.token != null) {
+        networkService.setToken(currentUser.token);
+      }
       // Update the user provider
       ref.read(currentUserProvider.notifier).setUser(currentUser);
       return '/home';

@@ -13,7 +13,44 @@ class NetworkService {
     : baseUrl = dotenv.env['BACKEND_URL'] ?? 'http://localhost:8080',
       syncEnabled = dotenv.env['ENABLE_SYNC']?.toLowerCase() == 'true';
 
-  Map<String, String> get _headers => {'Content-Type': 'application/json'};
+  String? _authToken;
+
+  void setToken(String? token) {
+    _authToken = token;
+    AppLogger.info(
+      '[NetworkService] 🔑 Token set: ${token != null ? "Yes" : "No"}',
+    );
+  }
+
+  Map<String, String> get _headers {
+    final headers = {'Content-Type': 'application/json'};
+    if (_authToken != null) {
+      headers['Authorization'] = 'Bearer $_authToken';
+    }
+    return headers;
+  }
+
+  void _logError(http.Response response) {
+    if (response.statusCode >= 400) {
+      String message = 'HTTP error ${response.statusCode}';
+      try {
+        final body = jsonDecode(response.body);
+        if (body is Map<String, dynamic>) {
+          if (body.containsKey('error')) {
+            message += ': ${body['error']}';
+          }
+          if (body.containsKey('details')) {
+            message += ' | Details: ${body['details']}';
+          }
+        } else {
+          message += ': ${response.body}';
+        }
+      } catch (_) {
+        message += ': ${response.body}';
+      }
+      AppLogger.warning(message);
+    }
+  }
 
   Future<http.Response> get(String endpoint) async {
     if (!syncEnabled) {
@@ -26,11 +63,7 @@ class NetworkService {
     try {
       final response = await http.get(url, headers: _headers);
       AppLogger.info('HTTP ${response.statusCode} ← $url');
-      if (response.statusCode >= 400) {
-        AppLogger.warning(
-          'HTTP error ${response.statusCode}: ${response.body}',
-        );
-      }
+      _logError(response);
       return response;
     } catch (e, s) {
       AppLogger.error('HTTP GET failed for $url', e, s);
@@ -53,11 +86,7 @@ class NetworkService {
         body: jsonEncode(body),
       );
       AppLogger.info('HTTP ${response.statusCode} ← $url');
-      if (response.statusCode >= 400) {
-        AppLogger.warning(
-          'HTTP error ${response.statusCode}: ${response.body}',
-        );
-      }
+      _logError(response);
       return response;
     } catch (e, s) {
       AppLogger.error('HTTP POST failed for $url', e, s);
@@ -80,11 +109,7 @@ class NetworkService {
         body: jsonEncode(body),
       );
       AppLogger.info('HTTP ${response.statusCode} ← $url');
-      if (response.statusCode >= 400) {
-        AppLogger.warning(
-          'HTTP error ${response.statusCode}: ${response.body}',
-        );
-      }
+      _logError(response);
       return response;
     } catch (e, s) {
       AppLogger.error('HTTP PUT failed for $url', e, s);
@@ -110,11 +135,7 @@ class NetworkService {
         body: jsonEncode(body),
       );
       AppLogger.info('HTTP ${response.statusCode} ← $url');
-      if (response.statusCode >= 400) {
-        AppLogger.warning(
-          'HTTP error ${response.statusCode}: ${response.body}',
-        );
-      }
+      _logError(response);
       return response;
     } catch (e, s) {
       AppLogger.error('HTTP PATCH failed for $url', e, s);
@@ -133,11 +154,7 @@ class NetworkService {
     try {
       final response = await http.delete(url, headers: _headers);
       AppLogger.info('HTTP ${response.statusCode} ← $url');
-      if (response.statusCode >= 400) {
-        AppLogger.warning(
-          'HTTP error ${response.statusCode}: ${response.body}',
-        );
-      }
+      _logError(response);
       return response;
     } catch (e, s) {
       AppLogger.error('HTTP DELETE failed for $url', e, s);

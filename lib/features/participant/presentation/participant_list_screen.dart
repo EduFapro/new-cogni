@@ -6,6 +6,7 @@ import 'package:segundo_cogni/features/participant/presentation/participant_stat
 import '../../../core/utils/file_helper.dart';
 import 'participant_list_provider.dart';
 import 'participant_table.dart';
+import 'widgets/participant_list_skeleton.dart';
 
 class ParticipantListScreen extends HookConsumerWidget {
   @override
@@ -94,7 +95,7 @@ class ParticipantListScreen extends HookConsumerWidget {
           ],
         );
       },
-      loading: () => const Center(child: ProgressRing()),
+      loading: () => const ParticipantListSkeleton(),
       error: (err, st) =>
           Center(child: Text('Erro ao carregar participantes: $err')),
     );

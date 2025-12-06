@@ -1,6 +1,6 @@
 import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
-import '../../../shared/encryption/deterministic_encryption_helper.dart';
+
 import '../data/participant_constants.dart';
 
 class ParticipantEntity {
@@ -25,12 +25,8 @@ class ParticipantEntity {
   static ParticipantEntity fromMap(Map<String, dynamic> map) {
     return ParticipantEntity(
       participantID: map[ParticipantFields.id],
-      name: DeterministicEncryptionHelper.decryptText(
-        map[ParticipantFields.name],
-      ),
-      surname: DeterministicEncryptionHelper.decryptText(
-        map[ParticipantFields.surname],
-      ),
+      name: map[ParticipantFields.name],
+      surname: map[ParticipantFields.surname],
       birthDate: DateTime.parse(map[ParticipantFields.birthDate]),
       sex: Sex.fromValue(map[ParticipantFields.sex]),
       educationLevel: EducationLevel.fromValue(
@@ -42,10 +38,8 @@ class ParticipantEntity {
 
   Map<String, dynamic> toMap() => {
     ParticipantFields.id: participantID,
-    ParticipantFields.name: DeterministicEncryptionHelper.encryptText(name),
-    ParticipantFields.surname: DeterministicEncryptionHelper.encryptText(
-      surname,
-    ),
+    ParticipantFields.name: name,
+    ParticipantFields.surname: surname,
     ParticipantFields.birthDate: birthDate.toIso8601String(),
     ParticipantFields.sex: sex.numericValue,
     ParticipantFields.educationLevel: educationLevel.numericValue,

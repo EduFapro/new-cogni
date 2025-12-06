@@ -1,36 +1,29 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import '../../../shared/encryption/deterministic_encryption_helper.dart';
+import '../../../shared/utils/password_helper.dart';
 import '../data/evaluator_model.dart';
 
 class EvaluatorSecureService {
-  static EvaluatorModel encrypt(EvaluatorModel model) {
+  static Future<EvaluatorModel> encrypt(EvaluatorModel model) async {
+    // Encryption removed for all fields except password (which is hashed).
+    // Data is now stored as plain text in the local DB.
     return model.copyWith(
-      name: DeterministicEncryptionHelper.encryptText(model.name),
-      surname: DeterministicEncryptionHelper.encryptText(model.surname),
-      email: DeterministicEncryptionHelper.encryptText(model.email),
-      birthDate: DeterministicEncryptionHelper.encryptText(model.birthDate),
-      specialty: DeterministicEncryptionHelper.encryptText(model.specialty),
-      cpfOrNif: DeterministicEncryptionHelper.encryptText(model.cpfOrNif),
-      username: DeterministicEncryptionHelper.encryptText(model.username),
+      name: model.name,
+      surname: model.surname,
+      email: model.email,
+      birthDate: model.birthDate,
+      specialty: model.specialty,
+      cpfOrNif: model.cpfOrNif,
+      username: model.username,
       password: hash(model.password), // password stays hashed
     );
   }
 
-  static EvaluatorModel decrypt(EvaluatorModel model) {
-    return model.copyWith(
-      name: DeterministicEncryptionHelper.decryptText(model.name),
-      surname: DeterministicEncryptionHelper.decryptText(model.surname),
-      email: DeterministicEncryptionHelper.decryptText(model.email),
-      birthDate: DeterministicEncryptionHelper.decryptText(model.birthDate),
-      specialty: DeterministicEncryptionHelper.decryptText(model.specialty),
-      cpfOrNif: DeterministicEncryptionHelper.decryptText(model.cpfOrNif),
-      username: DeterministicEncryptionHelper.decryptText(model.username),
-      // password remains hashed
-    );
+  static Future<EvaluatorModel> decrypt(EvaluatorModel model) async {
+    // No decryption needed as fields are plain text.
+    return model;
   }
 
   static String hash(String input) {
-    return sha256.convert(utf8.encode(input)).toString();
+    // Use BCrypt for password hashing
+    return PasswordHelper.hash(input);
   }
 }

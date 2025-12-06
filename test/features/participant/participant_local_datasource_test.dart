@@ -21,16 +21,12 @@ void main() {
     final db = await TestDatabaseHelper.instance.database;
 
     final id = await dataSource.insertParticipant(db, {
-      ParticipantFields.name: DeterministicEncryptionHelper.encryptText(
-        'Test User',
-      ),
-      ParticipantFields.surname: DeterministicEncryptionHelper.encryptText(
-        'User',
-      ),
+      ParticipantFields.name: 'Test User',
+      ParticipantFields.surname: 'User',
       ParticipantFields.birthDate: '2000-01-01', // must match schema
       ParticipantFields.sex: 1, // assuming numeric enum value
       ParticipantFields.educationLevel: 3, // assuming numeric enum value
-      ParticipantFields.laterality: Laterality.ambidextrous,
+      ParticipantFields.laterality: Laterality.ambidextrous.numericValue,
     });
 
     AppLogger.info('Test inserted participant with id=$id');
