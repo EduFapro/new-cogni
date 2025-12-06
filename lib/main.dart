@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -22,6 +23,14 @@ void main() async {
   MediaKit.ensureInitialized();
   AppLogger.info('MediaKit initialized');
 
+  // 🌍 Load Environment Variables
+  try {
+    await dotenv.load(fileName: ".env");
+    AppLogger.info('✅ Environment variables loaded');
+  } catch (e) {
+    AppLogger.warning('⚠️ Failed to load .env file: $e');
+  }
+
   // 🔐 Initialize encryption helper and connect logger
   await DeterministicEncryptionHelper.init();
   DeterministicEncryptionHelper.configureLogger(
@@ -32,7 +41,11 @@ void main() async {
   await initDatabaseFactory();
 
   FlutterError.onError = (FlutterErrorDetails details) {
-    AppLogger.error('Flutter framework error', details.exception, details.stack);
+    AppLogger.error(
+      'Flutter framework error',
+      details.exception,
+      details.stack,
+    );
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {

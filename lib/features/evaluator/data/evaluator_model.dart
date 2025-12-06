@@ -15,6 +15,7 @@ class EvaluatorModel extends EvaluatorEntity {
     required super.password,
     // Align with DB default (0 → false)
     super.firstLogin = false,
+    super.token,
   });
 
   factory EvaluatorModel.fromMap(Map<String, dynamic> map) => EvaluatorModel(
@@ -28,9 +29,24 @@ class EvaluatorModel extends EvaluatorEntity {
     username: map[EvaluatorFields.username] as String,
     password: map[EvaluatorFields.password] as String,
     firstLogin: (map[EvaluatorFields.firstLogin] as int) == 1,
+    token: map['token'] as String?,
   );
 
   Map<String, dynamic> toMap() => {
+    EvaluatorFields.id: evaluatorId,
+    EvaluatorFields.name: name,
+    EvaluatorFields.surname: surname,
+    EvaluatorFields.email: email,
+    EvaluatorFields.birthDate: birthDate,
+    EvaluatorFields.specialty: specialty,
+    EvaluatorFields.cpf: cpfOrNif,
+    EvaluatorFields.username: username,
+    EvaluatorFields.password: password,
+    EvaluatorFields.firstLogin: firstLogin ? 1 : 0,
+    'token': token,
+  };
+
+  Map<String, dynamic> toEvaluatorTableMap() => {
     EvaluatorFields.id: evaluatorId,
     EvaluatorFields.name: name,
     EvaluatorFields.surname: surname,
@@ -54,6 +70,7 @@ class EvaluatorModel extends EvaluatorEntity {
     'username': username,
     'password': password,
     'firstLogin': firstLogin,
+    'token': token,
   };
 
   factory EvaluatorModel.fromEntity(EvaluatorEntity entity) => EvaluatorModel(
@@ -67,6 +84,7 @@ class EvaluatorModel extends EvaluatorEntity {
     username: entity.username,
     password: entity.password,
     firstLogin: entity.firstLogin,
+    token: entity.token,
   );
 
   factory EvaluatorModel.fromDTO(EvaluatorRegistrationData dto) {
@@ -94,6 +112,7 @@ class EvaluatorModel extends EvaluatorEntity {
     String? username,
     String? password,
     bool? firstLogin,
+    String? token,
   }) {
     return EvaluatorModel(
       evaluatorId: evaluatorId ?? this.evaluatorId,
@@ -106,6 +125,7 @@ class EvaluatorModel extends EvaluatorEntity {
       username: username ?? this.username,
       password: password ?? this.password,
       firstLogin: firstLogin ?? this.firstLogin,
+      token: token ?? this.token,
     );
   }
 }

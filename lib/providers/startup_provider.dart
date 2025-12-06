@@ -4,7 +4,9 @@ import '../../features/evaluator/data/evaluator_local_datasource.dart';
 import '../../seeders/seed_runner.dart';
 import '../features/auth/data/auth_local_datasource.dart';
 import '../features/auth/data/auth_repository_impl.dart';
+import '../features/auth/data/datasources/evaluator_remote_datasource.dart';
 import '../core/database/prod_database_helper.dart';
+import '../core/network.dart';
 import 'providers.dart';
 
 /// The route that the app should navigate to after startup.
@@ -19,10 +21,22 @@ final startupProvider = FutureProvider<String>((ref) async {
     AppLogger.info('[STARTUP] Running database seeder...');
     await SeedRunner().run(db: db);
 
+    // 2.5 Check Backend Mode
+    final network = NetworkService();
+    final status = await network.checkBackendStatus();
+    if (status != null) {
+      final mode = status['mode'];
+      AppLogger.info('🌍 Backend Connected | Mode: $mode');
+    } else {
+      AppLogger.warning('⚠️ Backend unreachable or sync disabled');
+    }
+
     // 3. Initialize Data Sources & Repositories
     final evaluatorDS = EvaluatorLocalDataSource(db);
     final authDS = AuthLocalDataSource(db);
-    final authRepo = AuthRepositoryImpl(authDS);
+    final networkService = NetworkService();
+    final remoteDS = EvaluatorRemoteDataSource(networkService);
+    final authRepo = AuthRepositoryImpl(authDS, remoteDS);
 
     // 4. Check for Auto-Login
     AppLogger.info('[STARTUP] Checking for current user...');

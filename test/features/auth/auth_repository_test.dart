@@ -6,6 +6,15 @@ import 'package:segundo_cogni/features/evaluator/data/evaluator_model.dart';
 import 'package:segundo_cogni/features/evaluator/application/evaluator_secure_service.dart';
 import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
 
+import 'package:segundo_cogni/features/auth/data/datasources/evaluator_remote_datasource.dart';
+
+class MockEvaluatorRemoteDataSource implements EvaluatorRemoteDataSource {
+  @override
+  Future<String?> login(String username, String password) async {
+    return null; // Default to no token for existing tests
+  }
+}
+
 void main() {
   late TestDatabaseHelper dbHelper;
   late AuthLocalDataSource authDataSource;
@@ -27,7 +36,7 @@ void main() {
     // Insert into evaluators table first (needed for login and FK)
     final encrypted = EvaluatorSecureService.encrypt(dummyUser);
     final db = await dbHelper.database;
-    await db.insert('evaluators', encrypted.toMap());
+    await db.insert('evaluators', encrypted.toEvaluatorTableMap());
 
     // Also save as current user
     await authDataSource.saveCurrentUser(dummyUser);
@@ -39,7 +48,10 @@ void main() {
     dbHelper = TestDatabaseHelper.instance;
     final db = await dbHelper.database;
     authDataSource = AuthLocalDataSource(db);
-    authRepository = AuthRepositoryImpl(authDataSource);
+    authRepository = AuthRepositoryImpl(
+      authDataSource,
+      MockEvaluatorRemoteDataSource(),
+    );
   });
 
   tearDown(() async {

@@ -9,6 +9,7 @@ class EvaluatorEntity {
   final String username;
   final String password;
   final bool firstLogin;
+  final String? token;
 
   const EvaluatorEntity({
     this.evaluatorId,
@@ -21,5 +22,6 @@ class EvaluatorEntity {
     required this.username,
     required this.password,
     this.firstLogin = true,
+    this.token,
   });
 }

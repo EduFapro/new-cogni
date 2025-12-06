@@ -24,7 +24,7 @@ Future<void> seedDummyEvaluator(DatabaseExecutor db) async {
 
   await db.insert(
     Tables.evaluators,
-    secured.toMap(),
+    secured.toEvaluatorTableMap(),
     conflictAlgorithm: ConflictAlgorithm.replace,
   );
 

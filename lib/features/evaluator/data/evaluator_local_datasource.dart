@@ -17,7 +17,7 @@ class EvaluatorLocalDataSource {
     final secured = EvaluatorSecureService.encrypt(evaluator);
     await _db.insert(
       Tables.evaluators,
-      secured.toMap(),
+      secured.toEvaluatorTableMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }

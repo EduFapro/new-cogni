@@ -144,4 +144,19 @@ class NetworkService {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>?> checkBackendStatus() async {
+    if (!syncEnabled) return null;
+
+    final url = Uri.parse('$baseUrl/api/status');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      AppLogger.warning('Failed to check backend status: $e');
+    }
+    return null;
+  }
 }
