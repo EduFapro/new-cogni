@@ -54,3 +54,5 @@ project_dart_files.txt
 # Seed generator outputs
 lib/fake_prod_seed.sql
 
+
+logs/

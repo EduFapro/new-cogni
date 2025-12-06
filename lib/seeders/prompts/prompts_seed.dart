@@ -25,26 +25,61 @@ extension TaskPromptEntityMapper on TaskPromptEntity {
   }
 }
 
-Future<void> seedPrompts(DatabaseExecutor  db) async {
+Future<void> seedPrompts(DatabaseExecutor db) async {
   AppLogger.seed('[PROMPTS] Seeding prompts...');
 
   for (final prompt in tasksPromptsList) {
-    final result = await db.query(
+    // 1. Check if a prompt already exists for this task (Unique Constraint on taskID)
+    final existingByTask = await db.query(
+      Tables.taskPrompts,
+      where: '${TaskPromptFields.taskID} = ?',
+      whereArgs: [prompt.taskID],
+    );
+
+    if (existingByTask.isNotEmpty) {
+      final existingPromptID = existingByTask.first[TaskPromptFields.promptID];
+
+      if (existingPromptID == prompt.promptID) {
+        AppLogger.debug(
+          '[PROMPTS] Skipped existing prompt: ${prompt.promptID} (Task ${prompt.taskID})',
+        );
+        continue;
+      } else {
+        // Conflict: Task has a prompt, but ID is different.
+        // Delete the old one to enforce the new seed.
+        await db.delete(
+          Tables.taskPrompts,
+          where: '${TaskPromptFields.taskID} = ?',
+          whereArgs: [prompt.taskID],
+        );
+        AppLogger.warning(
+          '[PROMPTS] Overwriting prompt for task ${prompt.taskID} (ID $existingPromptID -> ${prompt.promptID})',
+        );
+      }
+    }
+
+    // 2. Check if promptID exists (Primary Key) - could happen if reassigning IDs
+    final existingByID = await db.query(
       Tables.taskPrompts,
       where: '${TaskPromptFields.promptID} = ?',
       whereArgs: [prompt.promptID],
     );
 
-    if (result.isEmpty) {
-      await db.insert(Tables.taskPrompts, prompt.toModel().toMap());
-      AppLogger.seed(
-        '[PROMPTS] Seeded prompt: ${prompt.promptID} → ${prompt.filePath}',
-      );
-    } else {
-      AppLogger.debug(
-        '[PROMPTS] Skipped existing prompt: ${prompt.promptID}',
+    if (existingByID.isNotEmpty) {
+      // ID exists but taskID was different (otherwise caught in step 1).
+      // Delete to avoid PK violation.
+      await db.delete(
+        Tables.taskPrompts,
+        where: '${TaskPromptFields.promptID} = ?',
+        whereArgs: [prompt.promptID],
       );
     }
+
+    // 3. Insert
+    await db.insert(Tables.taskPrompts, prompt.toModel().toMap());
+    AppLogger.seed(
+      '[PROMPTS] Seeded prompt: ${prompt.promptID} → ${prompt.filePath}',
+    );
   }
 
   AppLogger.seed('[PROMPTS] Done seeding prompts.');
