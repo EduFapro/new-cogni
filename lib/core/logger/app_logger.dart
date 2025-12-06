@@ -1,8 +1,12 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AppLogger {
   static final bool _isRelease = kReleaseMode;
+  static File? _logFile;
 
   static final Logger _logger = Logger(
     printer: PrettyPrinter(
@@ -19,6 +23,52 @@ class AppLogger {
   static void Function(String message, dynamic error, StackTrace? stack)?
   _onError;
 
+  static Future<void> init() async {
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      final logsDir = Directory('${docsDir.path}/Cognivoice/logs');
+      if (!await logsDir.exists()) {
+        await logsDir.create(recursive: true);
+      }
+
+      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      _logFile = File('${logsDir.path}/log_$date.txt');
+
+      info('📝 Log file initialized: ${_logFile!.path}');
+    } catch (e) {
+      print('❌ Failed to initialize log file: $e');
+    }
+  }
+
+  static void _writeToFile(
+    String level,
+    String message, [
+    dynamic error,
+    StackTrace? stack,
+  ]) {
+    if (_logFile == null) return;
+
+    try {
+      final time = DateFormat('HH:mm:ss').format(DateTime.now());
+      final logEntry = StringBuffer('[$time] [$level] $message\n');
+
+      if (error != null) {
+        logEntry.writeln('Error: $error');
+      }
+      if (stack != null) {
+        logEntry.writeln('Stack trace:\n$stack');
+      }
+
+      _logFile!.writeAsStringSync(
+        logEntry.toString(),
+        mode: FileMode.append,
+        flush: true,
+      );
+    } catch (e) {
+      print('❌ Failed to write to log file: $e');
+    }
+  }
+
   static void redirect(
     void Function(String) onLog,
     void Function(String, dynamic, StackTrace?) onError,
@@ -28,6 +78,7 @@ class AppLogger {
   }
 
   static void info(String message) {
+    _writeToFile('INFO', message);
     if (_onLog != null) {
       _onLog!(message);
       return;
@@ -37,6 +88,7 @@ class AppLogger {
   }
 
   static void debug(String message) {
+    _writeToFile('DEBUG', message);
     if (_onLog != null) {
       _onLog!(message);
       return;
@@ -46,6 +98,7 @@ class AppLogger {
   }
 
   static void warning(String message) {
+    _writeToFile('WARNING', message);
     if (_onLog != null) {
       _onLog!(message);
       return;
@@ -55,6 +108,7 @@ class AppLogger {
   }
 
   static void error(String message, [dynamic error, StackTrace? stack]) {
+    _writeToFile('ERROR', message, error, stack);
     if (_onError != null) {
       _onError!(message, error, stack);
       return;
@@ -64,6 +118,7 @@ class AppLogger {
   }
 
   static void db(String message) {
+    _writeToFile('DB', message);
     if (_onLog != null) {
       _onLog!('[DB] $message');
       return;
@@ -73,6 +128,7 @@ class AppLogger {
   }
 
   static void nav(String message) {
+    _writeToFile('NAV', message);
     if (_onLog != null) {
       _onLog!('[NAV] $message');
       return;
@@ -82,6 +138,7 @@ class AppLogger {
   }
 
   static void trace(String message) {
+    _writeToFile('TRACE', message);
     if (_onLog != null) {
       _onLog!(message);
       return;
@@ -91,6 +148,7 @@ class AppLogger {
   }
 
   static void seed(String message) {
+    _writeToFile('SEED', message);
     if (_onLog != null) {
       _onLog!('[SEED] $message');
       return;

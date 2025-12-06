@@ -19,6 +19,7 @@ Future<void> initDatabaseFactory() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppLogger.init();
   AppLogger.info('Flutter bindings initialized');
   MediaKit.ensureInitialized();
   AppLogger.info('MediaKit initialized');
