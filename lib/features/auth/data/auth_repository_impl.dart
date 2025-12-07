@@ -7,6 +7,8 @@ import '../../../../shared/utils/password_helper.dart';
 import '../../../../core/network.dart';
 import '../../../../core/environment.dart';
 
+import '../../../../shared/utils/jwt_helper.dart';
+
 class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSource _local;
   final EvaluatorRemoteDataSource _remote;
@@ -22,6 +24,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // 1. Try Remote Login (Only if NOT offline)
     String? token;
+    EvaluatorModel? remoteUser;
+
     if (_env != AppEnv.offline) {
       try {
         token = await _remote.login(emailOrUsername, password);
@@ -30,19 +34,39 @@ class AuthRepositoryImpl implements AuthRepository {
           print(
             '[AuthRepositoryImpl] ☁️ Remote login successful. Token received.',
           );
+
+          // Sync Remote User to Local DB
+          final userId = JwtHelper.getUserId(token);
+          if (userId != null) {
+            final userData = await _remote.getEvaluatorById(userId);
+            if (userData != null) {
+              remoteUser = EvaluatorModel.fromJson(
+                userData,
+              ).copyWith(token: token);
+              // Save/Update local DB with remote data
+              await _local.saveCurrentUser(remoteUser);
+              print('[AuthRepositoryImpl] 🔄 Synced remote user to local DB.');
+            }
+          }
         } else {
           print(
             '[AuthRepositoryImpl] ☁️ Remote login failed or returned no token.',
           );
+          // CRITICAL: If remote login fails in online mode, DO NOT FALLBACK.
+          // This prevents "ghost" logins when backend is down or credentials are wrong on backend.
+          return null;
         }
       } catch (e) {
         print('[AuthRepositoryImpl] ⚠️ Remote login error: $e');
+        // CRITICAL: If connection error occurs in online mode, DO NOT FALLBACK.
+        return null;
       }
     } else {
       print('[AuthRepositoryImpl] 📴 Offline mode: Skipping remote login.');
     }
 
     // 2. Local Lookup (Fallback or Sync)
+    // If we just synced the user, this will find it.
     final evaluator = await _local.getEvaluatorByEmail(emailOrUsername);
 
     if (evaluator == null) {
@@ -52,17 +76,23 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     }
 
-    // Verify password using BCrypt
-    if (!PasswordHelper.verify(password, evaluator.password)) {
-      print('[AuthRepositoryImpl] ❌ Password mismatch');
-      return null;
+    // Verify password using BCrypt (only if not already verified by remote)
+    // If we have a remote token, we know the password is correct for the remote user.
+    // However, to be safe and consistent, we can check local password hash.
+    // BUT, if we just synced, the password hash from remote might be different or we might have just saved it.
+    // If remote login succeeded (token != null), we can skip local password check OR ensure we updated the password hash.
+
+    if (token == null) {
+      if (!PasswordHelper.verify(password, evaluator.password)) {
+        print('[AuthRepositoryImpl] ❌ Password mismatch');
+        return null;
+      }
     }
 
-    print('[AuthRepositoryImpl] ✅ Local Login successful');
+    print('[AuthRepositoryImpl] ✅ Login successful');
 
-    // 3. Update Token if Remote Login Succeeded
-    if (token != null) {
-      _network.setToken(token);
+    // 3. Update Token if Remote Login Succeeded (Redundant if we synced above, but safe)
+    if (token != null && evaluator.token != token) {
       final updatedEvaluator = evaluator.copyWith(token: token);
       await _local.saveCurrentUser(updatedEvaluator);
       return updatedEvaluator;

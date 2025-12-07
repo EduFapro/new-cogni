@@ -274,7 +274,7 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                                   );
                                 }
                               },
-                              child: const Text(
+                              child: Text(
                                 'Baixar Gravações',
                                 style: TextStyle(
                                   color: Colors.purple,

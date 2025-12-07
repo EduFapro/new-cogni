@@ -26,4 +26,22 @@ class EvaluatorRemoteDataSource {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getEvaluatorById(int id) async {
+    try {
+      final response = await _network.get('/api/evaluators/$id');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        AppLogger.warning(
+          'Failed to fetch remote evaluator: ${response.statusCode}',
+        );
+        return null;
+      }
+    } catch (e) {
+      AppLogger.error('Error fetching remote evaluator', e);
+      return null;
+    }
+  }
 }

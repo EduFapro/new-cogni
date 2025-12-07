@@ -15,6 +15,11 @@ class MockEvaluatorRemoteDataSource implements EvaluatorRemoteDataSource {
   Future<String?> login(String username, String password) async {
     return null; // Default to no token for existing tests
   }
+
+  @override
+  Future<Map<String, dynamic>?> getEvaluatorById(int id) async {
+    return null;
+  }
 }
 
 class MockNetworkService extends NetworkService {

@@ -79,15 +79,16 @@ class SplashScreen extends HookConsumerWidget {
         : const AsyncValue.loading();
 
     // Listen for changes to navigate once ready
-    ref.listen<AsyncValue<String>>(startupProvider, (previous, next) {
-      if (!cleanupChecked.value) return; // Don't navigate before cleanup check
-
-      next.whenData((route) {
-        if (context.mounted) {
-          context.go(route);
-        }
+    // Listen for changes to navigate once ready
+    if (cleanupChecked.value) {
+      ref.listen<AsyncValue<String>>(startupProvider, (previous, next) {
+        next.whenData((route) {
+          if (context.mounted) {
+            context.go(route);
+          }
+        });
       });
-    });
+    }
 
     return NavigationView(
       content: ScaffoldPage(

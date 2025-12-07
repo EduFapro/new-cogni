@@ -25,18 +25,28 @@ class AppLogger {
 
   static Future<void> init() async {
     try {
+      debugPrint('🔄 Initializing AppLogger...');
       final docsDir = await getApplicationDocumentsDirectory();
-      final logsDir = Directory('${docsDir.path}/Cognivoice/logs');
+      final sep = Platform.pathSeparator;
+      // Use 'NovoCogni' to avoid conflict with legacy 'Cognivoice' folder cleanup
+      final logsDir = Directory('${docsDir.path}${sep}NovoCogni${sep}logs');
+
       if (!await logsDir.exists()) {
         await logsDir.create(recursive: true);
       }
 
-      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      _logFile = File('${logsDir.path}/log_$date.txt');
+      final date = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
+      _logFile = File('${logsDir.path}${sep}log_$date.txt');
 
-      info('📝 Log file initialized: ${_logFile!.path}');
+      // Force create file if it doesn't exist
+      if (!await _logFile!.exists()) {
+        await _logFile!.create();
+      }
+
+      debugPrint('✅ Log file initialized at: ${_logFile!.path}');
+      info('=== Application Started ===');
     } catch (e) {
-      print('❌ Failed to initialize log file: $e');
+      debugPrint('❌ Failed to initialize log file: $e');
     }
   }
 

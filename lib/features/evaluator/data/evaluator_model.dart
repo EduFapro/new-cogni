@@ -32,6 +32,20 @@ class EvaluatorModel extends EvaluatorEntity {
     token: map['token'] as String?,
   );
 
+  factory EvaluatorModel.fromJson(Map<String, dynamic> json) => EvaluatorModel(
+    evaluatorId: json['id'] as int?,
+    name: json['name'] as String,
+    surname: json['surname'] as String,
+    email: json['email'] as String,
+    birthDate: json['birthDate'] as String,
+    specialty: json['specialty'] as String,
+    cpfOrNif: json['cpfOrNif'] as String,
+    username: json['username'] as String,
+    password: json['password'] as String,
+    firstLogin: json['firstLogin'] as bool? ?? false,
+    token: json['token'] as String?,
+  );
+
   Map<String, dynamic> toMap() => {
     EvaluatorFields.id: evaluatorId,
     EvaluatorFields.name: name,
