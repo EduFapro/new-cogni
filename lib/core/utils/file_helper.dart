@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../shared/encryption/file_encryption_helper.dart';
+import 'package:path/path.dart' as p;
 import '../../features/recording_file/domain/recording_file_entity.dart';
 
 Future<void> exportParticipantsToExcel(
@@ -247,13 +248,13 @@ Future<void> downloadRecordingsForParticipant(
       final parentDir = encryptedFile.parent; // .encrypted
       final grandParentDir = parentDir.parent; // Paciente_Name
 
-      // Original filename without .enc
-      // If path is .../file.aac.enc, basename is file.aac.enc
-      // We want file.aac
-      final filenameEnc = encryptedPath.split(Platform.pathSeparator).last;
+      // Use package:path to safely extract the filename
+      // This handles both / and \ separators correctly
+      final filenameEnc = p.basename(encryptedPath);
       final filename = filenameEnc.replaceAll('.enc', '');
 
-      final destinationPath = '${grandParentDir.path}/$filename';
+      // Use p.join to construct the destination path safely
+      final destinationPath = p.join(grandParentDir.path, filename);
 
       try {
         await FileEncryptionHelper.decryptFile(encryptedPath, destinationPath);

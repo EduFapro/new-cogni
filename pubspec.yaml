@@ -34,6 +34,7 @@ dependencies:
   # Option B: video_player(+win) if you want it
   video_player:
   video_player_win:
+  path: ^1.9.1
 
 dependency_overrides:
   math_expressions:
