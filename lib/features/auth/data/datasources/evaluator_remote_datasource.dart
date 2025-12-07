@@ -10,7 +10,8 @@ class EvaluatorRemoteDataSource {
   Future<String?> login(String username, String password) async {
     try {
       final response = await _network.post('/api/evaluators/login', {
-        'username': username,
+        'email':
+            username, // The argument is still named username in the method, but we send it as 'email'
         'password': password,
       });
 
