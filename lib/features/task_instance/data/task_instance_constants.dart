@@ -7,18 +7,25 @@ class TaskInstanceFields {
   static const taskId = TaskFields.id;
   static const moduleInstanceId = ModuleInstanceFields.id;
   static const status = 'status';
-  static const completingTime = 'task_completing_time';
+  static const executionDuration = 'execution_duration';
 
-  static const values = [id, taskId, moduleInstanceId, status, completingTime];
+  static const values = [
+    id,
+    taskId,
+    moduleInstanceId,
+    status,
+    executionDuration,
+  ];
 }
 
-final scriptCreateTableTaskInstances = '''
+final scriptCreateTableTaskInstances =
+    '''
 CREATE TABLE ${Tables.taskInstances} (
   ${TaskInstanceFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${TaskInstanceFields.taskId} INTEGER NOT NULL,
   ${TaskInstanceFields.moduleInstanceId} INTEGER NOT NULL,
   ${TaskInstanceFields.status} INT NOT NULL CHECK(${TaskInstanceFields.status} IN (1, 2, 3)),
-  ${TaskInstanceFields.completingTime} TEXT,
+  ${TaskInstanceFields.executionDuration} TEXT,
   FOREIGN KEY (${TaskInstanceFields.taskId}) REFERENCES ${Tables.tasks}(${TaskFields.id}),
   FOREIGN KEY (${TaskInstanceFields.moduleInstanceId}) REFERENCES ${Tables.moduleInstances}(${ModuleInstanceFields.id})
 )

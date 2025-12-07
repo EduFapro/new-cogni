@@ -10,11 +10,13 @@ class MediaRecordTaskScreen extends StatefulWidget {
   final String videoAssetPath;
   final void Function(String recordingPath, Duration duration)?
   onRecordingFinished;
+  final Duration? maxDuration;
 
   const MediaRecordTaskScreen({
     super.key,
     required this.videoAssetPath,
     this.onRecordingFinished,
+    this.maxDuration,
   });
 
   @override
@@ -75,6 +77,7 @@ class _MediaRecordTaskScreenState extends State<MediaRecordTaskScreen> {
         autoStart: true,
         onRecordingFinished: _onRecordingFinished,
         onQuit: _onQuit,
+        maxDuration: widget.maxDuration,
       );
     }
 

@@ -66,7 +66,7 @@ void main() {
       authDataSource,
       MockEvaluatorRemoteDataSource(),
       mockNetworkService,
-      AppEnv.local,
+      AppEnv.offline,
     );
   });
 

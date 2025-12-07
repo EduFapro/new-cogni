@@ -44,15 +44,35 @@ Future<void> main() async {
   var nextRecordingId = 1;
 
   final firstNames = [
-    'Ana', 'Bruno', 'Carla', 'Diego', 'Eduarda',
-    'Felipe', 'Gabriela', 'Henrique', 'Isabela', 'João',
-    'Karen', 'Lucas', 'Marina', 'Nicolas', 'Otávio',
-    'Patrícia', 'Rafael', 'Sara',
+    'Ana',
+    'Bruno',
+    'Carla',
+    'Diego',
+    'Eduarda',
+    'Felipe',
+    'Gabriela',
+    'Henrique',
+    'Isabela',
+    'João',
+    'Karen',
+    'Lucas',
+    'Marina',
+    'Nicolas',
+    'Otávio',
+    'Patrícia',
+    'Rafael',
+    'Sara',
   ];
 
   final lastNames = [
-    'Silva', 'Pereira', 'Souza', 'Oliveira',
-    'Almeida', 'Costa', 'Lima', 'Gomes',
+    'Silva',
+    'Pereira',
+    'Souza',
+    'Oliveira',
+    'Almeida',
+    'Costa',
+    'Lima',
+    'Gomes',
   ];
 
   String pick(List<String> list, Random r) => list[r.nextInt(list.length)];
@@ -66,19 +86,25 @@ Future<void> main() async {
     final id = nextEvaluatorId++;
     final name = pick(firstNames, random);
     final surname = pick(lastNames, random);
-    final email = '${name.toLowerCase()}.${surname.toLowerCase()}$id@example.com';
+    final email =
+        '${name.toLowerCase()}.${surname.toLowerCase()}$id@example.com';
     final username = '${name[0].toLowerCase()}${surname.toLowerCase()}$id';
     const passwordPlain = '0000';
 
-    final birthDate = _formatDate(DateTime(
-      1970 + random.nextInt(25),
-      1 + random.nextInt(12),
-      1 + random.nextInt(28),
-    ));
+    final birthDate = _formatDate(
+      DateTime(
+        1970 + random.nextInt(25),
+        1 + random.nextInt(12),
+        1 + random.nextInt(28),
+      ),
+    );
 
     final specialtyOptions = [
-      'Geriatria', 'Neurologia', 'Psiquiatria',
-      'Neuropsicologia', 'Fonoaudiologia',
+      'Geriatria',
+      'Neurologia',
+      'Psiquiatria',
+      'Neuropsicologia',
+      'Fonoaudiologia',
     ];
     final specialty = pick(specialtyOptions, random);
     final cpf = '000000000$id';
@@ -97,19 +123,20 @@ Future<void> main() async {
     final encSpecialty = DeterministicEncryptionHelper.encryptText(specialty);
     final encCpf = DeterministicEncryptionHelper.encryptText(cpf);
     final encUsername = DeterministicEncryptionHelper.encryptText(username);
-    final hashedPassword =
-    DeterministicEncryptionHelper.hashPassword(passwordPlain);
+    final hashedPassword = DeterministicEncryptionHelper.hashPassword(
+      passwordPlain,
+    );
 
     buffer.writeln(
       'INSERT INTO ${Tables.evaluators} ('
-          '${EvaluatorFields.id}, ${EvaluatorFields.name}, ${EvaluatorFields.surname}, '
-          '${EvaluatorFields.email}, ${EvaluatorFields.birthDate}, '
-          '${EvaluatorFields.specialty}, ${EvaluatorFields.cpf}, '
-          '${EvaluatorFields.username}, ${EvaluatorFields.password}, '
-          '${EvaluatorFields.firstLogin}, ${EvaluatorFields.isAdmin}) VALUES ('
-          '$id, ${_q(encName)}, ${_q(encSurname)}, ${_q(encEmail)}, '
-          '${_q(encBirthDate)}, ${_q(encSpecialty)}, ${_q(encCpf)}, '
-          '${_q(encUsername)}, ${_q(hashedPassword)}, 0, $isAdmin);',
+      '${EvaluatorFields.id}, ${EvaluatorFields.name}, ${EvaluatorFields.surname}, '
+      '${EvaluatorFields.email}, ${EvaluatorFields.birthDate}, '
+      '${EvaluatorFields.specialty}, ${EvaluatorFields.cpf}, '
+      '${EvaluatorFields.username}, ${EvaluatorFields.password}, '
+      '${EvaluatorFields.firstLogin}, ${EvaluatorFields.isAdmin}) VALUES ('
+      '$id, ${_q(encName)}, ${_q(encSurname)}, ${_q(encEmail)}, '
+      '${_q(encBirthDate)}, ${_q(encSpecialty)}, ${_q(encCpf)}, '
+      '${_q(encUsername)}, ${_q(hashedPassword)}, 0, $isAdmin);',
     );
   }
 
@@ -142,11 +169,11 @@ Future<void> main() async {
       // Participant row
       buffer.writeln(
         'INSERT INTO ${Tables.participants} ('
-            '${ParticipantFields.id}, ${ParticipantFields.name}, ${ParticipantFields.surname}, '
-            '${ParticipantFields.educationLevel}, ${ParticipantFields.sex}, '
-            '${ParticipantFields.birthDate}, ${ParticipantFields.laterality}) VALUES ('
-            '$participantId, ${_q(encPName)}, ${_q(encPSurname)}, '
-            '$educationLevel, $sex, ${_q(birthDate)}, $laterality);',
+        '${ParticipantFields.id}, ${ParticipantFields.name}, ${ParticipantFields.surname}, '
+        '${ParticipantFields.educationLevel}, ${ParticipantFields.sex}, '
+        '${ParticipantFields.birthDate}, ${ParticipantFields.laterality}) VALUES ('
+        '$participantId, ${_q(encPName)}, ${_q(encPSurname)}, '
+        '$educationLevel, $sex, ${_q(birthDate)}, $laterality);',
       );
 
       // ----- Evaluation row -----
@@ -167,12 +194,12 @@ Future<void> main() async {
 
       buffer.writeln(
         'INSERT INTO ${Tables.evaluations} ('
-            '${EvaluationFields.id}, ${EvaluationFields.date}, '
-            '${EvaluationFields.evaluatorId}, ${EvaluationFields.participantId}, '
-            '${EvaluationFields.status}, ${EvaluationFields.language}) VALUES ('
-            '$evalId, ${_q(evalDateStr)}, '
-            '$evaluatorId, $participantId, '
-            '$evalStatus, $language);',
+        '${EvaluationFields.id}, ${EvaluationFields.date}, '
+        '${EvaluationFields.evaluatorId}, ${EvaluationFields.participantId}, '
+        '${EvaluationFields.status}, ${EvaluationFields.language}) VALUES ('
+        '$evalId, ${_q(evalDateStr)}, '
+        '$evaluatorId, $participantId, '
+        '$evalStatus, $language);',
       );
 
       // ----- Module instances + task instances + recordings -----
@@ -183,29 +210,32 @@ Future<void> main() async {
         // module_instance row
         buffer.writeln(
           'INSERT INTO ${Tables.moduleInstances} ('
-              '${ModuleInstanceFields.id}, ${ModuleInstanceFields.moduleId}, '
-              '${ModuleInstanceFields.evaluationId}, ${ModuleInstanceFields.status}) VALUES ('
-              '$moduleInstId, ${module.moduleID}, $evalId, $moduleStatus);',
+          '${ModuleInstanceFields.id}, ${ModuleInstanceFields.moduleId}, '
+          '${ModuleInstanceFields.evaluationId}, ${ModuleInstanceFields.status}) VALUES ('
+          '$moduleInstId, ${module.moduleID}, $evalId, $moduleStatus);',
         );
 
         // tasks of this module
-        final moduleTasks = tasksByModule[module.moduleID] ?? const <TaskEntity>[];
+        final moduleTasks =
+            tasksByModule[module.moduleID] ?? const <TaskEntity>[];
 
         for (final task in moduleTasks) {
           final taskInstId = nextTaskInstanceId++;
           final taskStatus = _randomTaskStatus(random); // 0 or 1
-          final completingSeconds =
-          _randomCompletingTime(random, task.taskMode);
+          final completingSeconds = _randomCompletingTime(
+            random,
+            task.taskMode,
+          );
           final completingStr = completingSeconds.toString();
 
           // task_instance
           buffer.writeln(
             'INSERT INTO ${Tables.taskInstances} ('
-                '${TaskInstanceFields.id}, ${TaskInstanceFields.taskId}, '
-                '${TaskInstanceFields.moduleInstanceId}, '
-                '${TaskInstanceFields.status}, ${TaskInstanceFields.completingTime}) VALUES ('
-                '$taskInstId, ${task.taskID}, $moduleInstId, '
-                '$taskStatus, ${_q(completingStr)});',
+            '${TaskInstanceFields.id}, ${TaskInstanceFields.taskId}, '
+            '${TaskInstanceFields.moduleInstanceId}, '
+            '${TaskInstanceFields.status}, ${TaskInstanceFields.executionDuration}) VALUES ('
+            '$taskInstId, ${task.taskID}, $moduleInstId, '
+            '$taskStatus, ${_q(completingStr)});',
           );
 
           // dummy recording row
@@ -215,9 +245,9 @@ Future<void> main() async {
 
           buffer.writeln(
             'INSERT INTO ${Tables.recordings} ('
-                '${RecordingFileFields.id}, ${RecordingFileFields.taskInstanceId}, '
-                '${RecordingFileFields.filePath}) VALUES ('
-                '$recordingId, $taskInstId, ${_q(path)});',
+            '${RecordingFileFields.id}, ${RecordingFileFields.taskInstanceId}, '
+            '${RecordingFileFields.filePath}) VALUES ('
+            '$recordingId, $taskInstId, ${_q(path)});',
           );
         }
       }
@@ -237,14 +267,14 @@ String _q(String s) => "'${s.replaceAll("'", "''")}'";
 
 String _formatDate(DateTime dt) =>
     '${dt.year.toString().padLeft(4, '0')}-'
-        '${dt.month.toString().padLeft(2, '0')}-'
-        '${dt.day.toString().padLeft(2, '0')}';
+    '${dt.month.toString().padLeft(2, '0')}-'
+    '${dt.day.toString().padLeft(2, '0')}';
 
 String _formatDateTime(DateTime dt) =>
     '${_formatDate(dt)} '
-        '${dt.hour.toString().padLeft(2, '0')}:'
-        '${dt.minute.toString().padLeft(2, '0')}:'
-        '${dt.second.toString().padLeft(2, '0')}';
+    '${dt.hour.toString().padLeft(2, '0')}:'
+    '${dt.minute.toString().padLeft(2, '0')}:'
+    '${dt.second.toString().padLeft(2, '0')}';
 
 int _randomStatus123(Random r) {
   final roll = r.nextInt(100);

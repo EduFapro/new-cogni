@@ -48,7 +48,7 @@ extension TaskEntityMapper on TaskEntity {
       position: position,
       imageAssetPath: imageAssetPath,
       videoAssetPath: videoAssetPath,
-      timeForCompletion: timeForCompletion,
+      maxDuration: maxDuration,
       mayRepeatPrompt: mayRepeatPrompt,
       testOnly: testOnly,
     );

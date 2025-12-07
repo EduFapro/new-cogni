@@ -128,7 +128,7 @@ Future<void> exportSingleParticipantToExcel(
           final taskStatus = task.status == TaskStatus.completed
               ? 'Concluída'
               : 'Pendente';
-          final time = task.completingTime ?? '-';
+          final time = task.executionDuration ?? '-';
 
           sheet.appendRow([
             TextCellValue(moduleTitle),

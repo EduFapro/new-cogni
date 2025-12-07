@@ -6,7 +6,7 @@ class TaskInstanceEntity {
   final int taskId;
   final int moduleInstanceId;
   final TaskStatus status;
-  final String? completingTime;
+  final String? executionDuration;
   final TaskEntity? task;
 
   const TaskInstanceEntity({
@@ -14,7 +14,7 @@ class TaskInstanceEntity {
     required this.taskId,
     required this.moduleInstanceId,
     this.status = TaskStatus.pending,
-    this.completingTime,
+    this.executionDuration,
     this.task,
   });
 
@@ -23,7 +23,7 @@ class TaskInstanceEntity {
     int? taskId,
     int? moduleInstanceId,
     TaskStatus? status,
-    String? completingTime,
+    String? executionDuration,
     TaskEntity? task,
   }) {
     return TaskInstanceEntity(
@@ -31,14 +31,14 @@ class TaskInstanceEntity {
       taskId: taskId ?? this.taskId,
       moduleInstanceId: moduleInstanceId ?? this.moduleInstanceId,
       status: status ?? this.status,
-      completingTime: completingTime ?? this.completingTime,
+      executionDuration: executionDuration ?? this.executionDuration,
       task: task ?? this.task,
     );
   }
 
   @override
   String toString() =>
-      'TaskInstanceEntity(id: $id, taskId: $taskId, moduleInstanceId: $moduleInstanceId, status: $status, completingTime: $completingTime)';
+      'TaskInstanceEntity(id: $id, taskId: $taskId, moduleInstanceId: $moduleInstanceId, status: $status, executionDuration: $executionDuration)';
 
   // For sending to backend API
   Map<String, dynamic> toJsonForApi() => {
@@ -46,7 +46,7 @@ class TaskInstanceEntity {
     'taskId': taskId,
     'moduleInstanceId': moduleInstanceId,
     'status': status.numericValue,
-    if (completingTime != null) 'completingTime': completingTime,
+    if (executionDuration != null) 'executionDuration': executionDuration,
   };
 
   // For receiving from backend API
@@ -56,7 +56,7 @@ class TaskInstanceEntity {
       taskId: json['taskId'] as int,
       moduleInstanceId: json['moduleInstanceId'] as int,
       status: TaskStatus.fromValue(json['status'] as int),
-      completingTime: json['completingTime'] as String?,
+      executionDuration: json['executionDuration'] as String?,
     );
   }
 }

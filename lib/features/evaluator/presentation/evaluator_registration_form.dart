@@ -2,13 +2,14 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/logger/app_logger.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../domain/evaluator_registration_data.dart';
 import 'evaluator_registration_provider.dart';
+import '../../../../shared/widgets/custom_date_picker.dart';
 
 class EvaluatorRegistrationForm extends HookConsumerWidget {
   const EvaluatorRegistrationForm({super.key});
@@ -91,7 +92,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
     );
 
     Future<void> _submit() async {
-      if (!formKey.currentState!.validate() || selectedDate.value == null) {
+      if (!formKey.currentState!.validate()) {
         AppLogger.warning('Registration form validation failed');
         return;
       }
@@ -220,29 +221,12 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
             // date picker
             InfoLabel(
               label: "Data de Nascimento",
-              child: Expander(
-                key: ValueKey(isDateExpanded.value),
-                initiallyExpanded: isDateExpanded.value,
-                onStateChanged: (open) => isDateExpanded.value = open,
-                header: Text(
-                  selectedDate.value != null
-                      ? DateFormat('dd/MM/yyyy').format(selectedDate.value!)
-                      : "Selecionar data",
-                ),
-                content: SfDateRangePicker(
-                  onSelectionChanged: (args) {
-                    selectedDate.value = args.value;
-                    isDateExpanded.value = false;
-                    AppLogger.debug(
-                      'Selected birth date: ${selectedDate.value}',
-                    );
-                  },
-                  selectionMode: DateRangePickerSelectionMode.single,
-                  initialSelectedDate: selectedDate.value,
-                  showNavigationArrow: true,
-                  todayHighlightColor: AppColors.primary,
-                  selectionColor: AppColors.primary,
-                ),
+              child: DatePicker(
+                selected: selectedDate.value,
+                onChanged: (date) {
+                  selectedDate.value = date;
+                  AppLogger.debug('Selected birth date: ${selectedDate.value}');
+                },
               ),
             ),
 
@@ -267,14 +251,19 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    String? Function(String?)? validator,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InfoLabel(
         label: label,
         child: TextFormBox(
           controller: controller,
-          validator: (v) => v!.isEmpty ? "Campo obrigatório" : null,
+          validator:
+              validator ?? (v) => v!.isEmpty ? "$label é obrigatório" : null,
         ),
       ),
     );
@@ -293,12 +282,12 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
         obscureText: !show.value,
         placeholder: label == "Senha" ? "Digite a senha" : "Repita a senha",
         validator: (v) {
-          if (v == null || v.isEmpty) return "Campo obrigatório";
+          if (v == null || v.isEmpty) return "$label é obrigatório";
           if (label == "Confirmar Senha" && v != confirm?.text) {
             return "As senhas não coincidem";
           }
           if (label == "Senha" && v.length < 6) {
-            return "Mínimo 6 caracteres";
+            return "A senha deve ter pelo menos 6 caracteres";
           }
           return null;
         },

@@ -8,11 +8,13 @@ class ImageRecordTaskScreen extends StatelessWidget {
   final String imageAssetPath;
   final void Function(String recordingPath, Duration duration)?
   onRecordingFinished;
+  final Duration? maxDuration;
 
   const ImageRecordTaskScreen({
     super.key,
     required this.imageAssetPath,
     this.onRecordingFinished,
+    this.maxDuration,
   });
 
   @override
@@ -22,6 +24,7 @@ class ImageRecordTaskScreen extends StatelessWidget {
       bottomOverlay: RecorderWidget(
         onRecordingFinished: (file, duration) =>
             onRecordingFinished?.call(file.path, duration),
+        maxDuration: maxDuration,
       ),
     );
   }

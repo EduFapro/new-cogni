@@ -10,7 +10,7 @@ class TaskFields {
   static const position = 'position';
   static const imagePath = 'image_path';
   static const videoPath = 'video_path';
-  static const timeForCompletion = 'time_for_completion';
+  static const maxDuration = 'max_duration';
   static const mayRepeatPrompt = 'may_repeat_prompt';
   static const testOnly = 'test_only';
 
@@ -23,7 +23,7 @@ class TaskFields {
     position,
     imagePath,
     videoPath,
-    timeForCompletion,
+    maxDuration,
     mayRepeatPrompt,
     testOnly,
   ];
@@ -42,7 +42,7 @@ CREATE TABLE ${Tables.tasks} (
   ${TaskFields.videoPath} TEXT,
   ${TaskFields.mayRepeatPrompt} INTEGER NOT NULL,
   ${TaskFields.testOnly} INTEGER NOT NULL,
-  ${TaskFields.timeForCompletion} INTEGER NOT NULL,
+  ${TaskFields.maxDuration} INTEGER NOT NULL,
   FOREIGN KEY (${TaskFields.moduleId}) REFERENCES ${Tables.modules}(${ModuleFields.id}),
   CHECK(${TaskFields.mode} >= 0 AND ${TaskFields.mode} <= 1),
   CHECK(${TaskFields.mayRepeatPrompt} >= 0 AND ${TaskFields.mayRepeatPrompt} <= 1)

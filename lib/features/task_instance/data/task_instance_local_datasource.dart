@@ -180,7 +180,7 @@ class TaskInstanceLocalDataSource {
       final db = await _db;
       final map = {
         TaskInstanceFields.status: TaskStatus.completed.numericValue,
-        if (duration != null) TaskInstanceFields.completingTime: duration,
+        if (duration != null) TaskInstanceFields.executionDuration: duration,
       };
       final rows = await db.update(
         Tables.taskInstances,

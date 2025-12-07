@@ -14,6 +14,7 @@ import '../../module/data/module_local_datasource.dart';
 import '../../module/domain/module_entity.dart';
 import '../domain/participant_entity.dart';
 import '../../home/home_providers.dart'; // ✅ Added import
+import '../../../shared/widgets/custom_date_picker.dart';
 
 class ParticipantRegistrationForm extends HookConsumerWidget {
   const ParticipantRegistrationForm({super.key});
@@ -271,8 +272,9 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
           InfoLabel(
             label: 'Data de Nascimento',
-            child: DatePicker(
+            child: CustomDatePicker(
               selected: birthDate.value,
+              allowManual: true,
               onChanged: (date) => birthDate.value = date,
             ),
           ),
@@ -322,8 +324,9 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
 
           InfoLabel(
             label: 'Data da Avaliação (opcional)',
-            child: DatePicker(
+            child: CustomDatePicker(
               selected: evaluationDate.value,
+              allowManual: true,
               onChanged: (date) => evaluationDate.value = date,
             ),
           ),

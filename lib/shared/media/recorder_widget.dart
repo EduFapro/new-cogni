@@ -10,12 +10,14 @@ class RecorderWidget extends StatefulWidget {
   onRecordingFinished;
   final VoidCallback? onQuit;
   final bool autoStart;
+  final Duration? maxDuration;
 
   const RecorderWidget({
     super.key,
     this.onRecordingFinished,
     this.onQuit,
     this.autoStart = false,
+    this.maxDuration,
   });
 
   @override
@@ -109,6 +111,10 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() => _elapsed += const Duration(seconds: 1));
+
+      if (widget.maxDuration != null && _elapsed >= widget.maxDuration!) {
+        _stopRecording();
+      }
     });
   }
 

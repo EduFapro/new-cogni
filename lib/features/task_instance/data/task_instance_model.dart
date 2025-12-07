@@ -10,7 +10,7 @@ class TaskInstanceModel extends TaskInstanceEntity {
     required super.taskId,
     required super.moduleInstanceId,
     required super.status,
-    super.completingTime,
+    super.executionDuration,
     super.task,
   });
 
@@ -20,7 +20,7 @@ class TaskInstanceModel extends TaskInstanceEntity {
       taskId: map[TaskInstanceFields.taskId] as int,
       moduleInstanceId: map[TaskInstanceFields.moduleInstanceId] as int,
       status: TaskStatus.fromValue(map[TaskInstanceFields.status] as int),
-      completingTime: map[TaskInstanceFields.completingTime] as String?,
+      executionDuration: map[TaskInstanceFields.executionDuration] as String?,
     );
 
     // If task_title is present (from JOIN), populate the task entity
@@ -46,7 +46,7 @@ class TaskInstanceModel extends TaskInstanceEntity {
     TaskInstanceFields.taskId: taskId,
     TaskInstanceFields.moduleInstanceId: moduleInstanceId,
     TaskInstanceFields.status: status.numericValue,
-    TaskInstanceFields.completingTime: completingTime,
+    TaskInstanceFields.executionDuration: executionDuration,
   };
 
   factory TaskInstanceModel.fromEntity(TaskInstanceEntity entity) {
@@ -55,7 +55,7 @@ class TaskInstanceModel extends TaskInstanceEntity {
       taskId: entity.taskId,
       moduleInstanceId: entity.moduleInstanceId,
       status: entity.status,
-      completingTime: entity.completingTime,
+      executionDuration: entity.executionDuration,
       task: entity.task,
     );
   }
@@ -66,7 +66,7 @@ class TaskInstanceModel extends TaskInstanceEntity {
       taskId: taskId,
       moduleInstanceId: moduleInstanceId,
       status: status,
-      completingTime: completingTime,
+      executionDuration: executionDuration,
       task: task,
     );
   }

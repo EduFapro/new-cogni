@@ -10,12 +10,16 @@ class ParticipantRemoteDataSource {
 
   Future<int?> createParticipant(
     ParticipantEntity participant,
-    int evaluatorId,
-  ) async {
+    int evaluatorId, {
+    List<int>? selectedModuleIds,
+  }) async {
     try {
       final response = await _networkService.post(
         '/api/participants',
-        participant.toJsonForApi(evaluatorId: evaluatorId),
+        participant.toJsonForApi(
+          evaluatorId: evaluatorId,
+          selectedModuleIds: selectedModuleIds,
+        ),
       );
 
       if (response.statusCode == 201) {

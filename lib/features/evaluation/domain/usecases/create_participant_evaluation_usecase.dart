@@ -171,6 +171,7 @@ class CreateParticipantEvaluationUseCase {
         evaluatorId: evaluatorId,
         evaluationId: evaluationId,
         language: language,
+        selectedModuleIds: selectedModuleIds,
       );
 
       return createdParticipant;
@@ -189,6 +190,7 @@ class CreateParticipantEvaluationUseCase {
     required int evaluatorId,
     required int evaluationId,
     required int language,
+    required List<int> selectedModuleIds,
   }) {
     if (appEnv == AppEnv.offline) {
       AppLogger.info('[USECASE] 📴 Offline mode: Skipping backend sync.');
@@ -204,7 +206,11 @@ class CreateParticipantEvaluationUseCase {
       try {
         // 1. Sync Participant
         final backendParticipantId = await participantRemoteDataSource!
-            .createParticipant(participant, evaluatorId);
+            .createParticipant(
+              participant,
+              evaluatorId,
+              selectedModuleIds: selectedModuleIds,
+            );
 
         if (backendParticipantId != null) {
           AppLogger.info(

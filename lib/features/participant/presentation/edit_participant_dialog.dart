@@ -8,6 +8,7 @@ import '../../../core/logger/app_logger.dart';
 import '../domain/participant_entity.dart';
 import '../presentation/participant_provider.dart';
 import '../presentation/participant_list_provider.dart';
+import '../../../shared/widgets/custom_date_picker.dart';
 
 class EditParticipantDialog extends HookConsumerWidget {
   final ParticipantEntity participant;
@@ -142,8 +143,9 @@ class EditParticipantDialog extends HookConsumerWidget {
 
               InfoLabel(
                 label: 'Data de Nascimento',
-                child: DatePicker(
+                child: CustomDatePicker(
                   selected: birthDate.value,
+                  allowManual: true,
                   onChanged: (date) => birthDate.value = date,
                 ),
               ),

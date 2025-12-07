@@ -32,8 +32,9 @@ class MockParticipantRemoteDataSource implements ParticipantRemoteDataSource {
   @override
   Future<int?> createParticipant(
     ParticipantEntity participant,
-    int evaluatorId,
-  ) async {
+    int evaluatorId, {
+    List<int>? selectedModuleIds,
+  }) async {
     createCalled = true;
     createdParticipant = participant;
     this.evaluatorId = evaluatorId;
@@ -186,7 +187,7 @@ void main() {
       'position': 1,
       'may_repeat_prompt': 1,
       'test_only': 0,
-      'time_for_completion': 60,
+      'max_duration': 60,
     });
 
     useCase = CreateParticipantEvaluationUseCase(

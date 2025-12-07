@@ -191,10 +191,15 @@ class MockParticipantRemoteDataSource extends _i1.Mock
   @override
   _i4.Future<int?> createParticipant(
     _i6.ParticipantEntity? participant,
-    int? evaluatorId,
-  ) =>
+    int? evaluatorId, {
+    List<int>? selectedModuleIds,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#createParticipant, [participant, evaluatorId]),
+            Invocation.method(
+              #createParticipant,
+              [participant, evaluatorId],
+              {#selectedModuleIds: selectedModuleIds},
+            ),
             returnValue: _i4.Future<int?>.value(),
           )
           as _i4.Future<int?>);

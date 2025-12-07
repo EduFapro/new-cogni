@@ -11,7 +11,7 @@ class TaskModel extends TaskEntity {
     required super.position,
     super.imageAssetPath = 'no_image',
     super.videoAssetPath,
-    super.timeForCompletion = 60,
+    super.maxDuration = 60,
     super.mayRepeatPrompt = true,
     super.testOnly = false,
     super.transcript,
@@ -27,7 +27,7 @@ class TaskModel extends TaskEntity {
       position: map[TaskFields.position] as int,
       imageAssetPath: map[TaskFields.imagePath] as String? ?? 'no_image',
       videoAssetPath: map[TaskFields.videoPath] as String?,
-      timeForCompletion: map[TaskFields.timeForCompletion] as int? ?? 60,
+      maxDuration: map[TaskFields.maxDuration] as int? ?? 60,
       mayRepeatPrompt: (map[TaskFields.mayRepeatPrompt] as int) == 1,
       testOnly: (map[TaskFields.testOnly] as int) == 1,
     );
@@ -42,7 +42,7 @@ class TaskModel extends TaskEntity {
     TaskFields.position: position,
     TaskFields.imagePath: imageAssetPath,
     TaskFields.videoPath: videoAssetPath,
-    TaskFields.timeForCompletion: timeForCompletion,
+    TaskFields.maxDuration: maxDuration,
     TaskFields.mayRepeatPrompt: mayRepeatPrompt ? 1 : 0,
     TaskFields.testOnly: testOnly ? 1 : 0,
   };
@@ -56,7 +56,7 @@ class TaskModel extends TaskEntity {
     position: entity.position,
     imageAssetPath: entity.imageAssetPath,
     videoAssetPath: entity.videoAssetPath,
-    timeForCompletion: entity.timeForCompletion,
+    maxDuration: entity.maxDuration,
     mayRepeatPrompt: entity.mayRepeatPrompt,
     testOnly: entity.testOnly,
   );
@@ -70,7 +70,7 @@ class TaskModel extends TaskEntity {
     position: position,
     imageAssetPath: imageAssetPath,
     videoAssetPath: videoAssetPath,
-    timeForCompletion: timeForCompletion,
+    maxDuration: maxDuration,
     mayRepeatPrompt: mayRepeatPrompt,
     testOnly: testOnly,
   );

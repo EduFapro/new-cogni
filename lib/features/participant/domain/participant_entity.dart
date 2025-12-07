@@ -47,16 +47,21 @@ class ParticipantEntity {
   };
 
   // For sending to backend API (unencrypted - backend stores plain text)
-  Map<String, dynamic> toJsonForApi({int? evaluatorId}) => {
-    if (participantID != null) 'id': participantID,
-    'name': name, // Plain text (not encrypted)
-    'surname': surname, // Plain text (not encrypted)
-    'birthDate': birthDate.toIso8601String().split('T')[0], // yyyy-MM-dd format
-    'sex': sex.numericValue,
-    'educationLevel': educationLevel.numericValue,
-    'laterality': laterality.numericValue,
-    if (evaluatorId != null) 'evaluatorId': evaluatorId,
-  };
+  Map<String, dynamic> toJsonForApi({
+    int? evaluatorId,
+    List<int>? selectedModuleIds,
+  }) =>
+      {
+        if (participantID != null) 'id': participantID,
+        'name': name, // Plain text (not encrypted)
+        'surname': surname, // Plain text (not encrypted)
+        'birthDate': birthDate.toIso8601String().split('T')[0], // yyyy-MM-dd format
+        'sex': sex.numericValue,
+        'educationLevel': educationLevel.numericValue,
+        'laterality': laterality.numericValue,
+        if (evaluatorId != null) 'evaluatorId': evaluatorId,
+        if (selectedModuleIds != null) 'selectedModuleIds': selectedModuleIds,
+      };
 
   // For receiving from backend API
   factory ParticipantEntity.fromJson(Map<String, dynamic> json) {

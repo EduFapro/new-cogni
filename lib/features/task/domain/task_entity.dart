@@ -10,7 +10,7 @@ class TaskEntity {
   final int position;
   final String imageAssetPath;
   final String? videoAssetPath;
-  final int timeForCompletion;
+  final int maxDuration;
   final bool mayRepeatPrompt;
   final bool testOnly;
 
@@ -23,7 +23,7 @@ class TaskEntity {
     this.transcript,
     this.imageAssetPath = 'no_image',
     this.videoAssetPath,
-    this.timeForCompletion = 60,
+    this.maxDuration = 60,
     this.mayRepeatPrompt = true,
     this.testOnly = false,
   });
@@ -37,7 +37,7 @@ class TaskEntity {
     TaskFields.position: position,
     TaskFields.imagePath: imageAssetPath,
     TaskFields.videoPath: videoAssetPath,
-    TaskFields.timeForCompletion: timeForCompletion,
+    TaskFields.maxDuration: maxDuration,
     TaskFields.mayRepeatPrompt: mayRepeatPrompt ? 1 : 0,
     TaskFields.testOnly: testOnly ? 1 : 0,
   };
@@ -51,7 +51,7 @@ class TaskEntity {
     position: map[TaskFields.position] as int,
     imageAssetPath: map[TaskFields.imagePath] as String,
     videoAssetPath: map[TaskFields.videoPath] as String?,
-    timeForCompletion: map[TaskFields.timeForCompletion] as int,
+    maxDuration: map[TaskFields.maxDuration] as int,
     mayRepeatPrompt: (map[TaskFields.mayRepeatPrompt] as int) == 1,
     testOnly: (map[TaskFields.testOnly] as int) == 1,
   );
@@ -65,7 +65,7 @@ class TaskEntity {
     int? position,
     String? imageAssetPath,
     String? videoAssetPath,
-    int? timeForCompletion,
+    int? maxDuration,
     bool? mayRepeatPrompt,
     bool? testOnly,
   }) {
@@ -78,7 +78,7 @@ class TaskEntity {
       position: position ?? this.position,
       imageAssetPath: imageAssetPath ?? this.imageAssetPath,
       videoAssetPath: videoAssetPath ?? this.videoAssetPath,
-      timeForCompletion: timeForCompletion ?? this.timeForCompletion,
+      maxDuration: maxDuration ?? this.maxDuration,
       mayRepeatPrompt: mayRepeatPrompt ?? this.mayRepeatPrompt,
       testOnly: testOnly ?? this.testOnly,
     );

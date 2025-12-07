@@ -65,12 +65,18 @@ class TaskRunnerScreen extends ConsumerWidget {
       );
     }
 
+    // Calculate max duration
+    final maxDuration = task.maxDuration > 0
+        ? Duration(seconds: task.maxDuration)
+        : null;
+
     // Para TaskMode.record com vídeo
     if (task.taskMode == TaskMode.record &&
         task.videoAssetPath != null &&
         task.videoAssetPath!.isNotEmpty) {
       return MediaRecordTaskScreen(
         videoAssetPath: task.videoAssetPath!,
+        maxDuration: maxDuration,
         onRecordingFinished: (filePath, duration) => _onTaskFinished(
           context,
           ref,
@@ -86,6 +92,7 @@ class TaskRunnerScreen extends ConsumerWidget {
         task.imageAssetPath != 'no_image') {
       return ImageRecordTaskScreen(
         imageAssetPath: task.imageAssetPath,
+        maxDuration: maxDuration,
         onRecordingFinished: (filePath, duration) => _onTaskFinished(
           context,
           ref,
