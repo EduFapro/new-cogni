@@ -10,6 +10,7 @@ class EvaluationEntity {
   final EvaluationStatus status;
   final DateTime evaluationDate;
   final int language;
+  final String avatar;
 
   EvaluationEntity({
     this.evaluationID,
@@ -18,6 +19,7 @@ class EvaluationEntity {
     required this.evaluatorID,
     required this.participantID,
     required this.language,
+    this.avatar = 'Joana',
   }) : evaluationDate = evaluationDate ?? DateTime.now();
 
   Map<String, dynamic> toMap() => {
@@ -27,6 +29,7 @@ class EvaluationEntity {
     EvaluationFields.participantId: participantID,
     EvaluationFields.status: status.numericValue,
     EvaluationFields.language: language,
+    EvaluationFields.avatar: avatar,
   };
 
   static EvaluationEntity fromMap(Map<String, dynamic> map) {
@@ -35,9 +38,8 @@ class EvaluationEntity {
       evaluatorID: map[EvaluationFields.evaluatorId] as int,
       participantID: map[EvaluationFields.participantId] as int,
       language: map[EvaluationFields.language] as int,
-      status: EvaluationStatus.fromValue(
-        map[EvaluationFields.status] ?? 1,
-      ),
+      avatar: map[EvaluationFields.avatar] as String? ?? 'Joana',
+      status: EvaluationStatus.fromValue(map[EvaluationFields.status] ?? 1),
       evaluationDate: map[EvaluationFields.date] != null
           ? DateTime.tryParse(map[EvaluationFields.date]) ?? DateTime.now()
           : DateTime.now(),
@@ -51,5 +53,5 @@ class EvaluationEntity {
 
   @override
   String toString() =>
-      'EvaluationEntity(evaluationID: $evaluationID, evaluatorID: $evaluatorID, participantID: $participantID, status: ${status.description})';
+      'EvaluationEntity(evaluationID: $evaluationID, evaluatorID: $evaluatorID, participantID: $participantID, status: ${status.description}, avatar: $avatar)';
 }

@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+
+import 'media_providers.dart';
 
 /// Background video widget using media_kit.
 ///
@@ -13,7 +16,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 /// - Plays the video as a background
 /// - Can loop or call [onCompleted] once at the end
 /// - Can auto-play or wait for manual control (via [autoPlay])
-class TaskVideoBackgroundMediaKit extends StatefulWidget {
+class TaskVideoBackgroundMediaKit extends ConsumerStatefulWidget {
   final String assetPath;
   final bool loop;
   final bool autoPlay;
@@ -28,48 +31,58 @@ class TaskVideoBackgroundMediaKit extends StatefulWidget {
   });
 
   @override
-  State<TaskVideoBackgroundMediaKit> createState() =>
+  ConsumerState<TaskVideoBackgroundMediaKit> createState() =>
       _TaskVideoBackgroundMediaKitState();
 }
 
 class _TaskVideoBackgroundMediaKitState
-    extends State<TaskVideoBackgroundMediaKit> {
-  late final Player _player;
-  late final VideoController _controller;
+    extends ConsumerState<TaskVideoBackgroundMediaKit> {
+  VideoController? _controller;
   StreamSubscription<bool>? _completedSub;
   StreamSubscription<bool>? _playingSub;
   bool _completedNotified = false;
   double _opacity = 0.0;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = ref.watch(backgroundVideoControllerProvider);
+    if (_controller != controller) {
+      _controller = controller;
+      _initializePlayer();
+    }
+  }
 
-    _player = Player();
-    _controller = VideoController(_player);
+  void _initializePlayer() {
+    if (_controller == null) return;
 
-    // Configure looping behavior before opening media.
+    final player = _controller!.player;
+
+    // Reset subscriptions
+    _completedSub?.cancel();
+    _playingSub?.cancel();
+
+    // Configure looping behavior
     if (widget.loop) {
-      _player.setPlaylistMode(PlaylistMode.loop);
+      player.setPlaylistMode(PlaylistMode.loop);
     } else {
-      _completedSub = _player.stream.completed.listen(_handleCompleted);
+      player.setPlaylistMode(PlaylistMode.none);
+      _completedSub = player.stream.completed.listen(_handleCompleted);
     }
 
-    // Listen to playing state to trigger fade-in when video starts
-    _playingSub = _player.stream.playing.listen(_handlePlayingStateChanged);
+    // Listen to playing state
+    _playingSub = player.stream.playing.listen(_handlePlayingStateChanged);
 
     _openAsset();
   }
 
   Future<void> _openAsset() async {
-    final uri = 'asset:///${widget.assetPath}';
-    // You can add a debug print here if needed:
-    // debugPrint('🎬 Opening video asset: $uri');
+    if (_controller == null) return;
 
+    final uri = 'asset:///${widget.assetPath}';
     try {
-      await _player.open(Media(uri), play: widget.autoPlay);
+      await _controller!.player.open(Media(uri), play: widget.autoPlay);
     } catch (e) {
-      // Avoid crashing the whole app on load failure.
       debugPrint('❌ Failed to open video asset: $uri\n$e');
     }
   }
@@ -86,7 +99,6 @@ class _TaskVideoBackgroundMediaKitState
 
   void _handlePlayingStateChanged(bool isPlaying) {
     if (isPlaying && _opacity == 0.0 && mounted) {
-      // Start fade-in when video starts playing
       setState(() {
         _opacity = 1.0;
       });
@@ -97,17 +109,19 @@ class _TaskVideoBackgroundMediaKitState
   void dispose() {
     _completedSub?.cancel();
     _playingSub?.cancel();
-    _player.dispose();
+    // DO NOT dispose the player/controller here as it is shared.
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_controller == null) return const SizedBox.shrink();
+
     return AnimatedOpacity(
       opacity: _opacity,
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeIn,
-      child: Video(controller: _controller, controls: null, fit: BoxFit.cover),
+      child: Video(controller: _controller!, controls: null, fit: BoxFit.cover),
     );
   }
 }

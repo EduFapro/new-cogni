@@ -8,10 +8,12 @@ import 'logger/app_logger.dart';
 class NetworkService {
   final String baseUrl;
   final bool syncEnabled;
+  final String? apiSecret;
 
   NetworkService()
     : baseUrl = dotenv.env['BACKEND_URL'] ?? 'http://localhost:8080',
-      syncEnabled = dotenv.env['ENABLE_SYNC']?.toLowerCase() == 'true';
+      syncEnabled = dotenv.env['ENABLE_SYNC']?.toLowerCase() == 'true',
+      apiSecret = dotenv.env['API_SECRET'];
 
   String? _authToken;
 
@@ -26,6 +28,9 @@ class NetworkService {
     final headers = {'Content-Type': 'application/json'};
     if (_authToken != null) {
       headers['Authorization'] = 'Bearer $_authToken';
+    }
+    if (apiSecret != null) {
+      headers['X-API-KEY'] = apiSecret!;
     }
     return headers;
   }

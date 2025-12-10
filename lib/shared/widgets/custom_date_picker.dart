@@ -2,6 +2,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import '../../core/utils/date_validator.dart';
+
 class CustomDatePicker extends HookWidget {
   final DateTime? selected;
   final ValueChanged<DateTime?> onChanged;
@@ -17,6 +19,7 @@ class CustomDatePicker extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final isManualMode = useState(false);
+    final errorMessage = useState<String?>(null);
 
     // Controllers for manual input
     final dayController = useTextEditingController(
@@ -37,28 +40,45 @@ class CustomDatePicker extends HookWidget {
           yearController.text = selected!.year.toString();
         }
         selectedMonth.value = selected!.month;
+        errorMessage.value = null; // Clear error on external update
       }
       return null;
     }, [selected]);
 
     void tryUpdateDate() {
-      final day = int.tryParse(dayController.text);
-      final year = int.tryParse(yearController.text);
+      final dayStr = dayController.text;
+      final yearStr = yearController.text;
       final month = selectedMonth.value;
 
-      if (day != null && year != null) {
-        try {
-          // Validate date validity (e.g., Feb 30)
-          final date = DateTime(year, month, day);
-          if (date.year == year && date.month == month && date.day == day) {
-            onChanged(date);
-          } else {
-            // Invalid date (e.g. 31st of Feb), don't update or maybe set to null
-            // For now, we just don't update if it's strictly invalid logic
-          }
-        } catch (e) {
-          // Ignore
+      // Validate Year
+      final yearError = DateValidator.validateYear(yearStr);
+      if (yearError != null) {
+        errorMessage.value = yearError;
+        return; // Don't update if year is invalid
+      }
+
+      // Validate Day
+      final dayError = DateValidator.validateDay(dayStr, month, yearStr);
+      if (dayError != null) {
+        errorMessage.value = dayError;
+        return; // Don't update if day is invalid
+      }
+
+      // If we get here, individual fields are valid.
+      // Double check full date object (though validator covers most)
+      final day = int.parse(dayStr);
+      final year = int.parse(yearStr);
+
+      try {
+        final date = DateTime(year, month, day);
+        if (date.year == year && date.month == month && date.day == day) {
+          errorMessage.value = null;
+          onChanged(date);
+        } else {
+          errorMessage.value = 'Data inválida';
         }
+      } catch (e) {
+        errorMessage.value = 'Data inválida';
       }
     }
 
@@ -84,6 +104,7 @@ class CustomDatePicker extends HookWidget {
           ),
         ] else ...[
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Day
               SizedBox(
@@ -105,7 +126,6 @@ class CustomDatePicker extends HookWidget {
                 value: selectedMonth.value,
                 items: List.generate(12, (index) {
                   final monthNum = index + 1;
-                  // Simple month names or use intl
                   final monthName = _getMonthName(monthNum);
                   return ComboBoxItem(value: monthNum, child: Text(monthName));
                 }),
@@ -133,6 +153,17 @@ class CustomDatePicker extends HookWidget {
               ),
             ],
           ),
+          if (errorMessage.value != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              errorMessage.value!,
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
           const SizedBox(height: 4),
           HyperlinkButton(
             child: const Text(
@@ -142,7 +173,10 @@ class CustomDatePicker extends HookWidget {
                 fontSize: 12,
               ),
             ),
-            onPressed: () => isManualMode.value = false,
+            onPressed: () {
+              isManualMode.value = false;
+              errorMessage.value = null;
+            },
           ),
         ],
       ],

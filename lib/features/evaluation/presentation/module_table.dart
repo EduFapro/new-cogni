@@ -49,7 +49,7 @@ class ModuleTable extends ConsumerWidget {
                   children: [
                     icon,
                     const SizedBox(width: 6),
-                    Text(instance.status.description),
+                    Text(_getStatusLabel(instance.status)),
                   ],
                 ),
               ),
@@ -74,6 +74,8 @@ class ModuleTable extends ConsumerWidget {
                   child: Text(
                     instance.status == ModuleStatus.completed
                         ? 'Concluído'
+                        : instance.status == ModuleStatus.inProgress
+                        ? 'Retomar'
                         : 'Iniciar',
                   ),
                 ),
@@ -85,6 +87,17 @@ class ModuleTable extends ConsumerWidget {
     );
   }
 
+  String _getStatusLabel(ModuleStatus status) {
+    switch (status) {
+      case ModuleStatus.completed:
+        return 'Concluído';
+      case ModuleStatus.inProgress:
+        return 'Em Andamento';
+      case ModuleStatus.pending:
+        return 'A Iniciar';
+    }
+  }
+
   Widget _statusIcon(ModuleStatus status) {
     switch (status) {
       case ModuleStatus.completed:
@@ -92,7 +105,6 @@ class ModuleTable extends ConsumerWidget {
       case ModuleStatus.inProgress:
         return const Icon(FluentIcons.play, color: Color(0xFF0078D4));
       case ModuleStatus.pending:
-      default:
         return const Icon(FluentIcons.circle_stop, color: Color(0xFF605E5C));
     }
   }

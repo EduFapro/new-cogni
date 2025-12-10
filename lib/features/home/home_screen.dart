@@ -7,6 +7,7 @@ import '../participant/presentation/create_participant_screen.dart';
 import '../participant/presentation/participant_list_screen.dart';
 
 import 'home_providers.dart';
+import 'backend_status_provider.dart';
 
 class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});
@@ -16,7 +17,13 @@ class HomeScreen extends HookConsumerWidget {
     final selectedIndex = ref.watch(homeNavigationProvider);
 
     return NavigationView(
-      appBar: const NavigationAppBar(title: Text('CogniVoice Home')),
+      appBar: NavigationAppBar(
+        title: const Text('CogniVoice Home'),
+        actions: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [const BackendStatusIndicator(), const SizedBox(width: 16)],
+        ),
+      ),
       pane: NavigationPane(
         selected: selectedIndex,
         onChanged: (index) => ref
@@ -72,6 +79,41 @@ class DashboardContent extends StatelessWidget {
         ),
       ),
       children: const [Text('Aqui é o conteúdo principal do dashboard.')],
+    );
+  }
+}
+
+class BackendStatusIndicator extends HookConsumerWidget {
+  const BackendStatusIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(backendStatusProvider);
+
+    final color = switch (status) {
+      BackendStatus.checking => Colors.yellow,
+      BackendStatus.connected => Colors.green,
+      BackendStatus.disconnected => Colors.red,
+    };
+
+    final tooltip = switch (status) {
+      BackendStatus.checking => 'Verificando conexão...',
+      BackendStatus.connected => 'Conectado ao servidor',
+      BackendStatus.disconnected => 'Desconectado (Offline)',
+    };
+
+    return Tooltip(
+      message: tooltip,
+      child: IconButton(
+        icon: Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        onPressed: () {
+          ref.read(backendStatusProvider.notifier).checkStatus();
+        },
+      ),
     );
   }
 }

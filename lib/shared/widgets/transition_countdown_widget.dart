@@ -6,11 +6,13 @@ import 'package:fluent_ui/fluent_ui.dart';
 class TransitionCountdownWidget extends StatefulWidget {
   final VoidCallback onComplete;
   final int seconds;
+  final bool showSkipButton;
 
   const TransitionCountdownWidget({
     super.key,
     required this.onComplete,
     this.seconds = 3,
+    this.showSkipButton = false,
   });
 
   @override
@@ -72,8 +74,6 @@ class _TransitionCountdownWidgetState extends State<TransitionCountdownWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(FluentIcons.forward, color: Colors.white, size: 32),
-          const SizedBox(width: 24),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -96,6 +96,30 @@ class _TransitionCountdownWidgetState extends State<TransitionCountdownWidget> {
               ),
             ],
           ),
+          if (widget.showSkipButton) ...[
+            const SizedBox(width: 48),
+            FilledButton(
+              style: ButtonStyle(
+                backgroundColor: ButtonState.all(Colors.white),
+                foregroundColor: ButtonState.all(const Color(0xFF0078D4)),
+                padding: ButtonState.all(
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+              ),
+              onPressed: widget.onComplete,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'PRÓXIMO',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(FluentIcons.chevron_right, size: 16),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -21,8 +21,6 @@ import 'package:segundo_cogni/features/evaluation/domain/evaluation_entity.dart'
 import 'package:segundo_cogni/shared/encryption/deterministic_encryption_helper.dart';
 import 'package:segundo_cogni/core/environment.dart';
 
-// ... existing imports ...
-
 // Mocks for Remote Data Sources
 class MockParticipantRemoteDataSource implements ParticipantRemoteDataSource {
   bool createCalled = false;
@@ -34,12 +32,23 @@ class MockParticipantRemoteDataSource implements ParticipantRemoteDataSource {
     ParticipantEntity participant,
     int evaluatorId, {
     List<int>? selectedModuleIds,
+    String? avatar,
   }) async {
     createCalled = true;
     createdParticipant = participant;
     this.evaluatorId = evaluatorId;
     return 999; // Backend ID
   }
+
+  @override
+  Future<bool> deleteParticipant(int id) async => true;
+
+  @override
+  Future<bool> updateParticipant(
+    int id,
+    ParticipantEntity participant,
+    int evaluatorId,
+  ) async => true;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -54,6 +63,11 @@ class MockEvaluationRemoteDataSource implements EvaluationRemoteDataSource {
     createCalled = true;
     createdEvaluation = evaluation;
     return 888; // Backend ID
+  }
+
+  @override
+  Future<bool> updateEvaluationStatus(int id, int status) async {
+    return true;
   }
 
   @override

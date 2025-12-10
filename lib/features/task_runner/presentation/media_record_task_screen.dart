@@ -4,6 +4,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 
 import '../../../../shared/media/recorder_widget.dart';
 import '../../../../shared/media/task_video_background_media_kit.dart';
+import '../../../../shared/widgets/transition_countdown_widget.dart';
 import 'task_shell.dart';
 
 class MediaRecordTaskScreen extends StatefulWidget {
@@ -11,12 +12,14 @@ class MediaRecordTaskScreen extends StatefulWidget {
   final void Function(String recordingPath, Duration duration)?
   onRecordingFinished;
   final Duration? maxDuration;
+  final bool requiresRecording;
 
   const MediaRecordTaskScreen({
     super.key,
     required this.videoAssetPath,
     this.onRecordingFinished,
     this.maxDuration,
+    this.requiresRecording = true,
   });
 
   @override
@@ -35,6 +38,11 @@ class _MediaRecordTaskScreenState extends State<MediaRecordTaskScreen> {
   void _onRecordingFinished(File file, Duration duration) {
     // Call the callback immediately (no countdown)
     widget.onRecordingFinished?.call(file.path, duration);
+  }
+
+  void _onNext() {
+    // For non-recording tasks, pass empty path and zero duration
+    widget.onRecordingFinished?.call('', Duration.zero);
   }
 
   Future<void> _onQuit() async {
@@ -72,13 +80,23 @@ class _MediaRecordTaskScreenState extends State<MediaRecordTaskScreen> {
     Widget? bottomOverlay;
 
     if (_videoCompleted) {
-      // Mostra recorder widget
-      bottomOverlay = RecorderWidget(
-        autoStart: true,
-        onRecordingFinished: _onRecordingFinished,
-        onQuit: _onQuit,
-        maxDuration: widget.maxDuration,
-      );
+      if (widget.requiresRecording) {
+        bottomOverlay = RecorderWidget(
+          autoStart: widget.requiresRecording,
+          requiresRecording: widget.requiresRecording,
+          onRecordingFinished: _onRecordingFinished,
+          onNext: _onNext,
+          onQuit: _onQuit,
+          maxDuration: widget.maxDuration,
+        );
+      } else {
+        // For non-recording tasks, show countdown before auto-advancing
+        bottomOverlay = TransitionCountdownWidget(
+          onComplete: _onNext,
+          seconds: 3,
+          showSkipButton: true,
+        );
+      }
     }
 
     return TaskShell(

@@ -50,9 +50,10 @@ class CreateParticipantEvaluationUseCase {
     required int evaluatorId,
     required List<int> selectedModuleIds,
     int language = 1,
+    String avatar = 'Joana',
   }) async {
     AppLogger.info(
-      '[USECASE] Starting participant creation: ${participant.name} (selectedModules=$selectedModuleIds)',
+      '[USECASE] Starting participant creation: ${participant.name} (selectedModules=$selectedModuleIds, avatar=$avatar)',
     );
 
     late final int participantId;
@@ -78,6 +79,7 @@ class CreateParticipantEvaluationUseCase {
           participantID: participantId,
           status: EvaluationStatus.pending,
           language: language,
+          avatar: avatar,
         );
 
         final insertedEvaluationId = await evaluationDataSource
@@ -172,6 +174,7 @@ class CreateParticipantEvaluationUseCase {
         evaluationId: evaluationId,
         language: language,
         selectedModuleIds: selectedModuleIds,
+        avatar: avatar,
       );
 
       return createdParticipant;
@@ -191,6 +194,7 @@ class CreateParticipantEvaluationUseCase {
     required int evaluationId,
     required int language,
     required List<int> selectedModuleIds,
+    String? avatar,
   }) {
     if (appEnv == AppEnv.offline) {
       AppLogger.info('[USECASE] 📴 Offline mode: Skipping backend sync.');
@@ -210,6 +214,7 @@ class CreateParticipantEvaluationUseCase {
               participant,
               evaluatorId,
               selectedModuleIds: selectedModuleIds,
+              avatar: avatar,
             );
 
         if (backendParticipantId != null) {

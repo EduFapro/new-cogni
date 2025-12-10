@@ -40,10 +40,15 @@ class ModuleTaskEntryScreen extends ConsumerWidget {
           orElse: () => sorted.first,
         );
 
+        final isResuming = sorted.any((t) => t.status == TaskStatus.completed);
+        final message = isResuming
+            ? 'Retomando avaliação em'
+            : 'Iniciando avaliação em';
+
         return CountdownScreen(
           targetWidget: TaskRunnerScreen(taskInstanceId: next.id),
           countdownSeconds: 5,
-          message: 'Iniciando avaliação em',
+          message: message,
         );
       },
     );

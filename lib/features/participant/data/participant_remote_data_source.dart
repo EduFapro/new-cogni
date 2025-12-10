@@ -12,6 +12,7 @@ class ParticipantRemoteDataSource {
     ParticipantEntity participant,
     int evaluatorId, {
     List<int>? selectedModuleIds,
+    String? avatar,
   }) async {
     try {
       final response = await _networkService.post(
@@ -19,6 +20,7 @@ class ParticipantRemoteDataSource {
         participant.toJsonForApi(
           evaluatorId: evaluatorId,
           selectedModuleIds: selectedModuleIds,
+          avatar: avatar,
         ),
       );
 

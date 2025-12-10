@@ -1,18 +1,22 @@
+import 'dart:io';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:segundo_cogni/features/task_instance/domain/task_instance_entity.dart';
 import 'package:video_player/video_player.dart';
 import '../../../shared/media/recorder_widget.dart';
+import '../../../core/constants/enums/task_mode.dart';
 
 import '../../task/domain/task_entity.dart';
 
 class VideoRecordTaskView extends StatefulWidget {
   final TaskEntity task;
   final TaskInstanceEntity instance;
+  final void Function(File? recordingFile, Duration duration) onTaskCompleted;
 
   const VideoRecordTaskView({
     super.key,
     required this.task,
     required this.instance,
+    required this.onTaskCompleted,
   });
 
   @override
@@ -49,6 +53,8 @@ class _VideoRecordTaskViewState extends State<VideoRecordTaskView> {
 
   @override
   Widget build(BuildContext context) {
+    final requiresRecording = widget.task.taskMode == TaskMode.record;
+
     return NavigationView(
       content: Column(
         children: [
@@ -63,8 +69,13 @@ class _VideoRecordTaskViewState extends State<VideoRecordTaskView> {
 
           if (videoCompleted)
             RecorderWidget(
+              requiresRecording: requiresRecording,
               onRecordingFinished: (file, duration) {
-                // TODO save recording → then next task
+                widget.onTaskCompleted(file, duration);
+              },
+              onNext: () {
+                // For non-recording tasks, we pass null file and zero duration (or actual duration if tracked)
+                widget.onTaskCompleted(null, Duration.zero);
               },
             ),
         ],

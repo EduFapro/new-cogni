@@ -43,6 +43,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/video/task_prompts/
+    - assets/video/task_prompts/Joana/01-Dados_Pessoais/
+    - assets/video/task_prompts/Joana/02-Funcoes_Cognitivas/
+    - assets/video/task_prompts/Joana/03-Funcionalidade/
+    - assets/video/task_prompts/Joana/04-SIntomas_de_Depressao/
+    - assets/video/task_prompts/Joana/05-Testes/
     - .env
 
 dev_dependencies:

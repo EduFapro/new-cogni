@@ -193,12 +193,13 @@ class MockParticipantRemoteDataSource extends _i1.Mock
     _i6.ParticipantEntity? participant,
     int? evaluatorId, {
     List<int>? selectedModuleIds,
+    String? avatar,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
               #createParticipant,
               [participant, evaluatorId],
-              {#selectedModuleIds: selectedModuleIds},
+              {#selectedModuleIds: selectedModuleIds, #avatar: avatar},
             ),
             returnValue: _i4.Future<int?>.value(),
           )

@@ -19,8 +19,28 @@ import '../../task/domain/task_entity.dart';
 import '../../task_instance/domain/task_instance_entity.dart';
 import '../../task_instance/domain/task_instance_providers.dart';
 import 'image_record_task_screen.dart';
-import 'media_prompt_task_screen.dart';
+
 import 'media_record_task_screen.dart';
+
+import '../../../../core/utils/video_path_service.dart';
+import '../../evaluation/domain/evaluation_entity.dart';
+
+final evaluationByTaskInstanceIdProvider =
+    FutureProvider.family<EvaluationEntity?, int>((ref, taskInstanceId) async {
+      final taskInstance = await ref.watch(
+        taskInstanceByIdProvider(taskInstanceId).future,
+      );
+      if (taskInstance == null) return null;
+
+      final moduleInstanceRepo = ref.watch(moduleInstanceRepositoryProvider);
+      final moduleInstance = await moduleInstanceRepo.getModuleInstanceById(
+        taskInstance.moduleInstanceId,
+      );
+      if (moduleInstance == null) return null;
+
+      final evaluationRepo = ref.watch(evaluationRepositoryProvider);
+      return evaluationRepo.getById(moduleInstance.evaluationId);
+    });
 
 class TaskRunnerScreen extends ConsumerWidget {
   final TaskEntity? task;
@@ -31,12 +51,16 @@ class TaskRunnerScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (task != null) {
-      return buildForTask(context, task!, ref);
+      // Preview mode: no evaluation context, default to Joana or null
+      return buildForTask(context, task!, ref, null);
     }
 
     if (taskInstanceId != null) {
       final asyncInstance = ref.watch(
         taskInstanceByIdProvider(taskInstanceId!),
+      );
+      final asyncEvaluation = ref.watch(
+        evaluationByTaskInstanceIdProvider(taskInstanceId!),
       );
 
       return asyncInstance.when(
@@ -44,7 +68,15 @@ class TaskRunnerScreen extends ConsumerWidget {
           if (instance == null || instance.task == null) {
             return const Center(child: Text('Task instance not found'));
           }
-          return buildForTask(context, instance.task!, ref);
+
+          return asyncEvaluation.when(
+            data: (evaluation) {
+              return buildForTask(context, instance.task!, ref, evaluation);
+            },
+            loading: () => const Center(child: ProgressRing()),
+            error: (err, stack) =>
+                Center(child: Text('Error loading evaluation: $err')),
+          );
         },
         loading: () => const Center(child: ProgressRing()),
         error: (err, stack) => Center(child: Text('Error: $err')),
@@ -54,99 +86,176 @@ class TaskRunnerScreen extends ConsumerWidget {
     return const Center(child: Text('No task or instance ID provided'));
   }
 
-  Widget buildForTask(BuildContext context, TaskEntity task, WidgetRef ref) {
-    // Para TaskMode.play com vídeo
-    if (task.taskMode == TaskMode.play &&
-        task.videoAssetPath != null &&
-        task.videoAssetPath!.isNotEmpty) {
-      return MediaPromptTaskScreen(
-        videoAssetPath: task.videoAssetPath!,
-        onCompleted: () => _onTaskFinished(context, ref),
-      );
-    }
+  Widget buildForTask(
+    BuildContext context,
+    TaskEntity task,
+    WidgetRef ref,
+    EvaluationEntity? evaluation,
+  ) {
+    // Use FutureBuilder to load assets if needed, or better: use a provider.
+    // Since we are inside a build method, we should avoid async work directly.
+    // However, AssetManifest loading is async.
+    // We can use a FutureBuilder here.
 
-    // Calculate max duration
-    final maxDuration = task.maxDuration > 0
-        ? Duration(seconds: task.maxDuration)
-        : null;
+    return FutureBuilder<List<String>>(
+      future: _loadAssetKeys(context),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: ProgressRing());
+        }
 
-    // Para TaskMode.record com vídeo
-    if (task.taskMode == TaskMode.record &&
-        task.videoAssetPath != null &&
-        task.videoAssetPath!.isNotEmpty) {
-      return MediaRecordTaskScreen(
-        videoAssetPath: task.videoAssetPath!,
-        maxDuration: maxDuration,
-        onRecordingFinished: (filePath, duration) => _onTaskFinished(
-          context,
-          ref,
-          recordingPath: filePath,
-          recordingDuration: duration,
-        ),
-      );
-    }
+        final allAssets = snapshot.data ?? [];
 
-    // Para TaskMode.record com imagem
-    if (task.taskMode == TaskMode.record &&
-        task.imageAssetPath.isNotEmpty &&
-        task.imageAssetPath != 'no_image') {
-      return ImageRecordTaskScreen(
-        imageAssetPath: task.imageAssetPath,
-        maxDuration: maxDuration,
-        onRecordingFinished: (filePath, duration) => _onTaskFinished(
-          context,
-          ref,
-          recordingPath: filePath,
-          recordingDuration: duration,
-        ),
-      );
-    }
+        // Resolve video path dynamically
+        String? resolvedVideoPath;
+        if (evaluation != null) {
+          resolvedVideoPath = VideoPathService.resolveVideoPath(
+            task: task,
+            evaluation: evaluation,
+            allAssets: allAssets,
+          );
+        }
 
-    // Erro: configuração inválida - missing video/image
-    return Container(
-      color: const Color(0xFF1A1A1A),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 600),
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                FluentIcons.error_badge,
-                size: 80,
-                color: Color(0xFFE81123),
+        // Fallback to seed path if dynamic resolution failed (and if it's not null)
+        if (resolvedVideoPath == null && task.videoAssetPath != null) {
+          // But seed path is likely wrong (old structure).
+          // We might want to try to adapt it or just leave it null.
+          // For now, let's NOT fallback to the old path if we expect new structure.
+          // Or maybe we can try to find it in the new structure using the old filename?
+          // Let's stick to the dynamic resolution which is robust.
+        }
+
+        // Para TaskMode.play com vídeo
+        if (task.taskMode == TaskMode.play &&
+            resolvedVideoPath != null &&
+            resolvedVideoPath.isNotEmpty) {
+          return MediaRecordTaskScreen(
+            videoAssetPath: resolvedVideoPath,
+            requiresRecording: false,
+            onRecordingFinished: (filePath, duration) => _onTaskFinished(
+              context,
+              ref,
+              recordingPath: filePath, // Will be empty
+              recordingDuration: duration, // Will be zero
+            ),
+          );
+        }
+
+        // Calculate max duration
+        final maxDuration = task.maxDuration > 0
+            ? Duration(seconds: task.maxDuration)
+            : null;
+
+        // Para TaskMode.record com vídeo
+        if (task.taskMode == TaskMode.record &&
+            resolvedVideoPath != null &&
+            resolvedVideoPath.isNotEmpty) {
+          return MediaRecordTaskScreen(
+            videoAssetPath: resolvedVideoPath,
+            maxDuration: maxDuration,
+            onRecordingFinished: (filePath, duration) => _onTaskFinished(
+              context,
+              ref,
+              recordingPath: filePath,
+              recordingDuration: duration,
+            ),
+          );
+        }
+
+        // Para TaskMode.record com imagem
+        if (task.taskMode == TaskMode.record &&
+            task.imageAssetPath.isNotEmpty &&
+            task.imageAssetPath != 'no_image') {
+          return ImageRecordTaskScreen(
+            imageAssetPath: task.imageAssetPath,
+            maxDuration: maxDuration,
+            onRecordingFinished: (filePath, duration) => _onTaskFinished(
+              context,
+              ref,
+              recordingPath: filePath,
+              recordingDuration: duration,
+            ),
+          );
+        }
+
+        // Error screen...
+        return Container(
+          color: const Color(0xFF1A1A1A),
+          child: Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 600),
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    FluentIcons.error_badge,
+                    size: 80,
+                    color: Color(0xFFE81123),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Erro de Configuração',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Esta tarefa está configurada incorretamente.\n'
+                    'Vídeo não encontrado para Avatar: ${evaluation?.avatar ?? "N/A"}\n'
+                    'Módulo: ${task.moduleID}, Tarefa: ${task.position}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Voltar'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 24),
-              const Text(
-                'Erro de Configuração',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Esta tarefa está configurada incorretamente.\n'
-                'Entre em contato com o suporte técnico.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.8),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              FilledButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Voltar'),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
+
+  Future<List<String>> _loadAssetKeys(BuildContext context) async {
+    try {
+      final manifestJson = await DefaultAssetBundle.of(
+        context,
+      ).loadString('AssetManifest.json');
+      // Simple parsing to extract keys.
+      // The manifest is a JSON map where keys are asset paths.
+      // We can use a regex or simple string manipulation if we want to avoid dart:convert import,
+      // but importing dart:convert is better.
+      // Since I can't easily add imports here without messing up the file,
+      // I will assume dart:convert is available or use a regex.
+      // Actually, TaskRunnerScreen imports dart:io, but not dart:convert.
+      // I should add dart:convert import in a separate step or use a regex.
+
+      // Regex approach to avoid import issues in this step:
+      final keys = <String>[];
+      final regExp = RegExp(r'"(assets/[^"]+)"');
+      final matches = regExp.allMatches(manifestJson);
+      for (final match in matches) {
+        if (match.groupCount >= 1) {
+          keys.add(match.group(1)!);
+        }
+      }
+      return keys;
+    } catch (e) {
+      AppLogger.error('Failed to load AssetManifest', e);
+      return [];
+    }
   }
 
   Future<void> _onTaskFinished(

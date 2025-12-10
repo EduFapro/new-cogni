@@ -153,6 +153,16 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
 
                             // 2. Mais Informações
                             Button(
+                              style: ButtonStyle(
+                                backgroundColor: ButtonState.all(
+                                  isExpanded
+                                      ? Colors.blue
+                                      : ButtonThemeData.buttonColor(
+                                          context,
+                                          {},
+                                        ),
+                                ),
+                              ),
                               onPressed: () {
                                 setState(() {
                                   if (isExpanded) {
@@ -168,7 +178,7 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                                     : 'Mais Informações',
                                 style: TextStyle(
                                   color: isExpanded
-                                      ? AppColors.coolGray500
+                                      ? Colors.white
                                       : Colors.green,
                                   fontWeight: FontWeight.bold,
                                 ),
