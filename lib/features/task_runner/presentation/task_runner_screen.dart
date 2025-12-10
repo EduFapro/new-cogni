@@ -75,15 +75,17 @@ class TaskRunnerScreen extends ConsumerWidget {
             },
             loading: () => const Center(child: ProgressRing()),
             error: (err, stack) =>
-                Center(child: Text('Error loading evaluation: $err')),
+                Center(child: Text('Erro ao carregar avaliação: $err')),
           );
         },
         loading: () => const Center(child: ProgressRing()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error: (err, stack) => Center(child: Text('Erro: $err')),
       );
     }
 
-    return const Center(child: Text('No task or instance ID provided'));
+    return const Center(
+      child: Text('Nenhuma tarefa ou ID de instância fornecido'),
+    );
   }
 
   Widget buildForTask(

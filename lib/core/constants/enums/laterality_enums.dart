@@ -1,7 +1,7 @@
 enum Laterality {
-  rightHanded(1, "Right-handed"),
-  leftHanded(2, "Left-handed"),
-  ambidextrous(3, "Ambidextrous");
+  rightHanded(1, "Destro"),
+  leftHanded(2, "Canhoto"),
+  ambidextrous(3, "Ambidestro");
 
   final int numericValue;
   final String description;
@@ -10,7 +10,7 @@ enum Laterality {
 
   static Laterality fromValue(int value) {
     return Laterality.values.firstWhere(
-          (l) => l.numericValue == value,
+      (l) => l.numericValue == value,
       orElse: () => Laterality.rightHanded,
     );
   }

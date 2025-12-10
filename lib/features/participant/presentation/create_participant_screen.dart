@@ -9,10 +9,8 @@ class CreatePatientScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     AppLogger.nav('Navigated to CreatePatientScreen');
     return ScaffoldPage.scrollable(
-      header: PageHeader(title: Text('Criar Novo Paciente')),
-      children: [
-        ParticipantRegistrationForm(),
-      ],
+      header: PageHeader(title: Text('Criar Novo Participante')),
+      children: [ParticipantRegistrationForm()],
     );
   }
 }

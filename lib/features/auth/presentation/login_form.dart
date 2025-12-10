@@ -76,7 +76,7 @@ class LoginForm extends HookConsumerWidget {
 
             // Email
             InfoLabel(
-              label: "Email",
+              label: "E-mail",
               child: TextBox(
                 placeholder: "email@exemplo.com",
                 controller: emailController,
@@ -86,7 +86,7 @@ class LoginForm extends HookConsumerWidget {
 
             // Password + visibility toggle
             InfoLabel(
-              label: "Password",
+              label: "Senha",
               child: Stack(
                 alignment: Alignment.centerRight,
                 children: [
@@ -109,7 +109,7 @@ class LoginForm extends HookConsumerWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Forgot password?",
+                "Esqueceu a senha?",
                 style: TextStyle(
                   color: AppColors.skyBlue,
                   decoration: TextDecoration.underline,
@@ -122,20 +122,18 @@ class LoginForm extends HookConsumerWidget {
             FilledButton(
               child: loginState.isLoading
                   ? const ProgressRing()
-                  : const Text("Sign in"),
+                  : const Text("Entrar"),
               onPressed: loginState.isLoading ? null : onLoginPressed,
             ),
             const SizedBox(height: 12),
 
-// 👇 New: Register link
+            // 👇 New: Register link
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  "Don't have an account?",
-                  style: TextStyle(
-                    color: AppColors.softWhite,
-                  ),
+                  "Não tem uma conta?",
+                  style: TextStyle(color: AppColors.softWhite),
                 ),
                 const SizedBox(width: 6),
                 HyperlinkButton(
@@ -143,7 +141,7 @@ class LoginForm extends HookConsumerWidget {
                     context.go('/register'); // must match your router
                   },
                   child: const Text(
-                    "Create one",
+                    "Criar uma",
                     style: TextStyle(
                       color: AppColors.skyBlue,
                       decoration: TextDecoration.underline,
@@ -153,7 +151,6 @@ class LoginForm extends HookConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-
 
             // Info bar
             if (showInfoBar.value)

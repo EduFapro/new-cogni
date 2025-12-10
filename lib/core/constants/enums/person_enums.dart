@@ -1,13 +1,13 @@
 enum EducationLevel {
-  incompleteElementary(1, "Incomplete Elementary"),
-  completeElementary(2, "Complete Elementary"),
-  incompleteHighSchool(3, "Incomplete High School"),
-  completeHighSchool(4, "Complete High School"),
-  incompleteCollege(5, "Incomplete College"),
-  completeCollege(6, "Complete College"),
-  postgraduate(7, "Postgraduate"),
-  master(8, "Master's Degree"), // Optional
-  doctorate(9, "Doctorate");    // Optional
+  incompleteElementary(1, "Fundamental Incompleto"),
+  completeElementary(2, "Fundamental Completo"),
+  incompleteHighSchool(3, "Médio Incompleto"),
+  completeHighSchool(4, "Médio Completo"),
+  incompleteCollege(5, "Superior Incompleto"),
+  completeCollege(6, "Superior Completo"),
+  postgraduate(7, "Pós-graduação"),
+  master(8, "Mestrado"), // Optional
+  doctorate(9, "Doutorado"); // Optional
 
   final int numericValue;
   final String description;
@@ -16,7 +16,7 @@ enum EducationLevel {
 
   static EducationLevel fromValue(int value) {
     return EducationLevel.values.firstWhere(
-          (level) => level.numericValue == value,
+      (level) => level.numericValue == value,
       orElse: () => EducationLevel.completeElementary,
     );
   }
@@ -49,9 +49,9 @@ enum EducationLevel {
 }
 
 enum Sex {
-  male(1, "Male"),
-  female(2, "Female"),
-  other(3, "Other");
+  male(1, "Masculino"),
+  female(2, "Feminino"),
+  other(3, "Outro");
 
   final int numericValue;
   final String description;
@@ -60,7 +60,7 @@ enum Sex {
 
   static Sex fromValue(int value) {
     return Sex.values.firstWhere(
-          (s) => s.numericValue == value,
+      (s) => s.numericValue == value,
       orElse: () => Sex.other,
     );
   }

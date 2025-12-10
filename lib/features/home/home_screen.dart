@@ -18,7 +18,7 @@ class HomeScreen extends HookConsumerWidget {
 
     return NavigationView(
       appBar: NavigationAppBar(
-        title: const Text('CogniVoice Home'),
+        title: const Text('Início CogniVoice'),
         actions: Row(
           mainAxisSize: MainAxisSize.min,
           children: [const BackendStatusIndicator(), const SizedBox(width: 16)],
@@ -33,7 +33,7 @@ class HomeScreen extends HookConsumerWidget {
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.home),
-            title: const Text('Dashboard'),
+            title: const Text('Painel'),
             body: const DashboardContent(),
           ),
           PaneItem(
