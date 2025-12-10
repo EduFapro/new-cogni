@@ -42,7 +42,11 @@ class LoginScreen extends HookConsumerWidget {
       content: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.aquaBlue, AppColors.skyBlue, AppColors.chromeBlue],
+            colors: [
+              AppColors.midnightBlue,
+              AppColors.deepSeaBlue,
+              AppColors.steelBlue,
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

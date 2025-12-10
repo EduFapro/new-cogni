@@ -7,6 +7,7 @@ import '../features/home/home_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/task/domain/task_entity.dart';
 import '../features/task_runner/presentation/task_runner_screen.dart';
+import '../features/auth/presentation/reset_password_screen.dart';
 import 'logger/app_logger.dart';
 
 final router = GoRouter(
@@ -54,8 +55,6 @@ final router = GoRouter(
         return const TaskRunnerScreen();
       },
     ),
-
-
   ],
 );
 

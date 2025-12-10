@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../core/constants/enums/progress_status.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../module_instance/domain/module_instance_entity.dart';
 import '../../task_runner/presentation/module_task_entry_screen.dart';
 
@@ -20,7 +21,7 @@ class ModuleTable extends ConsumerWidget {
       },
       children: [
         const TableRow(
-          decoration: BoxDecoration(color: Color(0xFFE4ECF7)),
+          decoration: BoxDecoration( color: AppColors.indigoBlue,),
           children: [
             Padding(
               padding: EdgeInsets.all(8.0),

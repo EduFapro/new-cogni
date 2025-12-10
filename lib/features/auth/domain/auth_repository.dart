@@ -10,4 +10,7 @@ abstract class AuthRepository {
   Future<void> saveCurrentUserToDB(EvaluatorModel user);
   Future<void> clearCurrentUserFromDB();
   Future<void> clearCurrentUser();
+  Future<bool> changePassword(String oldPassword, String newPassword);
+  Future<bool> requestPasswordReset(String email);
+  Future<bool> resetPassword(String token, String newPassword);
 }

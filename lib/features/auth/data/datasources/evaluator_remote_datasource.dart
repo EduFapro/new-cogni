@@ -45,4 +45,42 @@ class EvaluatorRemoteDataSource {
       return null;
     }
   }
+
+  Future<bool> changePassword(String oldPassword, String newPassword) async {
+    try {
+      final response = await _network.post('/api/auth/change-password', {
+        'oldPassword': oldPassword,
+        'newPassword': newPassword,
+      });
+      return response.statusCode == 200;
+    } catch (e) {
+      AppLogger.error('Error changing password', e);
+      return false;
+    }
+  }
+
+  Future<bool> requestPasswordReset(String email) async {
+    try {
+      final response = await _network.post('/api/auth/request-password-reset', {
+        'email': email,
+      });
+      return response.statusCode == 200;
+    } catch (e) {
+      AppLogger.error('Error requesting password reset', e);
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword(String token, String newPassword) async {
+    try {
+      final response = await _network.post('/api/auth/reset-password', {
+        'token': token,
+        'newPassword': newPassword,
+      });
+      return response.statusCode == 200;
+    } catch (e) {
+      AppLogger.error('Error resetting password', e);
+      return false;
+    }
+  }
 }

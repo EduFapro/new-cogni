@@ -245,6 +245,14 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
                   ? const ProgressRing()
                   : const Text("Registrar"),
             ),
+            const SizedBox(height: 12),
+            HyperlinkButton(
+              onPressed: () => context.go('/login'),
+              child: const Text(
+                'Voltar ao Login',
+                style: TextStyle(color: AppColors.softWhite),
+              ),
+            ),
           ],
         ),
       ),

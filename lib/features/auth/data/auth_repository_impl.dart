@@ -142,4 +142,29 @@ class AuthRepositoryImpl implements AuthRepository {
     _network.setToken(null);
     return _local.clearCurrentUser();
   }
+
+  @override
+  Future<bool> changePassword(String oldPassword, String newPassword) {
+    if (_env == AppEnv.offline) {
+      // Not supported in offline mode for now
+      return Future.value(false);
+    }
+    return _remote.changePassword(oldPassword, newPassword);
+  }
+
+  @override
+  Future<bool> requestPasswordReset(String email) {
+    if (_env == AppEnv.offline) {
+      return Future.value(false);
+    }
+    return _remote.requestPasswordReset(email);
+  }
+
+  @override
+  Future<bool> resetPassword(String token, String newPassword) {
+    if (_env == AppEnv.offline) {
+      return Future.value(false);
+    }
+    return _remote.resetPassword(token, newPassword);
+  }
 }

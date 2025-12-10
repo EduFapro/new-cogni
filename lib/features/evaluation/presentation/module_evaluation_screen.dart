@@ -19,9 +19,12 @@ class ModuleEvaluationScreen extends ConsumerWidget {
 
     return ScaffoldPage(
       header: PageHeader(
-        title: const Text('Avaliação por Módulo'),
+        title: const Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: Text('Avaliação por Módulo'),
+        ),
         leading: IconButton(
-          icon: const Icon(FluentIcons.back),
+          icon: const Icon(FluentIcons.back, size: 32.0),
           onPressed: () {
             // Invalidate the provider when navigating back to force a refresh
             ref.invalidate(moduleInstancesByEvaluationProvider(evaluationId));

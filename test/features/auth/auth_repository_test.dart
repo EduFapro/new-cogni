@@ -20,6 +20,21 @@ class MockEvaluatorRemoteDataSource implements EvaluatorRemoteDataSource {
   Future<Map<String, dynamic>?> getEvaluatorById(int id) async {
     return null;
   }
+
+  @override
+  Future<bool> changePassword(String oldPassword, String newPassword) async {
+    return true;
+  }
+
+  @override
+  Future<bool> requestPasswordReset(String email) async {
+    return true;
+  }
+
+  @override
+  Future<bool> resetPassword(String token, String newPassword) async {
+    return true;
+  }
 }
 
 class MockNetworkService extends NetworkService {

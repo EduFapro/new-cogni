@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../providers/providers.dart';
 import '../participant/presentation/create_participant_screen.dart';
 import '../participant/presentation/participant_list_screen.dart';
+import '../auth/presentation/change_password_dialog.dart';
 
 import 'home_providers.dart';
 import 'backend_status_provider.dart';
@@ -17,13 +18,13 @@ class HomeScreen extends HookConsumerWidget {
     final selectedIndex = ref.watch(homeNavigationProvider);
 
     return NavigationView(
-      appBar: NavigationAppBar(
-        title: const Text('Início CogniVoice'),
-        actions: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [const BackendStatusIndicator(), const SizedBox(width: 16)],
-        ),
-      ),
+      // appBar: NavigationAppBar(
+      //   title: const Text('Início CogniVoice'),
+      //   actions: Row(
+      //     mainAxisSize: MainAxisSize.min,
+      //     children: [const SizedBox(width: 16)],
+      //   ),
+      // ),
       pane: NavigationPane(
         selected: selectedIndex,
         onChanged: (index) => ref
@@ -49,6 +50,17 @@ class HomeScreen extends HookConsumerWidget {
         ],
         footerItems: [
           PaneItemSeparator(),
+          PaneItem(
+            icon: const Icon(FluentIcons.lock),
+            title: const Text('Alterar Senha'),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => const ChangePasswordDialog(),
+              );
+            },
+            body: const SizedBox.shrink(),
+          ),
           PaneItem(
             icon: const Icon(FluentIcons.sign_out),
             title: const Text('Sair'),
@@ -78,13 +90,17 @@ class DashboardContent extends StatelessWidget {
           style: FluentTheme.of(context).typography.title,
         ),
       ),
-      children: const [Text('Aqui é o conteúdo principal do dashboard.')],
+      children: const [
+        BackendStatusCard(),
+        // SizedBox(height: 24),
+        // Text('Aqui é o conteúdo principal do dashboard.'),
+      ],
     );
   }
 }
 
-class BackendStatusIndicator extends HookConsumerWidget {
-  const BackendStatusIndicator({super.key});
+class BackendStatusCard extends HookConsumerWidget {
+  const BackendStatusCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -96,23 +112,56 @@ class BackendStatusIndicator extends HookConsumerWidget {
       BackendStatus.disconnected => Colors.red,
     };
 
-    final tooltip = switch (status) {
-      BackendStatus.checking => 'Verificando conexão...',
-      BackendStatus.connected => 'Conectado ao servidor',
-      BackendStatus.disconnected => 'Desconectado (Offline)',
+    final icon = switch (status) {
+      BackendStatus.checking => FluentIcons.sync,
+      BackendStatus.connected => FluentIcons.plug_connected,
+      BackendStatus.disconnected => FluentIcons.plug_disconnected,
     };
 
-    return Tooltip(
-      message: tooltip,
-      child: IconButton(
-        icon: Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        onPressed: () {
-          ref.read(backendStatusProvider.notifier).checkStatus();
-        },
+    final title = switch (status) {
+      BackendStatus.checking => 'Verificando conexão...',
+      BackendStatus.connected => 'Conectado ao Servidor',
+      BackendStatus.disconnected => 'Desconectado',
+    };
+
+    final subtitle = switch (status) {
+      BackendStatus.checking => 'Aguarde enquanto testamos a conexão.',
+      BackendStatus.connected => 'Sincronização de dados ativa.',
+      BackendStatus.disconnected => 'Verifique sua internet ou o servidor.',
+    };
+
+    return Card(
+      backgroundColor: color.withOpacity(0.1),
+      borderColor: color.withOpacity(0.5),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: FluentTheme.of(
+                    context,
+                  ).typography.bodyStrong?.copyWith(color: color),
+                ),
+                Text(
+                  subtitle,
+                  style: FluentTheme.of(context).typography.caption,
+                ),
+              ],
+            ),
+          ),
+          Button(
+            onPressed: () {
+              ref.read(backendStatusProvider.notifier).checkStatus();
+            },
+            child: const Text('Verificar'),
+          ),
+        ],
       ),
     );
   }

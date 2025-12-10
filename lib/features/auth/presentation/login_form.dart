@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../providers/auth_providers.dart';
+import 'forgot_password_dialog.dart';
 
 class LoginForm extends HookConsumerWidget {
   const LoginForm({super.key});
@@ -108,11 +109,19 @@ class LoginForm extends HookConsumerWidget {
 
             Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                "Esqueceu a senha?",
-                style: TextStyle(
-                  color: AppColors.skyBlue,
-                  decoration: TextDecoration.underline,
+              child: HyperlinkButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const ForgotPasswordDialog(),
+                  );
+                },
+                child: const Text(
+                  "Esqueceu a senha?",
+                  style: TextStyle(
+                    color: AppColors.skyBlue,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
             ),
