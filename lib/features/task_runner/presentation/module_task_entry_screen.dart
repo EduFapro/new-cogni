@@ -9,8 +9,15 @@ import 'countdown_screen.dart';
 
 class ModuleTaskEntryScreen extends ConsumerWidget {
   final int moduleInstanceId;
+  final Color? backgroundColor;
+  final String? customMessage;
 
-  const ModuleTaskEntryScreen({super.key, required this.moduleInstanceId});
+  const ModuleTaskEntryScreen({
+    super.key,
+    required this.moduleInstanceId,
+    this.backgroundColor,
+    this.customMessage,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,14 +48,15 @@ class ModuleTaskEntryScreen extends ConsumerWidget {
         );
 
         final isResuming = sorted.any((t) => t.status == TaskStatus.completed);
-        final message = isResuming
+        final defaultMessage = isResuming
             ? 'Retomando avaliação em'
             : 'Iniciando avaliação em';
 
         return CountdownScreen(
           targetWidget: TaskRunnerScreen(taskInstanceId: next.id),
           countdownSeconds: 5,
-          message: message,
+          message: customMessage ?? defaultMessage,
+          backgroundColor: backgroundColor,
         );
       },
     );

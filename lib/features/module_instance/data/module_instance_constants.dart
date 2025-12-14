@@ -7,16 +7,19 @@ class ModuleInstanceFields {
   static const moduleId = ModuleFields.id;
   static const evaluationId = EvaluationFields.id;
   static const status = 'status';
+  static const completionDate = 'completionDate';
 
-  static const values = [id, moduleId, evaluationId, status];
+  static const values = [id, moduleId, evaluationId, status, completionDate];
 }
 
-const scriptCreateTableModuleInstances = '''
+const scriptCreateTableModuleInstances =
+    '''
 CREATE TABLE ${Tables.moduleInstances} (
   ${ModuleInstanceFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${ModuleInstanceFields.moduleId} INTEGER NOT NULL,
   ${ModuleInstanceFields.evaluationId} INTEGER NOT NULL,
   ${ModuleInstanceFields.status} INT NOT NULL CHECK(${ModuleInstanceFields.status} >= 1 AND ${ModuleInstanceFields.status} <= 3),
+  ${ModuleInstanceFields.completionDate} TEXT,
     FOREIGN KEY (${ModuleInstanceFields.moduleId}) REFERENCES ${Tables.modules}(${ModuleFields.id}),
   FOREIGN KEY (${ModuleInstanceFields.evaluationId}) REFERENCES ${Tables.evaluations}(${EvaluationFields.id})
 )

@@ -1,7 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/constants/enums/laterality_enums.dart';
 import '../../../core/constants/enums/person_enums.dart';
@@ -26,7 +25,6 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
     final surnameController = useTextEditingController();
 
     final birthDate = useState<DateTime?>(null);
-    final evaluationDate = useState<DateTime?>(null);
 
     final selectedGender = useState<Sex?>(null);
     final selectedEducation = useState<EducationLevel?>(null);
@@ -96,7 +94,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       nameController.clear();
       surnameController.clear();
       birthDate.value = null;
-      evaluationDate.value = null;
+
       selectedGender.value = null;
       selectedEducation.value = null;
       selectedLaterality.value = null;
@@ -321,22 +319,6 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-
-          InfoLabel(
-            label: 'Data da Avaliação (opcional)',
-            child: CustomDatePicker(
-              selected: evaluationDate.value,
-              allowManual: true,
-              onChanged: (date) => evaluationDate.value = date,
-            ),
-          ),
-          if (evaluationDate.value != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                '📅 Dia da semana: ${DateFormat('EEEE', 'pt_BR').format(evaluationDate.value!)}',
-              ),
-            ),
 
           const SizedBox(height: 24),
 

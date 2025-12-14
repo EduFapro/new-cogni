@@ -8,6 +8,8 @@ class TaskInstanceFields {
   static const moduleInstanceId = ModuleInstanceFields.id;
   static const status = 'status';
   static const executionDuration = 'execution_duration';
+  static const videoPath = 'videoPath';
+  static const completionDate = 'completionDate';
 
   static const values = [
     id,
@@ -15,6 +17,8 @@ class TaskInstanceFields {
     moduleInstanceId,
     status,
     executionDuration,
+    videoPath,
+    completionDate,
   ];
 }
 
@@ -26,6 +30,8 @@ CREATE TABLE ${Tables.taskInstances} (
   ${TaskInstanceFields.moduleInstanceId} INTEGER NOT NULL,
   ${TaskInstanceFields.status} INT NOT NULL CHECK(${TaskInstanceFields.status} IN (1, 2, 3)),
   ${TaskInstanceFields.executionDuration} TEXT,
+  ${TaskInstanceFields.videoPath} TEXT,
+  ${TaskInstanceFields.completionDate} TEXT,
   FOREIGN KEY (${TaskInstanceFields.taskId}) REFERENCES ${Tables.tasks}(${TaskFields.id}),
   FOREIGN KEY (${TaskInstanceFields.moduleInstanceId}) REFERENCES ${Tables.moduleInstances}(${ModuleInstanceFields.id})
 )

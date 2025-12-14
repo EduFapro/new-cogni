@@ -6,12 +6,14 @@ class CountdownScreen extends StatefulWidget {
   final Widget targetWidget;
   final int countdownSeconds;
   final String? message;
+  final Color? backgroundColor;
 
   const CountdownScreen({
     super.key,
     required this.targetWidget,
     this.countdownSeconds = 5,
     this.message,
+    this.backgroundColor,
   });
 
   @override
@@ -77,7 +79,7 @@ class _CountdownScreenState extends State<CountdownScreen>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF1A1A1A),
+      color: widget.backgroundColor ?? const Color(0xFF1A1A1A),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -7,6 +7,7 @@ class ModuleInstanceEntity {
   final int evaluationId;
   final ModuleStatus status;
   final ModuleEntity? module;
+  final String? completionDate;
 
   const ModuleInstanceEntity({
     this.id,
@@ -14,6 +15,7 @@ class ModuleInstanceEntity {
     required this.evaluationId,
     this.status = ModuleStatus.pending,
     this.module,
+    this.completionDate,
   });
 
   ModuleInstanceEntity copyWith({
@@ -22,6 +24,7 @@ class ModuleInstanceEntity {
     int? evaluationId,
     ModuleStatus? status,
     ModuleEntity? module,
+    String? completionDate,
   }) {
     return ModuleInstanceEntity(
       id: id ?? this.id,
@@ -29,6 +32,7 @@ class ModuleInstanceEntity {
       evaluationId: evaluationId ?? this.evaluationId,
       status: status ?? this.status,
       module: module ?? this.module,
+      completionDate: completionDate ?? this.completionDate,
     );
   }
 
@@ -42,6 +46,7 @@ class ModuleInstanceEntity {
     'moduleId': moduleId,
     'evaluationId': evaluationId,
     'status': status.numericValue,
+    'completionDate': completionDate,
   };
 
   // For receiving from backend API
@@ -51,6 +56,7 @@ class ModuleInstanceEntity {
       moduleId: json['moduleId'] as int,
       evaluationId: json['evaluationId'] as int,
       status: ModuleStatus.fromValue(json['status'] as int),
+      completionDate: json['completionDate'] as String?,
     );
   }
 }

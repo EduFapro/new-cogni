@@ -12,6 +12,7 @@ class EvaluatorFields {
   static const password = "password";
   static const firstLogin = "first_login";
   static const isAdmin = "is_admin";
+  static const creationDate = "creationDate";
 
   static const values = [
     id,
@@ -25,10 +26,12 @@ class EvaluatorFields {
     password,
     firstLogin,
     isAdmin,
+    creationDate,
   ];
 }
 
-const scriptCreateTableEvaluators = '''
+const scriptCreateTableEvaluators =
+    '''
 CREATE TABLE ${Tables.evaluators} (
   ${EvaluatorFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${EvaluatorFields.name} TEXT NOT NULL,
@@ -40,6 +43,7 @@ CREATE TABLE ${Tables.evaluators} (
   ${EvaluatorFields.username} TEXT NOT NULL UNIQUE,
   ${EvaluatorFields.password} TEXT NOT NULL DEFAULT '0000',
   ${EvaluatorFields.firstLogin} INTEGER NOT NULL DEFAULT 0,
-  ${EvaluatorFields.isAdmin} INTEGER NOT NULL DEFAULT 0
+  ${EvaluatorFields.isAdmin} INTEGER NOT NULL DEFAULT 0,
+  ${EvaluatorFields.creationDate} TEXT
 );
 ''';

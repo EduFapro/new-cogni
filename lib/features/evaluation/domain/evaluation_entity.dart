@@ -11,6 +11,8 @@ class EvaluationEntity {
   final DateTime evaluationDate;
   final int language;
   final String avatar;
+  final String? creationDate;
+  final String? completionDate;
 
   EvaluationEntity({
     this.evaluationID,
@@ -20,6 +22,8 @@ class EvaluationEntity {
     required this.participantID,
     required this.language,
     this.avatar = 'Joana',
+    this.creationDate,
+    this.completionDate,
   }) : evaluationDate = evaluationDate ?? DateTime.now();
 
   Map<String, dynamic> toMap() => {
@@ -30,6 +34,8 @@ class EvaluationEntity {
     EvaluationFields.status: status.numericValue,
     EvaluationFields.language: language,
     EvaluationFields.avatar: avatar,
+    'creationDate': creationDate,
+    'completionDate': completionDate,
   };
 
   static EvaluationEntity fromMap(Map<String, dynamic> map) {
@@ -43,6 +49,8 @@ class EvaluationEntity {
       evaluationDate: map[EvaluationFields.date] != null
           ? DateTime.tryParse(map[EvaluationFields.date]) ?? DateTime.now()
           : DateTime.now(),
+      creationDate: map['creationDate'],
+      completionDate: map['completionDate'],
     );
   }
 

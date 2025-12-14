@@ -11,6 +11,8 @@ class TaskInstanceModel extends TaskInstanceEntity {
     required super.moduleInstanceId,
     required super.status,
     super.executionDuration,
+    super.videoPath,
+    super.completionDate,
     super.task,
   });
 
@@ -21,6 +23,8 @@ class TaskInstanceModel extends TaskInstanceEntity {
       moduleInstanceId: map[TaskInstanceFields.moduleInstanceId] as int,
       status: TaskStatus.fromValue(map[TaskInstanceFields.status] as int),
       executionDuration: map[TaskInstanceFields.executionDuration] as String?,
+      videoPath: map['videoPath'] as String?,
+      completionDate: map['completionDate'] as String?,
     );
 
     // If task_title is present (from JOIN), populate the task entity
@@ -47,6 +51,8 @@ class TaskInstanceModel extends TaskInstanceEntity {
     TaskInstanceFields.moduleInstanceId: moduleInstanceId,
     TaskInstanceFields.status: status.numericValue,
     TaskInstanceFields.executionDuration: executionDuration,
+    'videoPath': videoPath,
+    'completionDate': completionDate,
   };
 
   factory TaskInstanceModel.fromEntity(TaskInstanceEntity entity) {
@@ -56,6 +62,8 @@ class TaskInstanceModel extends TaskInstanceEntity {
       moduleInstanceId: entity.moduleInstanceId,
       status: entity.status,
       executionDuration: entity.executionDuration,
+      videoPath: entity.videoPath,
+      completionDate: entity.completionDate,
       task: entity.task,
     );
   }
@@ -67,6 +75,8 @@ class TaskInstanceModel extends TaskInstanceEntity {
       moduleInstanceId: moduleInstanceId,
       status: status,
       executionDuration: executionDuration,
+      videoPath: videoPath,
+      completionDate: completionDate,
       task: task,
     );
   }

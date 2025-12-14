@@ -11,6 +11,7 @@ class ParticipantEntity {
   final Sex sex;
   final EducationLevel educationLevel;
   final Laterality laterality;
+  final String? creationDate;
 
   ParticipantEntity({
     this.participantID,
@@ -20,6 +21,7 @@ class ParticipantEntity {
     required this.sex,
     required this.educationLevel,
     required this.laterality,
+    this.creationDate,
   });
 
   static ParticipantEntity fromMap(Map<String, dynamic> map) {
@@ -33,6 +35,7 @@ class ParticipantEntity {
         map[ParticipantFields.educationLevel],
       ),
       laterality: Laterality.fromValue(map[ParticipantFields.laterality]),
+      creationDate: map['creationDate'],
     );
   }
 
@@ -44,6 +47,7 @@ class ParticipantEntity {
     ParticipantFields.sex: sex.numericValue,
     ParticipantFields.educationLevel: educationLevel.numericValue,
     ParticipantFields.laterality: laterality.numericValue,
+    'creationDate': creationDate,
   };
 
   // For sending to backend API (unencrypted - backend stores plain text)
@@ -74,6 +78,7 @@ class ParticipantEntity {
       sex: Sex.fromValue(json['sex'] as int),
       educationLevel: EducationLevel.fromValue(json['educationLevel'] as int),
       laterality: Laterality.fromValue(json['laterality'] as int),
+      creationDate: json['creationDate'] as String?,
     );
   }
 
@@ -85,6 +90,7 @@ class ParticipantEntity {
     Sex? sex,
     EducationLevel? educationLevel,
     Laterality? laterality,
+    String? creationDate,
   }) {
     return ParticipantEntity(
       participantID: participantID ?? this.participantID,
@@ -94,6 +100,7 @@ class ParticipantEntity {
       sex: sex ?? this.sex,
       educationLevel: educationLevel ?? this.educationLevel,
       laterality: laterality ?? this.laterality,
+      creationDate: creationDate ?? this.creationDate,
     );
   }
 

@@ -45,7 +45,7 @@ app.*.map.json
 /android/app/release
 
 # Environment secrets
-.env
+# .env
 
 # Generated SQL and credentials
 lib/fake_prod_seed_encrypted.sql
@@ -55,4 +55,5 @@ project_dart_files.txt
 lib/fake_prod_seed.sql
 
 
-logs/
+# logs/
+!.env

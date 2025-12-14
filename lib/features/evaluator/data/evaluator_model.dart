@@ -16,6 +16,7 @@ class EvaluatorModel extends EvaluatorEntity {
     // Align with DB default (0 → false)
     super.firstLogin = false,
     super.token,
+    super.creationDate,
   });
 
   factory EvaluatorModel.fromMap(Map<String, dynamic> map) => EvaluatorModel(
@@ -30,6 +31,7 @@ class EvaluatorModel extends EvaluatorEntity {
     password: map[EvaluatorFields.password] as String,
     firstLogin: (map[EvaluatorFields.firstLogin] as int) == 1,
     token: map['token'] as String?,
+    creationDate: map['creationDate'] as String?,
   );
 
   factory EvaluatorModel.fromJson(Map<String, dynamic> json) => EvaluatorModel(
@@ -44,6 +46,7 @@ class EvaluatorModel extends EvaluatorEntity {
     password: json['password'] as String,
     firstLogin: json['firstLogin'] as bool? ?? false,
     token: json['token'] as String?,
+    creationDate: json['creationDate'] as String?,
   );
 
   Map<String, dynamic> toMap() => {
@@ -58,6 +61,7 @@ class EvaluatorModel extends EvaluatorEntity {
     EvaluatorFields.password: password,
     EvaluatorFields.firstLogin: firstLogin ? 1 : 0,
     'token': token,
+    'creationDate': creationDate,
   };
 
   Map<String, dynamic> toEvaluatorTableMap() => {
@@ -71,6 +75,7 @@ class EvaluatorModel extends EvaluatorEntity {
     EvaluatorFields.username: username,
     EvaluatorFields.password: password,
     EvaluatorFields.firstLogin: firstLogin ? 1 : 0,
+    'creationDate': creationDate,
   };
 
   Map<String, dynamic> toJson() => {
@@ -85,6 +90,7 @@ class EvaluatorModel extends EvaluatorEntity {
     'password': password,
     'firstLogin': firstLogin,
     'token': token,
+    'creationDate': creationDate,
   };
 
   factory EvaluatorModel.fromEntity(EvaluatorEntity entity) => EvaluatorModel(
@@ -99,6 +105,7 @@ class EvaluatorModel extends EvaluatorEntity {
     password: entity.password,
     firstLogin: entity.firstLogin,
     token: entity.token,
+    creationDate: entity.creationDate,
   );
 
   factory EvaluatorModel.fromDTO(EvaluatorRegistrationData dto) {
@@ -127,6 +134,7 @@ class EvaluatorModel extends EvaluatorEntity {
     String? password,
     bool? firstLogin,
     String? token,
+    String? creationDate,
   }) {
     return EvaluatorModel(
       evaluatorId: evaluatorId ?? this.evaluatorId,
@@ -140,6 +148,7 @@ class EvaluatorModel extends EvaluatorEntity {
       password: password ?? this.password,
       firstLogin: firstLogin ?? this.firstLogin,
       token: token ?? this.token,
+      creationDate: creationDate ?? this.creationDate,
     );
   }
 }

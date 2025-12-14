@@ -10,6 +10,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
     required super.evaluationId,
     required super.status,
     super.module,
+    super.completionDate,
   });
 
   factory ModuleInstanceModel.fromMap(Map<String, dynamic> map) {
@@ -18,6 +19,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
       moduleId: map[ModuleInstanceFields.moduleId] as int,
       evaluationId: map[ModuleInstanceFields.evaluationId] as int,
       status: ModuleStatus.fromValue(map[ModuleInstanceFields.status] as int),
+      completionDate: map['completionDate'] as String?,
     );
   }
 
@@ -26,6 +28,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
     ModuleInstanceFields.moduleId: moduleId,
     ModuleInstanceFields.evaluationId: evaluationId,
     ModuleInstanceFields.status: status.numericValue,
+    'completionDate': completionDate,
   };
 
   factory ModuleInstanceModel.fromEntity(ModuleInstanceEntity entity) {
@@ -35,6 +38,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
       evaluationId: entity.evaluationId,
       status: entity.status,
       module: entity.module,
+      completionDate: entity.completionDate,
     );
   }
 
@@ -45,6 +49,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
       evaluationId: evaluationId,
       status: status,
       module: module,
+      completionDate: completionDate,
     );
   }
 
@@ -54,6 +59,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
     int? evaluationId,
     ModuleStatus? status,
     ModuleEntity? module,
+    String? completionDate,
   }) {
     return ModuleInstanceModel(
       id: id ?? this.id,
@@ -61,8 +67,7 @@ class ModuleInstanceModel extends ModuleInstanceEntity {
       evaluationId: evaluationId ?? this.evaluationId,
       status: status ?? this.status,
       module: module ?? this.module,
+      completionDate: completionDate ?? this.completionDate,
     );
   }
-
-
 }

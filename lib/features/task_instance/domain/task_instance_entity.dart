@@ -7,6 +7,8 @@ class TaskInstanceEntity {
   final int moduleInstanceId;
   final TaskStatus status;
   final String? executionDuration;
+  final String? videoPath;
+  final String? completionDate;
   final TaskEntity? task;
 
   const TaskInstanceEntity({
@@ -15,6 +17,8 @@ class TaskInstanceEntity {
     required this.moduleInstanceId,
     this.status = TaskStatus.pending,
     this.executionDuration,
+    this.videoPath,
+    this.completionDate,
     this.task,
   });
 
@@ -24,6 +28,8 @@ class TaskInstanceEntity {
     int? moduleInstanceId,
     TaskStatus? status,
     String? executionDuration,
+    String? videoPath,
+    String? completionDate,
     TaskEntity? task,
   }) {
     return TaskInstanceEntity(
@@ -32,6 +38,8 @@ class TaskInstanceEntity {
       moduleInstanceId: moduleInstanceId ?? this.moduleInstanceId,
       status: status ?? this.status,
       executionDuration: executionDuration ?? this.executionDuration,
+      videoPath: videoPath ?? this.videoPath,
+      completionDate: completionDate ?? this.completionDate,
       task: task ?? this.task,
     );
   }
@@ -47,6 +55,8 @@ class TaskInstanceEntity {
     'moduleInstanceId': moduleInstanceId,
     'status': status.numericValue,
     if (executionDuration != null) 'executionDuration': executionDuration,
+    if (videoPath != null) 'videoPath': videoPath,
+    if (completionDate != null) 'completionDate': completionDate,
   };
 
   // For receiving from backend API
@@ -57,6 +67,8 @@ class TaskInstanceEntity {
       moduleInstanceId: json['moduleInstanceId'] as int,
       status: TaskStatus.fromValue(json['status'] as int),
       executionDuration: json['executionDuration'] as String?,
+      videoPath: json['videoPath'] as String?,
+      completionDate: json['completionDate'] as String?,
     );
   }
 }

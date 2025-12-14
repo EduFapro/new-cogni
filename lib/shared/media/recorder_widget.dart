@@ -5,6 +5,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
+import '../../core/theme/app_colors.dart';
+
 class RecorderWidget extends StatefulWidget {
   final void Function(File recordingFile, Duration duration)?
   onRecordingFinished;
@@ -252,23 +254,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     if (_isFinished) return const SizedBox.shrink();
 
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF0078D4).withOpacity(0.95),
-            const Color(0xFF005A9E).withOpacity(0.95),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
+      color: AppColors.navyBlue,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 48),
         child: Column(

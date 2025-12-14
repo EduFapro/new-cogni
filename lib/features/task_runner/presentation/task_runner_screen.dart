@@ -21,6 +21,7 @@ import '../../task_instance/domain/task_instance_providers.dart';
 import 'image_record_task_screen.dart';
 
 import 'media_record_task_screen.dart';
+import 'module_task_entry_screen.dart';
 
 import '../../../../core/utils/video_path_service.dart';
 import '../../evaluation/domain/evaluation_entity.dart';
@@ -483,6 +484,42 @@ class TaskRunnerScreen extends ConsumerWidget {
             AppLogger.info(
               '⏳ Some modules still pending in evaluation $evaluationId',
             );
+          }
+        }
+
+        // Check for next module to navigate automatically
+        if (allCompleted && evaluationId != null) {
+          final allModulesInEvaluation = await moduleInstanceRepo
+              .getModuleInstancesByEvaluationId(evaluationId);
+
+          // Sort modules to find the sequence
+          final sortedModules = [...allModulesInEvaluation]
+            ..sort((a, b) => (a.id ?? 0).compareTo(b.id ?? 0));
+
+          final currentModuleIndex = sortedModules.indexWhere(
+            (m) => m.id == currentInstance.moduleInstanceId,
+          );
+
+          if (currentModuleIndex != -1 &&
+              currentModuleIndex < sortedModules.length - 1) {
+            final nextModule = sortedModules[currentModuleIndex + 1];
+            AppLogger.info(
+              '➡️ Found next module: ID=${nextModule.id}. Navigating to transition screen.',
+            );
+
+            if (context.mounted) {
+              Navigator.pushReplacement(
+                context,
+                FluentPageRoute(
+                  builder: (_) => ModuleTaskEntryScreen(
+                    moduleInstanceId: nextModule.id!,
+                    backgroundColor: Colors.green,
+                    customMessage: 'Iniciando próximo módulo em',
+                  ),
+                ),
+              );
+              return;
+            }
           }
         }
       }

@@ -8,6 +8,7 @@ class ParticipantFields {
   static const sex = "sex";
   static const birthDate = "birth_date";
   static const laterality = "laterality";
+  static const creationDate = "creationDate";
 
   static const values = [
     id,
@@ -17,6 +18,7 @@ class ParticipantFields {
     sex,
     birthDate,
     laterality,
+    creationDate,
   ];
 }
 
@@ -29,6 +31,7 @@ CREATE TABLE ${Tables.participants} (
   ${ParticipantFields.educationLevel} INT CHECK(${ParticipantFields.educationLevel} BETWEEN 1 AND 9),
   ${ParticipantFields.sex} INT CHECK(${ParticipantFields.sex} IN (1, 2, 3)),
   ${ParticipantFields.birthDate} TIMESTAMP,
-  ${ParticipantFields.laterality} INT NOT NULL
+  ${ParticipantFields.laterality} INT NOT NULL,
+  ${ParticipantFields.creationDate} TEXT
 );
 ''';

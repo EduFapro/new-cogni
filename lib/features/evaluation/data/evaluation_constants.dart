@@ -10,6 +10,8 @@ class EvaluationFields {
   static const status = "status";
   static const language = "language";
   static const avatar = "avatar";
+  static const creationDate = "creationDate";
+  static const completionDate = "completionDate";
 
   static const values = [
     id,
@@ -19,6 +21,8 @@ class EvaluationFields {
     status,
     language,
     avatar,
+    creationDate,
+    completionDate,
   ];
 }
 
@@ -32,6 +36,8 @@ CREATE TABLE ${Tables.evaluations} (
   ${EvaluationFields.status} INT CHECK(${EvaluationFields.status} >= 0 AND ${EvaluationFields.status} <= 3) NOT NULL,
   ${EvaluationFields.language} INT CHECK(${EvaluationFields.language} >= 1 AND ${EvaluationFields.language} <= 3),
   ${EvaluationFields.avatar} TEXT NOT NULL DEFAULT 'Joana',
+  ${EvaluationFields.creationDate} TEXT,
+  ${EvaluationFields.completionDate} TEXT,
   FOREIGN KEY (${EvaluationFields.evaluatorId}) REFERENCES ${Tables.evaluators}(${EvaluatorFields.id}),
   FOREIGN KEY (${EvaluationFields.participantId}) REFERENCES ${Tables.participants}(${ParticipantFields.id})
 );
