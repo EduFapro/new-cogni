@@ -12,10 +12,10 @@ class EvaluatorLocalDataSource {
   EvaluatorLocalDataSource(this._db);
 
   /// Insert evaluator securely (encrypt PII, hash password)
-  Future<void> insert(EvaluatorModel evaluator) async {
+  Future<int> insert(EvaluatorModel evaluator) async {
     AppLogger.db('[EVALUATOR] Inserting evaluator: ${evaluator.email}');
     final secured = await EvaluatorSecureService.encrypt(evaluator);
-    await _db.insert(
+    return await _db.insert(
       Tables.evaluators,
       secured.toEvaluatorTableMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,

@@ -35,20 +35,31 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
 
     // 1. Local Insert
     final model = EvaluatorModel.fromDTO(data);
-    await local.insert(model);
-    AppLogger.db('[REPO] Evaluator inserted into local DB');
+    final localId = await local.insert(model);
+    AppLogger.db('[REPO] Evaluator inserted into local DB with ID: $localId');
 
-    // 2. Remote Sync (Fire-and-forget)
+    // 2. Remote Sync
     if (remote != null) {
       if (EnvHelper.currentEnv != AppEnv.offline) {
-        _syncToBackend(() async {
+        try {
+          // We wait for remote to ensure validation passes (USER REQUEST)
+          // If remote fails (e.g. 400 Bad Request), we rollback local to avoid inconsistent state
           final backendId = await remote!.createEvaluator(data);
           if (backendId != null) {
             AppLogger.info(
               '[REPO] Evaluator synced to backend with ID: $backendId',
             );
+            // Optionally update local with backendId if needed, but for now just success
           }
-        });
+        } catch (e, s) {
+          AppLogger.error(
+            'Remote creation failed. Rolling back local insertion.',
+            e,
+            s,
+          );
+          await local.deleteById(localId);
+          rethrow; // Rethrow to notify UI
+        }
       } else {
         AppLogger.info('📴 Offline mode: Skipping Evaluator sync.');
       }
@@ -58,16 +69,5 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
   @override
   Future<bool> hasAnyEvaluatorAdmin() async {
     return await local.hasAnyEvaluatorAdmin();
-  }
-
-  // Helper method for fire-and-forget backend sync
-  void _syncToBackend(Future<void> Function() syncOperation) {
-    syncOperation().catchError((error, stackTrace) {
-      AppLogger.error(
-        'Backend sync failed (continuing locally)',
-        error,
-        stackTrace,
-      );
-    });
   }
 }
