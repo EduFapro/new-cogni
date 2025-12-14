@@ -240,13 +240,13 @@ class MockEvaluatorLocalDataSource extends _i1.Mock
   }
 
   @override
-  _i4.Future<void> insert(_i9.EvaluatorModel? evaluator) =>
+  _i4.Future<int> insert(_i9.EvaluatorModel? evaluator) =>
       (super.noSuchMethod(
             Invocation.method(#insert, [evaluator]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i4.Future<int>.value(0),
+            returnValueForMissingStub: _i4.Future<int>.value(0),
           )
-          as _i4.Future<void>);
+          as _i4.Future<int>);
 
   @override
   _i4.Future<List<_i9.EvaluatorModel>> getAll() =>
