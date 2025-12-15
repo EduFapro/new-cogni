@@ -35,7 +35,11 @@ class AppLogger {
         await logsDir.create(recursive: true);
       }
 
-      final date = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
+      // Cleanup old logs (older than 7 days)
+      _cleanupOldLogs(logsDir);
+
+      // Daily Log File: log_2025-12-14.txt
+      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       _logFile = File('${logsDir.path}${sep}log_$date.txt');
 
       // Force create file if it doesn't exist
@@ -49,6 +53,28 @@ class AppLogger {
       debugPrint('❌ Failed to initialize log file: $e');
     }
   }
+
+  static Future<void> _cleanupOldLogs(Directory logsDir) async {
+    try {
+      final now = DateTime.now();
+      final items = logsDir.listSync();
+
+      for (var item in items) {
+        if (item is File && item.path.endsWith('.txt')) {
+          final stat = await item.stat();
+          // Delete if modified more than 7 days ago
+          if (now.difference(stat.modified).inDays > 7) {
+            debugPrint('🗑️ Deleting old log: ${item.path}');
+            await item.delete();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Failed to clean up old logs: $e');
+    }
+  }
+
+  static File? get currentLogFile => _logFile;
 
   static void _writeToFile(
     String level,
