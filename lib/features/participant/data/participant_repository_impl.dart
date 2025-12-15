@@ -107,7 +107,7 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
 
   @override
   Future<List<ParticipantEntity>> getParticipantsByEvaluatorId(
-    int evaluatorId,
+    String evaluatorId,
   ) async {
     AppLogger.db(
       'ParticipantRepositoryImpl.getParticipantsByEvaluatorId → evaluatorId=$evaluatorId',

@@ -68,7 +68,7 @@ class CreateParticipantEvaluationNotifier
 
   Future<void> createParticipantWithEvaluation({
     required ParticipantEntity participant,
-    required int evaluatorId,
+    required String evaluatorId,
     required List<int> selectedModuleIds,
   }) async {
     state = const AsyncLoading();

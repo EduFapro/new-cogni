@@ -5,7 +5,7 @@ import '../data/evaluation_constants.dart';
 
 class EvaluationEntity {
   final int? evaluationID;
-  final int evaluatorID;
+  final String evaluatorID;
   final int participantID;
   final EvaluationStatus status;
   final DateTime evaluationDate;
@@ -41,7 +41,7 @@ class EvaluationEntity {
   static EvaluationEntity fromMap(Map<String, dynamic> map) {
     return EvaluationEntity(
       evaluationID: map[EvaluationFields.id] as int?,
-      evaluatorID: map[EvaluationFields.evaluatorId] as int,
+      evaluatorID: map[EvaluationFields.evaluatorId] as String,
       participantID: map[EvaluationFields.participantId] as int,
       language: map[EvaluationFields.language] as int,
       avatar: map[EvaluationFields.avatar] as String? ?? 'Joana',

@@ -8,6 +8,7 @@ class FakeAuthRepository implements AuthRepository {
   Future<EvaluatorModel?> login(String email, String password) async {
     if (email == 'john@example.com' && password == 'correctPassword') {
       final user = EvaluatorModel(
+        evaluatorId: 'uuid-1',
         name: 'John',
         surname: 'Doe',
         email: email,

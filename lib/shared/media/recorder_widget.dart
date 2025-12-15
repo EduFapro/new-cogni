@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
@@ -32,6 +33,7 @@ class RecorderWidget extends StatefulWidget {
 
 class _RecorderWidgetState extends State<RecorderWidget> {
   late final AudioRecorder _recorder;
+  late final Player _audioPlayer; // For sound effects
   bool _isRecording = false;
   bool _isPaused = false;
   bool _isBusy = false;
@@ -47,6 +49,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   void initState() {
     super.initState();
     _recorder = AudioRecorder();
+    _audioPlayer = Player();
+
     if (widget.autoStart && widget.requiresRecording) {
       // Optimistically set state to avoid "Pronto para gravar" flash
       _isRecording = true;
@@ -59,6 +63,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   void dispose() {
     _timer?.cancel();
     _recorder.dispose();
+    _audioPlayer.dispose();
     _cleanupTempFile();
     super.dispose();
   }
@@ -175,6 +180,10 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           _isFinished = true; // Mark as finished to prevent cleanup
           if (isTimeout) {
             _showTimeoutMessage = true;
+            // Play timeout sound
+            _audioPlayer.open(
+              Media('asset:///assets/audio/running_on_air_sound_effect.mp3'),
+            );
           }
         });
       }

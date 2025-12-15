@@ -9,7 +9,7 @@ final helloHowAreYouTask = TaskEntity(
   moduleID: sociodemographicInfoId,
   title: helloHowAreYouTaskTitle,
   transcript:
-  'Olá, tudo bem! Agora vou fazer algumas perguntas para conhecer você melhor.',
+      'Olá, tudo bem! Agora vou fazer algumas perguntas para conhecer você melhor.',
   videoAssetPath: VideoFilePaths.hello_how_are_you,
   taskMode: TaskMode.play,
   position: 1,
@@ -193,6 +193,7 @@ final recallWordsFromListFirstTimeTask = TaskEntity(
   moduleID: cognitiveFunctionsId,
   title: recallWordsFromListFirstTimeTaskTitle,
   taskMode: TaskMode.record,
+  mayRepeatPrompt: false,
   position: 12,
 );
 
@@ -210,6 +211,7 @@ final recallWordsFromListSecondTimeTask = TaskEntity(
   moduleID: cognitiveFunctionsId,
   title: recallWordsFromListSecondTimeTaskTitle,
   taskMode: TaskMode.record,
+  mayRepeatPrompt: false,
   position: 14,
 );
 
@@ -227,6 +229,7 @@ final recallWordsFromListThirdTimeTask = TaskEntity(
   moduleID: cognitiveFunctionsId,
   title: recallWordsFromListThirdTimeTaskTitle,
   taskMode: TaskMode.record,
+  mayRepeatPrompt: false,
   position: 16,
 );
 
@@ -268,6 +271,7 @@ final anasCatStoryTask = TaskEntity(
   moduleID: cognitiveFunctionsId,
   title: anasCatStoryTaskTitle,
   taskMode: TaskMode.record,
+  mayRepeatPrompt: false,
   position: 21,
 );
 
@@ -308,6 +312,10 @@ final describeWhatYouSeeTask = TaskEntity(
   moduleID: cognitiveFunctionsId,
   title: describeWhatYouSeeTaskTitle,
   taskMode: TaskMode.record,
+  imageAssetPath: 'assets/images/imagem_sala.png',
+  // Requires video to play first
+  videoAssetPath:
+      'assets/video/task_prompts/Joana/02-Funcoes_Cognitivas/08_JOANA_FUNCOES_COGNITIVAS_nomeacao.mp4', // Example, check actual path
   position: 26,
 );
 

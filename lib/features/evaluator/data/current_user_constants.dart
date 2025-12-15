@@ -14,6 +14,7 @@ class CurrentUserFields {
   static const firstLogin = EvaluatorFields.firstLogin;
   static const isAdmin = EvaluatorFields.isAdmin;
   static const token = 'token';
+  static const creationDate = 'creationDate';
 
   static const values = [
     id,
@@ -28,13 +29,14 @@ class CurrentUserFields {
     firstLogin,
     isAdmin,
     token,
+    creationDate,
   ];
 }
 
 const scriptCreateTableCurrentUser =
     '''
 CREATE TABLE ${Tables.currentUser} (
-  ${CurrentUserFields.id} INTEGER PRIMARY KEY,
+  ${CurrentUserFields.id} TEXT PRIMARY KEY,
   ${CurrentUserFields.name} TEXT NOT NULL,
   ${CurrentUserFields.surname} TEXT NOT NULL,
   ${CurrentUserFields.email} TEXT NOT NULL,
@@ -46,6 +48,7 @@ CREATE TABLE ${Tables.currentUser} (
   ${CurrentUserFields.isAdmin} INTEGER NOT NULL DEFAULT 0,
   ${CurrentUserFields.firstLogin} INTEGER NOT NULL DEFAULT 0,
   ${CurrentUserFields.token} TEXT,
+  ${CurrentUserFields.creationDate} TEXT,
   FOREIGN KEY (${CurrentUserFields.id})
     REFERENCES ${Tables.evaluators}(${EvaluatorFields.id})
     ON DELETE CASCADE ON UPDATE CASCADE

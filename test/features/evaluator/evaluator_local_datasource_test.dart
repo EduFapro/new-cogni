@@ -26,7 +26,7 @@ void main() {
 
   test('✅ Create evaluator and verify encrypted storage', () async {
     final evaluator = EvaluatorModel(
-      evaluatorId: null,
+      evaluatorId: "test-uuid-correct",
       name: 'John',
       surname: 'Doe',
       email: 'john.doe@example.com',
@@ -62,7 +62,7 @@ void main() {
 
   test('✅ Insert and fetch evaluator works with encryption', () async {
     final evaluator = EvaluatorModel(
-      evaluatorId: null,
+      evaluatorId: "test-uuid-correct",
       name: 'Jane',
       surname: 'Doe',
       email: 'jane@example.com',
@@ -89,7 +89,7 @@ void main() {
       const surname = 'Doe';
 
       final evaluator = EvaluatorModel(
-        evaluatorId: null,
+        evaluatorId: "test-uuid-correct",
         name: name,
         surname: surname,
         email: email,
@@ -118,7 +118,7 @@ void main() {
     const wrongPassword = 'wrongPassword456';
 
     final evaluator = EvaluatorModel(
-      evaluatorId: null,
+      evaluatorId: "test-uuid-correct",
       name: 'Fail',
       surname: 'Tester',
       email: 'fail@test.com',
@@ -141,7 +141,7 @@ void main() {
     const password = 'correctPassword';
 
     final evaluator = EvaluatorModel(
-      evaluatorId: null,
+      evaluatorId: "test-uuid-correct",
       name: 'Real',
       surname: 'User',
       email: 'real@user.com',

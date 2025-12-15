@@ -16,29 +16,66 @@ import 'package:path/path.dart' as p;
 import '../../features/recording_file/domain/recording_file_entity.dart';
 
 Future<void> exportParticipantsToExcel(
-  List<ParticipantWithEvaluation> list,
-) async {
+  List<ParticipantWithEvaluation> list, {
+  required Future<List<ModuleInstanceEntity>> Function(int evaluationId)
+  fetchModules,
+  required Future<List<TaskInstanceEntity>> Function(int moduleId) fetchTasks,
+}) async {
   final excel = Excel.createExcel();
-  final sheet = excel['Pacientes'];
+  // We'll rename the default sheet later or use it as Summary
 
-  // Header
-  sheet.appendRow([
+  // Summary Sheet
+  final summarySheet = excel['Resumo'];
+  excel.delete('Sheet1'); // Remove default if possible
+
+  summarySheet.appendRow([
     TextCellValue('Nome'),
     TextCellValue('Status'),
     TextCellValue('Data da Avaliação'),
   ]);
 
-  // Rows
   for (final p in list) {
-    sheet.appendRow([
+    summarySheet.appendRow([
       TextCellValue(p.fullName),
       TextCellValue(p.statusLabel),
       TextCellValue(p.evaluationDateFormatted),
     ]);
   }
 
+  // Individual Sheets
+  for (final p in list) {
+    // Generate a unique safe sheet name (Excel limit ~31 chars)
+    // We'll use "Lastname_Firstname" truncated
+    String sheetName = '${p.participant.surname}_${p.participant.name}'
+        .replaceAll(RegExp(r'[^a-zA-Z0-9_\- ]'), '');
+    if (sheetName.length > 30) sheetName = sheetName.substring(0, 30);
+
+    // Check duplicates? Excel handles duplicates by erroring or auto-renaming?
+    // safe approach: simple dedup check could be added but let's assume unique enough for now or let package handle.
+    // Actually current package might overwrite. Let's trust unique names or add ID if needed.
+
+    final sheet = excel[sheetName];
+
+    // Fetch data
+    List<ModuleInstanceEntity> modules = [];
+    Map<int, List<TaskInstanceEntity>> tasksByModule = {};
+
+    if (p.evaluation != null) {
+      modules = await fetchModules(p.evaluation!.evaluationID!);
+      for (final m in modules) {
+        if (m.id != null) {
+          final tasks = await fetchTasks(m.id!);
+          tasksByModule[m.id!] = tasks;
+        }
+      }
+    }
+
+    _writeParticipantToSheet(sheet, p, modules, tasksByModule);
+  }
+
   final directory = await getApplicationDocumentsDirectory();
-  final filePath = '${directory.path}/pacientes_exportados.xlsx';
+  final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+  final filePath = '${directory.path}/Relatorio_Geral_$timestamp.xlsx';
 
   final fileBytes = excel.encode();
   if (fileBytes == null) return;
@@ -47,7 +84,7 @@ Future<void> exportParticipantsToExcel(
     ..createSync(recursive: true)
     ..writeAsBytesSync(fileBytes);
 
-  debugPrint('📁 Exported to $filePath');
+  debugPrint('📁 Exported ALL to $filePath');
 }
 
 Future<void> exportSingleParticipantToExcel(
@@ -58,92 +95,14 @@ Future<void> exportSingleParticipantToExcel(
 }) async {
   final excel = Excel.createExcel();
   final sheet = excel['Relatório'];
-
-  // Remove default sheet if possible or just use 'Relatório'
   excel.delete('Sheet1');
 
-  // Helper to add a styled header row
-  void addHeader(String text) {
-    sheet.appendRow([TextCellValue(text)]);
-    // Note: styling is limited in this package version, but we structure it well.
-  }
-
-  // Helper to add a key-value row
-  void addKeyValue(String key, String value) {
-    sheet.appendRow([TextCellValue(key), TextCellValue(value)]);
-  }
-
-  // --- 1. Dados Pessoais ---
-  addHeader('DADOS PESSOAIS');
-  addKeyValue('Nome Completo:', participant.fullName);
-  addKeyValue(
-    'Data de Nascimento:',
-    DateFormat('dd/MM/yyyy').format(participant.participant.birthDate),
+  _writeParticipantToSheet(
+    sheet,
+    participant,
+    modules ?? [],
+    tasksByModule ?? {},
   );
-  addKeyValue('Sexo:', participant.participant.sex.label);
-  addKeyValue('Escolaridade:', participant.participant.educationLevel.label);
-  addKeyValue('Lateralidade:', participant.participant.laterality.label);
-  sheet.appendRow([TextCellValue('')]); // Spacer
-
-  // --- 2. Resumo da Avaliação ---
-  addHeader('RESUMO DA AVALIAÇÃO');
-  addKeyValue('Status:', participant.statusLabel);
-  addKeyValue('Data da Avaliação:', participant.evaluationDateFormatted);
-  sheet.appendRow([TextCellValue('')]); // Spacer
-
-  // --- 3. Detalhes dos Módulos e Tarefas ---
-  if (modules != null && modules.isNotEmpty) {
-    addHeader('DETALHAMENTO');
-
-    // Table Header
-    sheet.appendRow([
-      TextCellValue('Módulo'),
-      TextCellValue('Status do Módulo'),
-      TextCellValue('Tarefa'),
-      TextCellValue('Status da Tarefa'),
-      TextCellValue('Tempo (s)'),
-    ]);
-
-    for (final module in modules) {
-      final moduleTitle = module.module?.title ?? 'Módulo ${module.moduleId}';
-      final moduleStatus = module.status == ModuleStatus.completed
-          ? 'Concluído'
-          : 'Pendente';
-
-      final tasks = tasksByModule?[module.id] ?? [];
-
-      if (tasks.isEmpty) {
-        // Print just module info
-        sheet.appendRow([
-          TextCellValue(moduleTitle),
-          TextCellValue(moduleStatus),
-          TextCellValue('-'),
-          TextCellValue('-'),
-          TextCellValue('-'),
-        ]);
-      } else {
-        // Print module info on first task row, or separate?
-        // Let's print module info for every task for easier filtering in Excel
-        for (final task in tasks) {
-          final taskTitle = task.task?.title ?? 'Tarefa ${task.taskId}';
-          final taskStatus = task.status == TaskStatus.completed
-              ? 'Concluída'
-              : 'Pendente';
-          final time = task.executionDuration ?? '-';
-
-          sheet.appendRow([
-            TextCellValue(moduleTitle),
-            TextCellValue(moduleStatus),
-            TextCellValue(taskTitle),
-            TextCellValue(taskStatus),
-            TextCellValue(time),
-          ]);
-        }
-      }
-    }
-  } else {
-    sheet.appendRow([TextCellValue('Nenhum detalhe de módulo disponível.')]);
-  }
 
   final directory = await getApplicationDocumentsDirectory();
 
@@ -181,6 +140,113 @@ Future<void> exportSingleParticipantToExcel(
     ..writeAsBytesSync(fileBytes);
 
   debugPrint('📁 Exported single participant to $filePath');
+}
+
+void _writeParticipantToSheet(
+  Sheet sheet,
+  ParticipantWithEvaluation participant,
+  List<ModuleInstanceEntity> modules,
+  Map<int, List<TaskInstanceEntity>> tasksByModule,
+) {
+  // Helper to add a styled header row
+  void addHeader(String text) {
+    sheet.appendRow([TextCellValue(text)]);
+  }
+
+  // Helper to add a key-value row
+  void addKeyValue(String key, String value) {
+    sheet.appendRow([TextCellValue(key), TextCellValue(value)]);
+  }
+
+  // --- 1. Dados Pessoais ---
+  addHeader('DADOS PESSOAIS');
+  addKeyValue('Nome Completo:', participant.fullName);
+  addKeyValue(
+    'Data de Nascimento:',
+    DateFormat('dd/MM/yyyy').format(participant.participant.birthDate),
+  );
+  addKeyValue('Sexo:', participant.participant.sex.label);
+  addKeyValue('Escolaridade:', participant.participant.educationLevel.label);
+  addKeyValue('Lateralidade:', participant.participant.laterality.label);
+  addKeyValue('Data Cadastro:', participant.participant.creationDate ?? '-');
+  sheet.appendRow([TextCellValue('')]); // Spacer
+
+  // --- 2. Resumo da Avaliação ---
+  addHeader('RESUMO DA AVALIAÇÃO');
+  addKeyValue('Status:', participant.statusLabel);
+  addKeyValue(
+    'Data Criação (Agendamento):',
+    participant.evaluation?.creationDate ?? '-',
+  );
+  addKeyValue(
+    'Data de Início (Realizada):',
+    participant.evaluationDateFormatted,
+  );
+  addKeyValue(
+    'Data de Conclusão:',
+    participant.evaluation?.completionDate ?? '-',
+  );
+  sheet.appendRow([TextCellValue('')]); // Spacer
+
+  // --- 3. Detalhes dos Módulos e Tarefas ---
+  if (modules.isNotEmpty) {
+    addHeader('DETALHAMENTO');
+
+    // Table Header
+    sheet.appendRow([
+      TextCellValue('Módulo'),
+      TextCellValue('Status do Módulo'),
+      TextCellValue('Conclusão Módulo'),
+      TextCellValue('Tarefa'),
+      TextCellValue('Status da Tarefa'),
+      TextCellValue('Conclusão Tarefa'),
+      TextCellValue('Tempo (s)'),
+    ]);
+
+    for (final module in modules) {
+      final moduleTitle = module.module?.title ?? 'Módulo ${module.moduleId}';
+      final moduleStatus = module.status == ModuleStatus.completed
+          ? 'Concluído'
+          : 'Pendente';
+      final moduleDate = module.completionDate ?? '-';
+
+      final tasks = tasksByModule[module.id] ?? [];
+
+      if (tasks.isEmpty) {
+        // Print just module info
+        sheet.appendRow([
+          TextCellValue(moduleTitle),
+          TextCellValue(moduleStatus),
+          TextCellValue(moduleDate),
+          TextCellValue('-'),
+          TextCellValue('-'),
+          TextCellValue('-'),
+          TextCellValue('-'),
+        ]);
+      } else {
+        for (final task in tasks) {
+          final taskTitle = task.task?.title ?? 'Tarefa ${task.taskId}';
+          final taskStatus = task.status == TaskStatus.completed
+              ? 'Concluída'
+              : 'Pendente';
+          final taskDate = task.completionDate ?? '-';
+          final time = task.executionDuration ?? '-';
+
+          sheet.appendRow([
+            TextCellValue(moduleTitle),
+            TextCellValue(moduleStatus),
+            TextCellValue(moduleDate),
+            TextCellValue(taskTitle),
+            TextCellValue(taskStatus),
+            TextCellValue(taskDate),
+            TextCellValue(time),
+          ]);
+        }
+      }
+    }
+  } else {
+    sheet.appendRow([TextCellValue('Nenhum detalhe de módulo disponível.')]);
+  }
 }
 
 /// Checks if legacy data cleanup is needed.

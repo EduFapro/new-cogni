@@ -31,7 +31,7 @@ const scriptCreateTableEvaluations =
 CREATE TABLE ${Tables.evaluations} (
   ${EvaluationFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
   ${EvaluationFields.date} TIMESTAMP NOT NULL,
-  ${EvaluationFields.evaluatorId} INTEGER NOT NULL,
+  ${EvaluationFields.evaluatorId} TEXT NOT NULL,
   ${EvaluationFields.participantId} INTEGER UNIQUE NOT NULL,
   ${EvaluationFields.status} INT CHECK(${EvaluationFields.status} >= 0 AND ${EvaluationFields.status} <= 3) NOT NULL,
   ${EvaluationFields.language} INT CHECK(${EvaluationFields.language} >= 1 AND ${EvaluationFields.language} <= 3),

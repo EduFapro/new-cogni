@@ -10,7 +10,7 @@ class ParticipantRemoteDataSource {
 
   Future<int?> createParticipant(
     ParticipantEntity participant,
-    int evaluatorId, {
+    String evaluatorId, {
     List<int>? selectedModuleIds,
     String? avatar,
   }) async {
@@ -42,7 +42,7 @@ class ParticipantRemoteDataSource {
   Future<bool> updateParticipant(
     int id,
     ParticipantEntity participant,
-    int evaluatorId,
+    String evaluatorId,
   ) async {
     try {
       final response = await _networkService.put(

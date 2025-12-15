@@ -8,7 +8,7 @@ Future<void> seedDummyEvaluator(DatabaseExecutor db) async {
   AppLogger.seed('[DUMMY] Seeding dummy evaluator...');
 
   final evaluator = EvaluatorModel(
-    evaluatorId: 1,
+    evaluatorId: "seed-evaluator-uuid",
     name: 'Demo',
     surname: 'User',
     email: 'demo@example.com',

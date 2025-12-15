@@ -21,7 +21,7 @@ import '../../task_instance/domain/task_instance_providers.dart';
 import 'image_record_task_screen.dart';
 
 import 'media_record_task_screen.dart';
-import 'module_task_entry_screen.dart';
+import 'module_transition_screen.dart';
 
 import '../../../../core/utils/video_path_service.dart';
 import '../../evaluation/domain/evaluation_entity.dart';
@@ -171,6 +171,7 @@ class TaskRunnerScreen extends ConsumerWidget {
             task.imageAssetPath != 'no_image') {
           return ImageRecordTaskScreen(
             imageAssetPath: task.imageAssetPath,
+            videoAssetPath: resolvedVideoPath, // Pass the resolved video path
             maxDuration: maxDuration,
             onRecordingFinished: (filePath, duration) => _onTaskFinished(
               context,
@@ -325,12 +326,12 @@ class TaskRunnerScreen extends ConsumerWidget {
 
         // Get evaluator info from current user
         final currentUser = ref.read(currentUserProvider);
-        if (currentUser == null || currentUser.evaluatorId == null) {
+        if (currentUser == null) {
           AppLogger.error('❌ No current user or evaluator ID');
           throw Exception('No current user');
         }
 
-        final evaluatorId = currentUser.evaluatorId!;
+        final evaluatorId = currentUser.evaluatorId;
         // Evaluator names are now stored as plain text
         final evaluatorName = '${currentUser.name} ${currentUser.surname}';
 
@@ -511,10 +512,8 @@ class TaskRunnerScreen extends ConsumerWidget {
               Navigator.pushReplacement(
                 context,
                 FluentPageRoute(
-                  builder: (_) => ModuleTaskEntryScreen(
-                    moduleInstanceId: nextModule.id!,
-                    backgroundColor: Colors.green,
-                    customMessage: 'Iniciando próximo módulo em',
+                  builder: (_) => ModuleTransitionScreen(
+                    nextModuleInstanceId: nextModule.id!,
                   ),
                 ),
               );

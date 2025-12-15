@@ -24,7 +24,7 @@ class RecordingFilePathHelper {
   /// Example output:
   /// C:/Users/user/Documents/Cognivoice/Avaliador_JoaoSilva/Paciente_MariaSantos/A01_P05_T3_26112025.aac
   static Future<String> generateRecordingPath({
-    required int evaluatorId,
+    required String evaluatorId,
     required String evaluatorName,
     required int participantId,
     required String participantName,
@@ -54,7 +54,7 @@ class RecordingFilePathHelper {
       }
 
       // Generate filename
-      final formattedEvaluatorId = evaluatorId.toString().padLeft(2, '0');
+      final formattedEvaluatorId = evaluatorId;
       final formattedParticipantId = participantId.toString().padLeft(2, '0');
       final dateString = DateFormat('ddMMyyyy').format(DateTime.now());
 

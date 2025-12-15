@@ -33,7 +33,7 @@ class EvaluatorFields {
 const scriptCreateTableEvaluators =
     '''
 CREATE TABLE ${Tables.evaluators} (
-  ${EvaluatorFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
+  ${EvaluatorFields.id} TEXT PRIMARY KEY,
   ${EvaluatorFields.name} TEXT NOT NULL,
   ${EvaluatorFields.surname} TEXT NOT NULL,
   ${EvaluatorFields.email} TEXT NOT NULL,

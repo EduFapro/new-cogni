@@ -7,5 +7,5 @@ abstract class EvaluationRepository {
   Future<EvaluationEntity?> getById(int id);
   Future<int> setEvaluationStatus(int evaluationId, EvaluationStatus status);
 
-  Future getEvaluationsByEvaluator(int i) async {}
+  Future<List<EvaluationEntity>> getEvaluationsByEvaluator(String evaluatorId);
 }

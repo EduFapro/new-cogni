@@ -439,6 +439,10 @@ class _ParticipantTableState extends ConsumerState<ParticipantTable> {
                   'Lateralidade:',
                   item.participant.laterality.label,
                 ),
+                _buildInfoRow(
+                  'Data Cadastro:',
+                  item.participant.creationDate ?? '-',
+                ),
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 16),

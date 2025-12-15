@@ -31,7 +31,7 @@ class EvaluatorLocalDataSource {
   }
 
   /// Get evaluator by ID (decrypted)
-  Future<EvaluatorModel?> getById(int id) async {
+  Future<EvaluatorModel?> getById(String id) async {
     final result = await _db.query(
       Tables.evaluators,
       where: '${EvaluatorFields.id} = ?',
@@ -72,7 +72,7 @@ class EvaluatorLocalDataSource {
   }
 
   /// Delete evaluator
-  Future<int> deleteById(int id) async {
+  Future<int> deleteById(String id) async {
     return await _db.delete(
       Tables.evaluators,
       where: '${EvaluatorFields.id} = ?',

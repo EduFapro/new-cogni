@@ -177,7 +177,7 @@ class ParticipantLocalDataSource {
   }
 
   Future<List<ParticipantEntity>> getParticipantsByEvaluatorId(
-    int evaluatorId,
+    String evaluatorId,
   ) async {
     AppLogger.db(
       'ParticipantLocalDataSource.getParticipantsByEvaluatorId → evaluatorId=$evaluatorId',

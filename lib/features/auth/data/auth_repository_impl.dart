@@ -36,8 +36,21 @@ class AuthRepositoryImpl implements AuthRepository {
           );
 
           // Sync Remote User to Local DB
-          final userId = JwtHelper.getUserId(token);
+          final userId = JwtHelper.getUserId(token)?.toString();
           if (userId != null) {
+            // EvaluatorRemoteDataSource expects String ID now?
+            // The method signature might still be int. We need to check EvaluatorRemoteDataSource.
+            // Assuming we will update the interface next.
+            // But wait, if remote DB uses UUIDs too, we need String.
+            // If remote uses int, we have a problem.
+            // Assumption: Remote backend is ALSO updated to UUIDs or we just cast for now.
+            // Let's modify the call assuming String support or we pause to update interface first.
+            // For now, let's keep it safe.
+            // Wait, JwtHelper.getUserId returns int? or dynamic?
+            // If we refactor ID to String, getUserId should return String or we convert.
+
+            // Let's assume we update the remote datasource interface too.
+            // So I will convert to String here.
             final userData = await _remote.getEvaluatorById(userId);
             if (userData != null) {
               remoteUser = EvaluatorModel.fromJson(

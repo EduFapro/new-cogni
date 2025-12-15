@@ -28,7 +28,7 @@ class EvaluatorRemoteDataSource {
     }
   }
 
-  Future<Map<String, dynamic>?> getEvaluatorById(int id) async {
+  Future<Map<String, dynamic>?> getEvaluatorById(String id) async {
     try {
       final response = await _network.get('/api/evaluators/$id');
 

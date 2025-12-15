@@ -35,7 +35,8 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
 
     // 1. Local Insert
     final model = EvaluatorModel.fromDTO(data);
-    final localId = await local.insert(model);
+    await local.insert(model);
+    final localId = model.evaluatorId;
     AppLogger.db('[REPO] Evaluator inserted into local DB with ID: $localId');
 
     // 2. Remote Sync
@@ -44,7 +45,21 @@ class EvaluatorRepositoryImpl implements EvaluatorRepository {
         try {
           // We wait for remote to ensure validation passes (USER REQUEST)
           // If remote fails (e.g. 400 Bad Request), we rollback local to avoid inconsistent state
-          final backendId = await remote!.createEvaluator(data);
+          // Pass the locally generated ID to the remote to ensure consistency
+          final dataWithId = EvaluatorRegistrationData(
+            id: localId,
+            name: data.name,
+            surname: data.surname,
+            email: data.email,
+            birthDate: data.birthDate,
+            specialty: data.specialty,
+            cpf: data.cpf,
+            username: data.username,
+            password: data.password,
+            isAdmin: data.isAdmin,
+            firstLogin: data.firstLogin,
+          );
+          final backendId = await remote!.createEvaluator(dataWithId);
           if (backendId != null) {
             AppLogger.info(
               '[REPO] Evaluator synced to backend with ID: $backendId',

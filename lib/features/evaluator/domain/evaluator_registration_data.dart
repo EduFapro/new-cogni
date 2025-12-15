@@ -1,4 +1,5 @@
 class EvaluatorRegistrationData {
+  final String? id; // Optional ID for synchronization
   final String name;
   final String surname;
   final String email;
@@ -11,6 +12,7 @@ class EvaluatorRegistrationData {
   final bool firstLogin;
 
   EvaluatorRegistrationData({
+    this.id,
     required this.name,
     required this.surname,
     required this.email,
@@ -24,6 +26,7 @@ class EvaluatorRegistrationData {
   });
 
   Map<String, dynamic> toMap() => {
+    if (id != null) 'id': id,
     'name': name,
     'surname': surname,
     'email': email,
@@ -42,6 +45,7 @@ class EvaluatorRegistrationData {
   // For receiving from backend API
   factory EvaluatorRegistrationData.fromJson(Map<String, dynamic> json) {
     return EvaluatorRegistrationData(
+      id: json['id'] as String?,
       name: json['name'] as String,
       surname: json['surname'] as String,
       email: json['email'] as String,

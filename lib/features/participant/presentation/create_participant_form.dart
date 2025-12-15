@@ -153,7 +153,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
       }
 
       final evaluator = ref.read(currentUserProvider);
-      if (evaluator == null || evaluator.evaluatorId == null) {
+      if (evaluator == null) {
         AppLogger.error('[UI] ❌ Nenhum avaliador logado');
 
         await showDialog(
@@ -197,7 +197,7 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
         final notifier = ref.read(createParticipantEvaluationProvider.notifier);
         await notifier.createParticipantWithEvaluation(
           participant: participant,
-          evaluatorId: evaluator.evaluatorId!,
+          evaluatorId: evaluator.evaluatorId,
           selectedModuleIds: moduleIds,
         );
 
@@ -373,7 +373,9 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
                               (m) => m.moduleID != null && m.moduleID != 9001,
                             )
                             .length;
-                        selectAll.value = set.length == totalVisible;
+                        selectAll.value =
+                            set.where((id) => id != 9001).length ==
+                            totalVisible;
                       },
                     ),
                     const SizedBox(width: 8),
@@ -382,6 +384,43 @@ class ParticipantRegistrationForm extends HookConsumerWidget {
                 );
               })
               .toList(),
+
+          // Test Module (9001) Section
+          ...modulesState.value.where((m) => m.moduleID == 9001).map((module) {
+            final id = module.moduleID!;
+            final isChecked = selectedModuleIds.value.contains(id);
+
+            return Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Row(
+                children: [
+                  Checkbox(
+                    checked: isChecked,
+                    style: CheckboxThemeData(
+                      checkedDecoration: ButtonState.all(
+                        BoxDecoration(color: Colors.red),
+                      ),
+                      checkedIconColor: ButtonState.all(Colors.white),
+                    ),
+                    onChanged: (value) {
+                      final set = {...selectedModuleIds.value};
+                      value == true ? set.add(id) : set.remove(id);
+                      selectedModuleIds.value = set;
+                      // Independent: Does NOT affect selectAll
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    module.title,
+                    style: TextStyle(
+                      color: Colors.red, // Optional: also color text
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
 
           const SizedBox(height: 24),
 

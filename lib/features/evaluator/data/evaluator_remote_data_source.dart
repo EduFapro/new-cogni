@@ -8,7 +8,7 @@ class EvaluatorRemoteDataSource {
 
   EvaluatorRemoteDataSource(this._networkService);
 
-  Future<int?> createEvaluator(EvaluatorRegistrationData data) async {
+  Future<String?> createEvaluator(EvaluatorRegistrationData data) async {
     try {
       final response = await _networkService.post(
         '/api/evaluators',
@@ -17,7 +17,7 @@ class EvaluatorRemoteDataSource {
 
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        return responseData['id'] as int?;
+        return responseData['id'] as String?;
       } else {
         AppLogger.error(
           'Failed to create evaluator on backend: ${response.statusCode}',
@@ -30,7 +30,10 @@ class EvaluatorRemoteDataSource {
     }
   }
 
-  Future<bool> updateEvaluator(int id, EvaluatorRegistrationData data) async {
+  Future<bool> updateEvaluator(
+    String id,
+    EvaluatorRegistrationData data,
+  ) async {
     try {
       final response = await _networkService.put(
         '/api/evaluators/$id',
@@ -51,7 +54,7 @@ class EvaluatorRemoteDataSource {
     }
   }
 
-  Future<bool> deleteEvaluator(int id) async {
+  Future<bool> deleteEvaluator(String id) async {
     try {
       final response = await _networkService.delete('/api/evaluators/$id');
 

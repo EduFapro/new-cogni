@@ -25,12 +25,12 @@ import 'package:segundo_cogni/core/environment.dart';
 class MockParticipantRemoteDataSource implements ParticipantRemoteDataSource {
   bool createCalled = false;
   ParticipantEntity? createdParticipant;
-  int? evaluatorId;
+  String? evaluatorId;
 
   @override
   Future<int?> createParticipant(
     ParticipantEntity participant,
-    int evaluatorId, {
+    String evaluatorId, {
     List<int>? selectedModuleIds,
     String? avatar,
   }) async {
@@ -47,7 +47,7 @@ class MockParticipantRemoteDataSource implements ParticipantRemoteDataSource {
   Future<bool> updateParticipant(
     int id,
     ParticipantEntity participant,
-    int evaluatorId,
+    String evaluatorId,
   ) async => true;
 
   @override
@@ -236,7 +236,7 @@ void main() {
 
       final created = await useCase.execute(
         participant: participant,
-        evaluatorId: 1,
+        evaluatorId: "uuid-1",
         selectedModuleIds: [1],
       );
 
@@ -260,7 +260,7 @@ void main() {
         whereArgs: [created.participantID],
       );
       expect(savedEvaluation, isNotEmpty);
-      expect(savedEvaluation.first['evaluator_id'], 1);
+      expect(savedEvaluation.first['evaluator_id'], "uuid-1");
 
       // Verify Sync to Backend
       await Future.delayed(Duration.zero); // Allow microtask to run

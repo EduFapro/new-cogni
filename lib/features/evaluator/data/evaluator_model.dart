@@ -1,10 +1,11 @@
+import 'package:uuid/uuid.dart';
 import 'package:segundo_cogni/features/evaluator/domain/evaluator_registration_data.dart';
 import '../domain/evaluator_entity.dart';
 import 'evaluator_constants.dart';
 
 class EvaluatorModel extends EvaluatorEntity {
   const EvaluatorModel({
-    super.evaluatorId,
+    required super.evaluatorId,
     required super.name,
     required super.surname,
     required super.email,
@@ -20,7 +21,7 @@ class EvaluatorModel extends EvaluatorEntity {
   });
 
   factory EvaluatorModel.fromMap(Map<String, dynamic> map) => EvaluatorModel(
-    evaluatorId: map[EvaluatorFields.id] as int?,
+    evaluatorId: map[EvaluatorFields.id] as String,
     name: map[EvaluatorFields.name] as String,
     surname: map[EvaluatorFields.surname] as String,
     email: map[EvaluatorFields.email] as String,
@@ -35,7 +36,7 @@ class EvaluatorModel extends EvaluatorEntity {
   );
 
   factory EvaluatorModel.fromJson(Map<String, dynamic> json) => EvaluatorModel(
-    evaluatorId: json['id'] as int?,
+    evaluatorId: json['id'] as String,
     name: json['name'] as String,
     surname: json['surname'] as String,
     email: json['email'] as String,
@@ -110,6 +111,8 @@ class EvaluatorModel extends EvaluatorEntity {
 
   factory EvaluatorModel.fromDTO(EvaluatorRegistrationData dto) {
     return EvaluatorModel(
+      evaluatorId: const Uuid()
+          .v4(), // Generate UUID v4 for new local evaluators
       name: dto.name,
       surname: dto.surname,
       email: dto.email,
@@ -123,7 +126,7 @@ class EvaluatorModel extends EvaluatorEntity {
   }
 
   EvaluatorModel copyWith({
-    int? evaluatorId,
+    String? evaluatorId,
     String? name,
     String? surname,
     String? email,

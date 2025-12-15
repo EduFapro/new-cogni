@@ -47,7 +47,7 @@ class CreateParticipantEvaluationUseCase {
 
   Future<ParticipantEntity> execute({
     required ParticipantEntity participant,
-    required int evaluatorId,
+    required String evaluatorId,
     required List<int> selectedModuleIds,
     int language = 1,
     String avatar = 'Joana',
@@ -190,7 +190,7 @@ class CreateParticipantEvaluationUseCase {
 
   void _syncToBackend({
     required ParticipantEntity participant,
-    required int evaluatorId,
+    required String evaluatorId,
     required int evaluationId,
     required int language,
     required List<int> selectedModuleIds,

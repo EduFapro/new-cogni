@@ -208,7 +208,9 @@ void main() {
     test('insertEvaluator: syncs in local mode', () async {
       setEnv(AppEnv.local);
       when(mockEvaluatorLocal.insert(any)).thenAnswer((_) async => 1);
-      when(mockEvaluatorRemote.createEvaluator(any)).thenAnswer((_) async => 1);
+      when(
+        mockEvaluatorRemote.createEvaluator(any),
+      ).thenAnswer((_) async => 'uuid-1');
 
       await evaluatorRepo.insertEvaluator(evaluatorData);
       await Future.delayed(Duration(milliseconds: 50));

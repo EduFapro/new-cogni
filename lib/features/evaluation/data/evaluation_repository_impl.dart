@@ -47,7 +47,7 @@ class EvaluationRepositoryImpl implements EvaluationRepository {
 
   @override
   Future<List<EvaluationEntity>> getEvaluationsByEvaluator(
-    int evaluatorId,
+    String evaluatorId,
   ) async {
     final db = await local.dbHelper.database;
     final maps = await db.query(

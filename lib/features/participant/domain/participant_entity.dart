@@ -52,7 +52,7 @@ class ParticipantEntity {
 
   // For sending to backend API (unencrypted - backend stores plain text)
   Map<String, dynamic> toJsonForApi({
-    int? evaluatorId,
+    String? evaluatorId,
     List<int>? selectedModuleIds,
     String? avatar,
   }) => {

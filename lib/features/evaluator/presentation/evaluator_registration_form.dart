@@ -32,8 +32,10 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
     final showPassword = useState(false);
     final showConfirmPassword = useState(false);
     final manualUsername = useState(false);
+    // ignore: unused_local_variable
     final isDateExpanded = useState(false);
     final isRedirecting = useState(false);
+    final showDateError = useState(false);
 
     final state = ref.watch(evaluatorRegistrationProvider);
     final notifier = ref.read(evaluatorRegistrationProvider.notifier);
@@ -92,7 +94,10 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
     );
 
     Future<void> _submit() async {
-      if (!formKey.currentState!.validate()) {
+      final isDateValid = selectedDate.value != null;
+      showDateError.value = !isDateValid;
+
+      if (!formKey.currentState!.validate() || !isDateValid) {
         AppLogger.warning('Registration form validation failed');
         return;
       }
@@ -221,12 +226,29 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
             // date picker
             InfoLabel(
               label: "Data de Nascimento",
-              child: DatePicker(
-                selected: selectedDate.value,
-                onChanged: (date) {
-                  selectedDate.value = date;
-                  AppLogger.debug('Selected birth date: ${selectedDate.value}');
-                },
+              labelStyle: TextStyle(
+                color: showDateError.value ? Colors.red : AppColors.softWhite,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomDatePicker(
+                    selected: selectedDate.value,
+                    onChanged: (date) {
+                      selectedDate.value = date;
+                      if (date != null) showDateError.value = false;
+                    },
+                    allowManual: true,
+                  ),
+                  if (showDateError.value)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        "Data de nascimento é obrigatória",
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                ],
               ),
             ),
 
@@ -236,7 +258,7 @@ class EvaluatorRegistrationForm extends HookConsumerWidget {
 
             FilledButton(
               style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(AppColors.primary),
+                backgroundColor: ButtonState.all(AppColors.primary),
               ),
               onPressed: state.isLoading || isRedirecting.value
                   ? null

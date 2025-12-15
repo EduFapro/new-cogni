@@ -168,7 +168,7 @@ class MockParticipantLocalDataSource extends _i1.Mock
 
   @override
   _i4.Future<List<_i6.ParticipantEntity>> getParticipantsByEvaluatorId(
-    int? evaluatorId,
+    String? evaluatorId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#getParticipantsByEvaluatorId, [evaluatorId]),
@@ -191,7 +191,7 @@ class MockParticipantRemoteDataSource extends _i1.Mock
   @override
   _i4.Future<int?> createParticipant(
     _i6.ParticipantEntity? participant,
-    int? evaluatorId, {
+    String? evaluatorId, {
     List<int>? selectedModuleIds,
     String? avatar,
   }) =>
@@ -209,7 +209,7 @@ class MockParticipantRemoteDataSource extends _i1.Mock
   _i4.Future<bool> updateParticipant(
     int? id,
     _i6.ParticipantEntity? participant,
-    int? evaluatorId,
+    String? evaluatorId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateParticipant, [
@@ -259,7 +259,7 @@ class MockEvaluatorLocalDataSource extends _i1.Mock
           as _i4.Future<List<_i9.EvaluatorModel>>);
 
   @override
-  _i4.Future<_i9.EvaluatorModel?> getById(int? id) =>
+  _i4.Future<_i9.EvaluatorModel?> getById(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#getById, [id]),
             returnValue: _i4.Future<_i9.EvaluatorModel?>.value(),
@@ -283,7 +283,7 @@ class MockEvaluatorLocalDataSource extends _i1.Mock
           as _i4.Future<bool>);
 
   @override
-  _i4.Future<int> deleteById(int? id) =>
+  _i4.Future<int> deleteById(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteById, [id]),
             returnValue: _i4.Future<int>.value(0),
@@ -325,16 +325,16 @@ class MockEvaluatorRemoteDataSource extends _i1.Mock
   }
 
   @override
-  _i4.Future<int?> createEvaluator(_i11.EvaluatorRegistrationData? data) =>
+  _i4.Future<String?> createEvaluator(_i11.EvaluatorRegistrationData? data) =>
       (super.noSuchMethod(
             Invocation.method(#createEvaluator, [data]),
-            returnValue: _i4.Future<int?>.value(),
+            returnValue: _i4.Future<String?>.value(),
           )
-          as _i4.Future<int?>);
+          as _i4.Future<String?>);
 
   @override
   _i4.Future<bool> updateEvaluator(
-    int? id,
+    String? id,
     _i11.EvaluatorRegistrationData? data,
   ) =>
       (super.noSuchMethod(
@@ -344,7 +344,7 @@ class MockEvaluatorRemoteDataSource extends _i1.Mock
           as _i4.Future<bool>);
 
   @override
-  _i4.Future<bool> deleteEvaluator(int? id) =>
+  _i4.Future<bool> deleteEvaluator(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteEvaluator, [id]),
             returnValue: _i4.Future<bool>.value(false),

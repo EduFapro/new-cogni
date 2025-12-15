@@ -1,5 +1,5 @@
 class EvaluatorEntity {
-  final int? evaluatorId;
+  final String evaluatorId;
   final String name;
   final String surname;
   final String email;
@@ -13,7 +13,7 @@ class EvaluatorEntity {
   final String? creationDate;
 
   const EvaluatorEntity({
-    this.evaluatorId,
+    required this.evaluatorId,
     required this.name,
     required this.surname,
     required this.email,

@@ -17,7 +17,7 @@ class MockEvaluatorRemoteDataSource implements EvaluatorRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>?> getEvaluatorById(int id) async {
+  Future<Map<String, dynamic>?> getEvaluatorById(String id) async {
     return null;
   }
 
@@ -49,7 +49,7 @@ void main() {
   late MockNetworkService mockNetworkService;
 
   final dummyUser = EvaluatorModel(
-    evaluatorId: null,
+    evaluatorId: "test-uuid-123", // String ID
     name: 'Edu',
     surname: 'Fapro',
     email: 'edu@gmail.com',

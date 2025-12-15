@@ -7,6 +7,8 @@ import '../../../core/utils/file_helper.dart';
 import 'participant_list_provider.dart';
 import 'participant_table.dart';
 import 'widgets/participant_list_skeleton.dart';
+import '../../module_instance/presentation/module_instance_provider.dart';
+import '../../task_instance/domain/task_instance_providers.dart';
 
 class ParticipantListScreen extends HookConsumerWidget {
   @override
@@ -68,23 +70,68 @@ class ParticipantListScreen extends HookConsumerWidget {
                   FilledButton(
                     child: const Text('Exportar Excel'),
                     onPressed: () async {
-                      await exportParticipantsToExcel(filtered);
-                      if (context.mounted) {
-                        showDialog(
-                          context: context,
-                          builder: (_) => ContentDialog(
-                            title: const Text('Exportado!'),
-                            content: const Text(
-                              'Arquivo salvo em documentos do app.',
-                            ),
-                            actions: [
-                              Button(
-                                child: const Text('OK'),
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                            ],
-                          ),
+                      // Show loading indicator
+                      showDialog(
+                        context: context,
+                        builder: (_) => const Center(child: ProgressRing()),
+                      );
+
+                      try {
+                        await exportParticipantsToExcel(
+                          filtered,
+                          fetchModules: (evaluationId) async {
+                            return await ref.read(
+                              moduleInstancesByEvaluationProvider(
+                                evaluationId,
+                              ).future,
+                            );
+                          },
+                          fetchTasks: (moduleId) async {
+                            return await ref
+                                .read(taskInstanceRepositoryProvider)
+                                .getByModuleInstance(moduleId);
+                          },
                         );
+
+                        // Close loading
+                        if (context.mounted) Navigator.pop(context);
+
+                        if (context.mounted) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => ContentDialog(
+                              title: const Text('Exportado!'),
+                              content: const Text(
+                                'Arquivo salvo com sucesso (Relatório Geral).\nVerifique a pasta Documentos.',
+                              ),
+                              actions: [
+                                Button(
+                                  child: const Text('OK'),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        // Close loading
+                        if (context.mounted) Navigator.pop(context);
+
+                        if (context.mounted) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => ContentDialog(
+                              title: const Text('Erro'),
+                              content: Text('Erro ao exportar: $e'),
+                              actions: [
+                                Button(
+                                  child: const Text('OK'),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
                       }
                     },
                   ),
